@@ -191,6 +191,11 @@ public class GameSession : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        AnimationManager.OnDestroy();
+    }
+
     public Color hexToColor(string hex)
     {
         return Tools.hexToColor(hex);

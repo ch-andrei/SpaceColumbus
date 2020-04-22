@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
+using Unity.Jobs;
 
 using Common;
 
 namespace Animation.Systems
 {
-    // derive from this class to customize params
-    public abstract class AnimationParams : ScriptableObject { }
-
+    [System.Serializable]
     public abstract class AnimationBase : IIdentifiable
     {
-        public GameObject go { get; set; }
+        public GameObject go { get; private set; }
 
-        public AnimationParams Params { get; set; }
-
-        public AnimationBase(GameObject go, AnimationParams Params)
+        public AnimationBase(GameObject go)
         {
             this.go = go;
-            this.Params = Params;
         }
 
         public int GetId()
@@ -28,17 +25,7 @@ namespace Animation.Systems
         }
     }
 
-    public abstract class AnimationSystem<T> : AnimationSystem where T : AnimationBase
-    {
-        public override void Update(float time, float deltaTime, AnimationBase animationBase)
-        {
-            Update(time, deltaTime, animationBase as T);
-        }
-
-        public abstract void Update(float time, float deltaTime, T animationBase);
-    }
-
-    public abstract class AnimationSystem
+    public abstract class AnimationSystem : IDestroyable
     {
         private static readonly int AnimationSystemCapacity = 997; // 997 is a prime number
 
@@ -54,33 +41,64 @@ namespace Animation.Systems
             this.Animated = new Dictionary<int, AnimationBase>(capacity: capacity);
         }
 
-        public virtual void Update(float time, float deltaTime)
+        public virtual void AddAnimated(AnimationBase animationBase)
         {
-            foreach (var animationBase in Animated.Values)
-            {
-                Update(time, deltaTime, animationBase);
-            }
-        }
-
-        public abstract void Update(float time, float deltaTime, AnimationBase animationBase);
-
-        public virtual void AddAnimated(AnimationBase ap)
-        {
-            int id = ap.GetId();
+            int id = animationBase.GetId();
 
             if (!this.Animated.ContainsKey(id))
-                this.Animated.Add(id, ap);
+                this.Animated.Add(id, animationBase);
         }
 
-        public void RemoveAnimated(AnimationBase ap)
+        public void RemoveAnimated(AnimationBase animationBase)
         {
-            RemoveAnimated(ap.GetId());
+            RemoveAnimated(animationBase.GetId());
         }
 
         public void RemoveAnimated(int id)
         {
             if (this.Animated.ContainsKey(id))
                 this.Animated.Remove(id);
+        }
+
+        public abstract void Update(float time, float deltaTime);
+
+        public abstract void OnDestroy();
+    }
+
+    public abstract class AnimationSystem<T> : AnimationSystem
+        where T : AnimationBase
+    {
+        override public void AddAnimated(AnimationBase ab)
+        {
+            if (ab is T abT)
+                AddAnimated(abT);
+            else
+                Debug.Log("WARNING Animation System: Tried to add animation base with incorrect type.");
+        }
+
+        public void AddAnimated(T ap)
+        {
+            base.AddAnimated(ap);
+        }
+    }
+
+    public abstract class AnimationSystemThreaded<T> : AnimationSystem<T>
+    where T : AnimationBase
+    {
+        protected JobHandle AnimationJobHandle;
+
+        public abstract JobHandle ScheduleAnimationJob(float time, float deltaTime);
+
+        override public void Update(float time, float deltaTime)
+        {
+            AnimationJobHandle.Complete(); // wait for previous job to complete
+
+            AnimationJobHandle = ScheduleAnimationJob(time, deltaTime); // schedule next job
+        }
+
+        override public void OnDestroy()
+        {
+            AnimationJobHandle.Complete();
         }
     }
 }

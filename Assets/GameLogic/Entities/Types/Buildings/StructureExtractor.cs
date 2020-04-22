@@ -4,15 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Animation;
-using Animation.Systems;
+using Animation.Systems.Extractor;
 
 namespace Entities
 {
     public class StructureExtractor : Structure
     {
         public GameObject AnimatedObject;
-        public ExtractorAnimationParams AnimationParams;
-        private ExtractorAnimationBase AnimationBase;
+        public ExtractorAnimationBase AnimationParameters;
 
         override public string Name { get { return "Extractor"; } }
 
@@ -20,19 +19,14 @@ namespace Entities
         {
             base.Start();
 
-            SetupAnimations();
+            this.AnimationParameters = new ExtractorAnimationBase(AnimatedObject, Time.time);
 
-            AnimationManager.RegisterAnimation<ExtractorAnimationSystem>(this.AnimationBase);
-        }
-
-        void SetupAnimations()
-        {
-            this.AnimationBase = new ExtractorAnimationBase(AnimatedObject, AnimationParams);
+            AnimationManager.RegisterAnimation<ExtractorAnimationSystemThreaded>(this.AnimationParameters);
         }
 
         private void OnDestroy()
         {
-            AnimationManager.UnregisterAnimation<ExtractorAnimationSystem>(this.AnimationBase);
+            AnimationManager.UnregisterAnimation<ExtractorAnimationSystemThreaded>(this.AnimationParameters);
         }
     }
 }

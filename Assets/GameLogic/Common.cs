@@ -4,6 +4,11 @@ using UnityEngine;
 
 namespace Common
 {
+    public interface IDestroyable
+    {
+        void OnDestroy();
+    }
+
     public interface INamed
     {
         string Name { get; }

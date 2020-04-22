@@ -399,7 +399,7 @@ NavMeshObstacle:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1336850582846044205}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Shape: 1
   m_Extents: {x: 1, y: 2, z: 1}
@@ -434,7 +434,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AnimatedObject: {fileID: 3200342161573637118}
-  AnimationParams: {fileID: 11400000, guid: f810865dfb5e8c7419c6c25a18f6f590, type: 2}
+  AnimationParameters:
+    Speed: 8
+    MoveAmount: 0.75
 --- !u!1 &1336850582896236800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1022,7 +1024,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5962878461243415326
 Transform:
   m_ObjectHideFlags: 0
