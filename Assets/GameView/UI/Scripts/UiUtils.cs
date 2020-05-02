@@ -8,7 +8,7 @@ namespace UI.Utils
     {
         public static string WithColor(string s, Color color)
         {
-            return "<color=#" + ColorUtility.ToHtmlStringRGBA(color) + ">" + s + "</color>";
+            return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{s}</color>";
         }
     }
 

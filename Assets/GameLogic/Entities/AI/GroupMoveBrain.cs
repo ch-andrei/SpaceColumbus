@@ -8,16 +8,16 @@ public class GroupMoveBrain : MonoBehaviour
     {
         public struct FormationParams
         {
-            public FormationType formationType;
-            public List<Vector3> orientations;
-            public List<Vector3> positions;
+            public FormationType FormationType;
+            public List<Vector3> Orientations;
+            public List<Vector3> Positions;
 
             public static FormationParams NewFormation()
             {
                 FormationParams formationParams;
-                formationParams.formationType = FormationType.Line;
-                formationParams.orientations = new List<Vector3>();
-                formationParams.positions = new List<Vector3>();
+                formationParams.FormationType = FormationType.Line;
+                formationParams.Orientations = new List<Vector3>();
+                formationParams.Positions = new List<Vector3>();
                 return formationParams;
             }
         }
@@ -29,12 +29,12 @@ public class GroupMoveBrain : MonoBehaviour
         }
 
         // visualize with projectors
-        public static FormationParams getFormationPositions(int numMembers, Vector3 p1, Vector3 p2, FormationType formationType)
+        public static FormationParams GetFormationPositions(int numMembers, Vector3 p1, Vector3 p2, FormationType formationType)
         {
             FormationParams formationParams = FormationParams.NewFormation();
 
             // copy formation type
-            formationParams.formationType = formationType;
+            formationParams.FormationType = formationType;
 
             // compute the main 2d orientation of the formation
             Vector3 orientation = p2 - p1;

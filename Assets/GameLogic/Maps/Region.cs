@@ -7,28 +7,28 @@ namespace Regions
 {
     public class Tile
     {
-        public Vector3 pos;
-        public int i;
-        public int j;
+        public Vector3 Pos;
+        public int I;
+        public int J;
 
-        public Vector2Int index { get { return new Vector2Int(this.i, this.j); } }
+        public Vector2Int index { get { return new Vector2Int(this.I, this.J); } }
 
         public Tile(Vector3 pos, int i, int j)
         {
-            this.pos = pos;
-            this.i = i;
-            this.j = j;
+            this.Pos = pos;
+            this.I = i;
+            this.J = j;
         }
 
-        public bool Equals(Tile tile) { return this.i == tile.i && this.j == tile.j; }
+        public bool Equals(Tile tile) { return this.I == tile.I && this.J == tile.J; }
     }
 
     [System.Serializable] // for unity editor
     public class RegionGenConfig
     {
-        private const int maxNumberOfTiles = 64000; // slightly less than ~2^16 -> unity's mesh vertex count limitation 
+        private const int MaxNumberOfTiles = 64000; // slightly less than ~2^16 -> unity's mesh vertex count limitation 
 
-        [Range(1, maxNumberOfTiles)]
+        [Range(1, MaxNumberOfTiles)]
         public int numberOfTiles;
 
         [Range(0.001f, 100f)]
@@ -42,65 +42,65 @@ namespace Regions
 
     public abstract class Region
     {
-        protected int seed;
+        protected int Seed;
 
-        protected HeightMap heightMap;
+        protected HeightMap HeightMap;
 
-        protected float tileSize;
-        protected int gridRadius;
+        protected float TileSize;
+        protected int GridRadius;
 
-        protected float regionSize;
-        protected float center;
+        protected float RegionSize;
+        protected float Center;
 
         //protected float waterLevelElevation;
-        protected float minElevation, maxElevation, avgElevation;
+        protected float MinElevation, MaxElevation, AvgElevation;
 
-        public Tile[,] tiles;
-        protected abstract int computeGridRadius();
+        public Tile[,] Tiles;
+        protected abstract int ComputeGridRadius();
 
-        protected Vector3 regionWorldCoordToIndex(Vector2 pos) { return regionWorldCoordToIndex(pos.x, pos.y); }
-        protected Vector3 regionWorldCoordToIndex(Vector3 pos) { return regionWorldCoordToIndex(pos.x, pos.z); }
-        protected abstract Vector3 regionWorldCoordToIndex(float x, float y);
+        protected Vector3 RegionWorldCoordToIndex(Vector2 pos) { return RegionWorldCoordToIndex(pos.x, pos.y); }
+        protected Vector3 RegionWorldCoordToIndex(Vector3 pos) { return RegionWorldCoordToIndex(pos.x, pos.z); }
+        protected abstract Vector3 RegionWorldCoordToIndex(float x, float y);
 
-        public abstract Tile getTileAt(Vector3 pos);
-        public abstract List<Vector2Int> getNeighborDirections();
+        public abstract Tile GetTileAt(Vector3 pos);
+        public abstract List<Vector2Int> GetNeighborDirections();
 
         public Region(int seed)
         {
-            this.seed = seed;
+            this.Seed = seed;
         }
 
-        public Tile[,] getTiles()
+        public Tile[,] GetTiles()
         {
-            return this.tiles;
-        }
-
-        // unity units coordinates
-        public List<Tile> getTileNeighbors(Vector3 tilePos)
-        {
-            return getTileNeighbors(regionWorldCoordToIndex(tilePos));
+            return this.Tiles;
         }
 
         // unity units coordinates
-        public List<Tile> getTileNeighbors(Vector2Int tileIndex)
+        public List<Tile> GetTileNeighbors(Vector3 tilePos)
         {
-            return getTileNeighbors(tileIndex.x, tileIndex.y);
+            return GetTileNeighbors(RegionWorldCoordToIndex(tilePos));
         }
 
-        public float distanceBetweenTiles(Tile tile1, Tile tile2)
+        // unity units coordinates
+        public List<Tile> GetTileNeighbors(Vector2Int tileIndex)
         {
-            return (tile1.pos - tile2.pos).magnitude;
+            return GetTileNeighbors(tileIndex.x, tileIndex.y);
+        }
+
+        public float DistanceBetweenTiles(Tile tile1, Tile tile2)
+        {
+            return (tile1.Pos - tile2.Pos).magnitude;
         }
 
         // array index coordinates
-        public List<Tile> getTileNeighbors(int i, int j)
+        public List<Tile> GetTileNeighbors(int i, int j)
         {
             List<Tile> neighbors = new List<Tile>();
-            foreach (Vector2Int dir in this.getNeighborDirections())
+            foreach (Vector2Int dir in this.GetNeighborDirections())
             {
                 try
                 {
-                    Tile neighbor = this.tiles[i + dir.x, j + dir.y];
+                    Tile neighbor = this.Tiles[i + dir.x, j + dir.y];
                     if (neighbor != null)
                         neighbors.Add(neighbor);
                 }
@@ -112,25 +112,25 @@ namespace Regions
             return neighbors;
         }
 
-        public Vector2 pos2UV(Vector3 pos)
+        public Vector2 Pos2Uv(Vector3 pos)
         {
-            float u = pos.x / regionSize + 1f / 2f;
-            float v = pos.z / regionSize + 1f / 2f;
+            float u = pos.x / RegionSize + 1f / 2f;
+            float v = pos.z / RegionSize + 1f / 2f;
             return new Vector2(u, v);
         }
 
         // *** ELEVATION PARAMETERS COMPUTATIONS *** //
-        protected void computeElevationParameters()
+        protected void ComputeElevationParameters()
         {
-            this.minElevation = this.computeMinimumElevation();
-            this.maxElevation = this.computeMaximumElevation();
-            this.avgElevation = this.computeAverageElevation();
+            this.MinElevation = this.ComputeMinimumElevation();
+            this.MaxElevation = this.ComputeMaximumElevation();
+            this.AvgElevation = this.ComputeAverageElevation();
         }
 
-        protected float computeAverageElevation()
+        protected float ComputeAverageElevation()
         {
             double sum = 0;
-            List<Vector3> positions = getTileVertices();
+            List<Vector3> positions = GetTileVertices();
             foreach (Vector3 pos in positions)
             {
                 sum += pos.y;
@@ -138,10 +138,10 @@ namespace Regions
             return (float)(sum / (positions.Count));
         }
 
-        protected float computeMaximumElevation()
+        protected float ComputeMaximumElevation()
         {
             float max = -float.MaxValue;
-            List<Vector3> positions = getTileVertices();
+            List<Vector3> positions = GetTileVertices();
             foreach (Vector3 pos in positions)
             {
                 if (max < pos.y)
@@ -152,10 +152,10 @@ namespace Regions
             return max;
         }
 
-        protected float computeMinimumElevation()
+        protected float ComputeMinimumElevation()
         {
             float min = float.MaxValue;
-            List<Vector3> positions = getTileVertices();
+            List<Vector3> positions = GetTileVertices();
             foreach (Vector3 pos in positions)
             {
                 if (min > pos.y)
@@ -168,17 +168,17 @@ namespace Regions
 
         // *** GETTERS AND SETTERS *** //
 
-        public List<Vector3> getTileVertices()
+        public List<Vector3> GetTileVertices()
         {
             List<Vector3> tilesList = new List<Vector3>();
 
-            int length = tiles.GetLength(0);
+            int length = Tiles.GetLength(0);
             for (int i = 0; i < length; i++)
             {
                 for (int j = 0; j < length; j++)
                 {
-                    if (tiles[i, j] != null)
-                        tilesList.Add(tiles[i, j].pos);
+                    if (Tiles[i, j] != null)
+                        tilesList.Add(Tiles[i, j].Pos);
                 }
             }
 

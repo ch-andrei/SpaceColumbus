@@ -4,10 +4,10 @@
     {
         public void Initialize(string time, string notification="")
         {
-            this.TextLeft.Text = time;
+            this.textLeft.Text = time;
 
             if (notification.Length > 0)
-                this.TextRight.Text = notification;
+                this.textRight.Text = notification;
 
             TriggerUpdateLayoutSize();
         }

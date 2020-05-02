@@ -18,89 +18,89 @@ public class CloudsView : MonoBehaviour
     public Vector3 cloudMoveDirectionNormalized = new Vector3(1, 0, 1).normalized;
 
     // private variables
-    private int numberOfCloudsSpawned;
-    private float cloudElevationLevel;
-    List<Cloud> clouds;
-    Vector3 cameraViewCenterPoint;
+    private int _numberOfCloudsSpawned;
+    private float _cloudElevationLevel;
+    List<Cloud> _clouds;
+    Vector3 _cameraViewCenterPoint;
 
-    private int framesSinceLastSpawn;
+    private int _framesSinceLastSpawn;
 
     public class Cloud
     {
         // cloud dimension and offsets constants
-        public static float cloudMaxCenterOffsetHorizontal = 15f;
-        public static float cloudMinCenterOffsetHorizontal = 5f;
+        public static float CloudMaxCenterOffsetHorizontal = 15f;
+        public static float CloudMinCenterOffsetHorizontal = 5f;
 
-        public static float cloudMaxCenterOffsetVertical = 7f;
-        public static float cloudMinCenterOffsetVertical = 2f;
+        public static float CloudMaxCenterOffsetVertical = 7f;
+        public static float CloudMinCenterOffsetVertical = 2f;
 
-        public static float cloudMaxObjectSizeVertical = 5f;
-        public static float cloudMinObjectSizeVertical = 2f;
+        public static float CloudMaxObjectSizeVertical = 5f;
+        public static float CloudMinObjectSizeVertical = 2f;
 
-        public static float cloudMaxObjectSizeHorizontal = 15f;
-        public static float cloudMinObjectSizeHorizontal = 3f;
+        public static float CloudMaxObjectSizeHorizontal = 15f;
+        public static float CloudMinObjectSizeHorizontal = 3f;
         // cloud object counts
-        public static int maxObjectsPerCloud = 20;
-        public static int minObjectsPerCloud = 5;
+        public static int MaxObjectsPerCloud = 20;
+        public static int MinObjectsPerCloud = 5;
 
         // private variables //
 
         public int objectsPerCloud { get; }
 
-        public GameObject cloudCenter;
-        public Vector3 cloudCenterPos { get { return this.cloudCenter.transform.position; } }
+        public GameObject CloudCenter;
+        public Vector3 cloudCenterPos { get { return this.CloudCenter.transform.position; } }
 
         public Cloud(Transform parent, Vector3 spawnPos)
         {
-            objectsPerCloud = (int)UnityEngine.Random.Range(minObjectsPerCloud, maxObjectsPerCloud);
-            cloudCenter = new GameObject("Cloud");
-            cloudCenter.transform.parent = parent;
-            cloudCenter.transform.position = spawnPos;
-            generateCloud(parent);
+            objectsPerCloud = (int)UnityEngine.Random.Range(MinObjectsPerCloud, MaxObjectsPerCloud);
+            CloudCenter = new GameObject("Cloud");
+            CloudCenter.transform.parent = parent;
+            CloudCenter.transform.position = spawnPos;
+            GenerateCloud(parent);
         }
 
-        private void generateCloud(Transform parent)
+        private void GenerateCloud(Transform parent)
         {
             for (int i = 0; i < this.objectsPerCloud; i++)
             {
                 GameObject cloudObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                cloudObject.transform.parent = cloudCenter.transform;
+                cloudObject.transform.parent = CloudCenter.transform;
                 cloudObject.transform.localPosition =
                                         new Vector3(
-                                            Random.Range(cloudMinCenterOffsetHorizontal, cloudMaxCenterOffsetHorizontal),
-                                            Random.Range(cloudMinCenterOffsetVertical, cloudMaxCenterOffsetVertical),
-                                            Random.Range(cloudMinCenterOffsetHorizontal, cloudMaxCenterOffsetHorizontal)
+                                            Random.Range(CloudMinCenterOffsetHorizontal, CloudMaxCenterOffsetHorizontal),
+                                            Random.Range(CloudMinCenterOffsetVertical, CloudMaxCenterOffsetVertical),
+                                            Random.Range(CloudMinCenterOffsetHorizontal, CloudMaxCenterOffsetHorizontal)
                                                     );
-                cloudObject.transform.localScale = new Vector3(Random.Range(cloudMinObjectSizeHorizontal, cloudMaxObjectSizeHorizontal),
-                                                Random.Range(cloudMinObjectSizeVertical, cloudMaxObjectSizeVertical),
-                                                Random.Range(cloudMinObjectSizeHorizontal, cloudMaxObjectSizeHorizontal));
+                cloudObject.transform.localScale = new Vector3(Random.Range(CloudMinObjectSizeHorizontal, CloudMaxObjectSizeHorizontal),
+                                                Random.Range(CloudMinObjectSizeVertical, CloudMaxObjectSizeVertical),
+                                                Random.Range(CloudMinObjectSizeHorizontal, CloudMaxObjectSizeHorizontal));
             }
         }
 
-        public void tick(float moveSpeed, Vector3 moveDirection)
+        public void Tick(float moveSpeed, Vector3 moveDirection)
         {
-            move(moveSpeed, moveDirection);
+            Move(moveSpeed, moveDirection);
         }
 
-        public void despawn()
+        public void Despawn()
         {
-            Destroy(cloudCenter);
+            Destroy(CloudCenter);
         }
 
-        private void move(float moveSpeed, Vector3 moveDirection)
+        private void Move(float moveSpeed, Vector3 moveDirection)
         {
-            cloudCenter.transform.position += moveDirection * moveSpeed;
+            CloudCenter.transform.position += moveDirection * moveSpeed;
         }
     }
 
     // Use this for initialization
     void Start()
     {
-        cloudElevationLevel = cloudSpawnElevation;
-        clouds = new List<Cloud>();
-        cameraViewCenterPoint = new Vector3();
-        numberOfCloudsSpawned = 0;
-        framesSinceLastSpawn = 0;
+        _cloudElevationLevel = cloudSpawnElevation;
+        _clouds = new List<Cloud>();
+        _cameraViewCenterPoint = new Vector3();
+        _numberOfCloudsSpawned = 0;
+        _framesSinceLastSpawn = 0;
     }
 
     // Update is called once per frame
@@ -108,57 +108,57 @@ public class CloudsView : MonoBehaviour
     {
 
         // update camera position
-        cameraViewCenterPoint = new Vector3(0,0,0);
-        cameraViewCenterPoint.y = 0;
+        _cameraViewCenterPoint = new Vector3(0,0,0);
+        _cameraViewCenterPoint.y = 0;
 
-        if (numberOfCloudsSpawned < numberOfCloudsToSpawn && framesSinceLastSpawn > framesBetweenCloudSpawns)
+        if (_numberOfCloudsSpawned < numberOfCloudsToSpawn && _framesSinceLastSpawn > framesBetweenCloudSpawns)
         {
             // spawn cloud
-            spawnCloud();
-            numberOfCloudsSpawned++;
-            framesSinceLastSpawn = 0;
+            SpawnCloud();
+            _numberOfCloudsSpawned++;
+            _framesSinceLastSpawn = 0;
         }
 
-        framesSinceLastSpawn++;
+        _framesSinceLastSpawn++;
 
         // update clouds
-        foreach (Cloud cloud in clouds)
+        foreach (Cloud cloud in _clouds)
         {
             // update cloud tick
-            cloud.tick(cloudMoveSpeed, cloudMoveDirectionNormalized);
+            cloud.Tick(cloudMoveSpeed, cloudMoveDirectionNormalized);
         }
 
         // despawn old clouds
-        for (int i = 0; i < clouds.Count; i++)
+        for (int i = 0; i < _clouds.Count; i++)
         {
-            Cloud cloud = clouds[i];
+            Cloud cloud = _clouds[i];
             Vector3 posNoY = cloud.cloudCenterPos;
             posNoY.y = 0;
-            if ((cameraViewCenterPoint - posNoY).magnitude > cloudToCameraDistanceToDespawn)
+            if ((_cameraViewCenterPoint - posNoY).magnitude > cloudToCameraDistanceToDespawn)
             {
-                despawnCloud(cloud);
-                clouds.RemoveAt(i);
+                DespawnCloud(cloud);
+                _clouds.RemoveAt(i);
                 i--;
             }
         }
     }
 
-    private void spawnCloud()
+    private void SpawnCloud()
     {
         // compute new cloud position
         Vector3 cloudPos = new Vector3(
             Random.Range(-cloudSpawnMaxDistanceFromViewPoint, cloudSpawnMaxDistanceFromViewPoint),
-            cloudElevationLevel + Random.Range(-cloudSpawnMaxDistanceFromElevationLevel, cloudSpawnMaxDistanceFromElevationLevel),
+            _cloudElevationLevel + Random.Range(-cloudSpawnMaxDistanceFromElevationLevel, cloudSpawnMaxDistanceFromElevationLevel),
             Random.Range(-cloudSpawnMaxDistanceFromViewPoint, cloudSpawnMaxDistanceFromViewPoint)
             );
         // create a cloud and add to the list of clouds
-        Cloud cloud = new Cloud(transform, cameraViewCenterPoint + cloudPos);
-        clouds.Add(cloud);
+        Cloud cloud = new Cloud(transform, _cameraViewCenterPoint + cloudPos);
+        _clouds.Add(cloud);
     }
 
-    private void despawnCloud(Cloud cloud)
+    private void DespawnCloud(Cloud cloud)
     {
-        cloud.despawn();
-        numberOfCloudsSpawned--;
+        cloud.Despawn();
+        _numberOfCloudsSpawned--;
     }
 }

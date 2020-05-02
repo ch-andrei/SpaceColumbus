@@ -10,28 +10,28 @@ namespace HeightMapGenerators
     [System.Serializable]
     public class HeightMapConfig
     {
-        private const float configEpsilon = 1e-3f;
+        private const float ConfigEpsilon = 1e-3f;
 
         public int preset = -1;
 
         [Header("Height Map Post Processing Configuration")]
 
         // how uniform the overall terrain should be
-        [Range(0, 1 - configEpsilon)]
+        [Range(0, 1 - ConfigEpsilon)]
         public float flattenLinearStrength = 0.25f;
 
-        [Range(0, 1 - configEpsilon)]
+        [Range(0, 1 - ConfigEpsilon)]
         public float flattenLowsStrength = 0.5f;
 
         // how much to suppress high elevations
-        [Range(0, 1 - configEpsilon)]
+        [Range(0, 1 - ConfigEpsilon)]
         public float flattenDampenStrength = 0.25f;
 
         // how much to flatten terrain with logarithmic clamping
         [Range(0, 1f)]
         public float logClampThreshold = 0.5f;
 
-        [Range(configEpsilon, 10f)]
+        [Range(ConfigEpsilon, 10f)]
         public float logClampIntensity = 2f;
 
         // amplifiction parameter for rescaling height values; high amplifiaction pulls small values smaller, and make high values appear higher; exponential stretching
@@ -65,7 +65,7 @@ namespace HeightMapGenerators
         [Header("Map Gen Noise configuration")]
 
         // height map resolution depends on region size; this scaler can be used to increase the resolution
-        [Range(configEpsilon, 10f)]
+        [Range(ConfigEpsilon, 10f)]
         public float resolutionScale = 1f;
 
         // number of discrete values for the noise height map
@@ -117,86 +117,86 @@ namespace HeightMapGenerators
 
     public class HeightMap
     {
-        private HeightMapConfig config;
-        private FastPerlinNoiseConfig noiseConfig;
-        private ErosionConfig erosionConfig;
+        private HeightMapConfig _config;
+        private FastPerlinNoiseConfig _noiseConfig;
+        private ErosionConfig _erosionConfig;
 
-        private Noise noise;
+        private Noise _noise;
 
-        public int preset { get { return this.config.preset; } }
-        public float flattenLinearStrength { get { return this.config.flattenLinearStrength; } }
-        public float flattenLowsStrength { get { return this.config.flattenLowsStrength; } }
-        public float flattenDampenStrength { get { return this.config.flattenDampenStrength; } }
-        public float logClampThreshold { get { return this.config.logClampThreshold; } }
-        public float logClampIntensity { get { return this.config.logClampIntensity; } }
-        public float amplification { get { return this.config.amplification; } }
-        public int heightSteps { get { return this.config.heightSteps; } }
-        public float craterImportance{ get { return this.config.craterImportance; } }
-        public float centralCraterDepth { get { return this.config.centralCraterDepth; } }
-        public float centralCraterWidth { get { return this.config.centralCraterWidth; } }
-        public float craterRandomInfluence { get { return this.config.craterRandomInfluence; } }
-        public int craterCount { get { return this.config.craterCount; } }
-        public float craterSize { get { return this.config.craterSize; } }
-        public float craterDepth{ get { return this.config.craterDepth; } }
+        public int preset { get { return this._config.preset; } }
+        public float flattenLinearStrength { get { return this._config.flattenLinearStrength; } }
+        public float flattenLowsStrength { get { return this._config.flattenLowsStrength; } }
+        public float flattenDampenStrength { get { return this._config.flattenDampenStrength; } }
+        public float logClampThreshold { get { return this._config.logClampThreshold; } }
+        public float logClampIntensity { get { return this._config.logClampIntensity; } }
+        public float amplification { get { return this._config.amplification; } }
+        public int heightSteps { get { return this._config.heightSteps; } }
+        public float craterImportance{ get { return this._config.craterImportance; } }
+        public float centralCraterDepth { get { return this._config.centralCraterDepth; } }
+        public float centralCraterWidth { get { return this._config.centralCraterWidth; } }
+        public float craterRandomInfluence { get { return this._config.craterRandomInfluence; } }
+        public int craterCount { get { return this._config.craterCount; } }
+        public float craterSize { get { return this._config.craterSize; } }
+        public float craterDepth{ get { return this._config.craterDepth; } }
 
-        public ComputeShader erosionShader { get { return this.erosionConfig.erosionShader; } }
-        public int erosionIterations { get { return this.erosionConfig.iterations; } }
-        public float erosionStrength { get { return this.erosionConfig.strength; } }
-        public float erosionWaterAmount { get { return this.erosionConfig.waterAmount; } }
-        public float erosionWaterLoss { get { return this.erosionConfig.waterLoss; } }
-        public float erosionWaterVelocityElevationDiffRegularizer { get { return this.erosionConfig.waterVelocityElevationDiffRegularizer; } }
-        public float erosionWaterToElevationProportion { get { return this.erosionConfig.waterToElevationProportion; } }
-        public float erosionMinTerrainMovementProportion { get { return this.erosionConfig.minTerrainMovementProportion; } }
+        public ComputeShader erosionShader { get { return this._erosionConfig.erosionShader; } }
+        public int erosionIterations { get { return this._erosionConfig.iterations; } }
+        public float erosionStrength { get { return this._erosionConfig.strength; } }
+        public float erosionWaterAmount { get { return this._erosionConfig.waterAmount; } }
+        public float erosionWaterLoss { get { return this._erosionConfig.waterLoss; } }
+        public float erosionWaterVelocityElevationDiffRegularizer { get { return this._erosionConfig.waterVelocityElevationDiffRegularizer; } }
+        public float erosionWaterToElevationProportion { get { return this._erosionConfig.waterToElevationProportion; } }
+        public float erosionMinTerrainMovementProportion { get { return this._erosionConfig.minTerrainMovementProportion; } }
 
-        public float getNoiseValueUV(float u, float v) { return this.noise.lerpNoiseValue(u, v); }
+        public float GetNoiseValueUv(float u, float v) { return this._noise.LerpNoiseValue(u, v); }
 
         public HeightMap(int seed, HeightMapConfig config, FastPerlinNoiseConfig noiseConfig, ErosionConfig erosionConfig)
         {
-            this.config = config;
-            this.noiseConfig = noiseConfig;
+            this._config = config;
+            this._noiseConfig = noiseConfig;
             //this.noise = new ZeroNoiseMap(noiseConfig.resolution, seed);
-            this.noise = new FastPerlinNoise(seed, this.noiseConfig);
-            this.erosionConfig = erosionConfig;
-            modifyNoise();
+            this._noise = new FastPerlinNoise(seed, this._noiseConfig);
+            this._erosionConfig = erosionConfig;
+            ModifyNoise();
         }
 
-        public void modifyNoise()
+        public void ModifyNoise()
         {
-            float[,] elevations = this.noise.getNoiseValues();
+            float[,] elevations = this._noise.GetNoiseValues();
             Erosion erosion = new Erosion();
-            erosion.erosion = erosionShader;
+            erosion.ErosionShader = erosionShader;
 
-            if (erosionConfig.applyErosion)
+            if (_erosionConfig.applyErosion)
                 erosion.Erode(elevations, erosionIterations);
 
             switch (preset)
             {
                 case 0:
-                    applyNormalizedHalfSphere(elevations);
+                    ApplyNormalizedHalfSphere(elevations);
                     break;
                 case 1:
-                    applyLogisticsFunctionToElevations(elevations);
+                    ApplyLogisticsFunctionToElevations(elevations);
                     break;
                 case 2:
-                    amplifyElevations(elevations, 2);
+                    AmplifyElevations(elevations, 2);
                     break;
                 case 3:
                     break;
                 default:
                     Debug.Log("Default noise map.");
 
-                    createCraters(elevations);
+                    CreateCraters(elevations);
 
-                    amplifyElevations(elevations, amplification);
-                    logarithmicClamp(elevations, logClampThreshold, logClampIntensity);
-                    dampenElevations(elevations, flattenDampenStrength);
-                    flattenLows(elevations);
-                    flattenLinearToAverage(elevations);
+                    AmplifyElevations(elevations, amplification);
+                    LogarithmicClamp(elevations, logClampThreshold, logClampIntensity);
+                    DampenElevations(elevations, flattenDampenStrength);
+                    FlattenLows(elevations);
+                    FlattenLinearToAverage(elevations);
 
                     break;
             }
 
-            Tools.normalize(elevations);
+            Tools.Normalize(elevations);
 
 
             // computeErosion (elevations);
@@ -205,52 +205,52 @@ namespace HeightMapGenerators
 
             //normalizeToNElevationLevels(elevations, heightSteps);
 
-            this.noise.setNoiseValues(elevations);
+            this._noise.SetNoiseValues(elevations);
         }
 
         // while generating N craters, want the earlier craters to be smaller than the later
         // this function is a simple heuristic that gives an importance weight to the crater based on its generation number (i.e. first vs last crater)
-        public float craterScaleModifier(int craterNum, int power = 5, float minImportance = 0.05f)
+        public float CraterScaleModifier(int craterNum, int power = 5, float minImportance = 0.05f)
         {
             return minImportance + (1f - minImportance) * Mathf.Pow((craterNum + craterCount) / 2f / craterCount, power);
         }
 
-        public float randomCraterDiameter(int craterNum, int craterCount)
+        public float RandomCraterDiameter(int craterNum, int craterCount)
         {
-            return craterSize * (1f + craterRandomInfluence * (UnityEngine.Random.value * craterScaleModifier(craterNum, craterCount) - 1f));
+            return craterSize * (1f + craterRandomInfluence * (UnityEngine.Random.value * CraterScaleModifier(craterNum, craterCount) - 1f));
         }
 
-        public float randomCraterDepth(float craterDiam) {
+        public float RandomCraterDepth(float craterDiam) {
             return craterDepth * craterDiam * craterImportance * (1f + craterRandomInfluence * (UnityEngine.Random.value - 1));
         }
 
-        public float computeHeightModifier(float elevation, float elevationAtImpact, float val) {
+        public float ComputeHeightModifier(float elevation, float elevationAtImpact, float val) {
             float heightModifierPower = 1f;
             float heightModifierInfluence = 0;
             float heightModifier = Mathf.Clamp(1f - heightModifierInfluence * Mathf.Pow(Mathf.Abs(elevation - elevationAtImpact) / (val == 0 ? 1: val), heightModifierPower), 0f, 1f) ;
             return heightModifier;
         }
 
-        public void createCraters(float[,] elevations)
+        public void CreateCraters(float[,] elevations)
         {
             // central landing crater
-            generateCrater(elevations, new Vector2(0.5f, 0.5f), centralCraterWidth, centralCraterDepth * craterImportance); ;
+            GenerateCrater(elevations, new Vector2(0.5f, 0.5f), centralCraterWidth, centralCraterDepth * craterImportance); ;
 
             // extra smaller craters
             for (int craterNum = 0; craterNum < craterCount; craterNum++)
             {
-                Vector2 rCraterCenterUV = new Vector2(UnityEngine.Random.value, UnityEngine.Random.value);
+                Vector2 rCraterCenterUv = new Vector2(UnityEngine.Random.value, UnityEngine.Random.value);
 
-                float rCraterDiam = randomCraterDiameter(craterNum, craterCount);
-                float rCraterDepth = randomCraterDepth(rCraterDiam);
+                float rCraterDiam = RandomCraterDiameter(craterNum, craterCount);
+                float rCraterDepth = RandomCraterDepth(rCraterDiam);
 
-                generateCrater(elevations, rCraterCenterUV, rCraterDiam, rCraterDepth); ;
+                GenerateCrater(elevations, rCraterCenterUv, rCraterDiam, rCraterDepth); ;
             }
 
-            Tools.normalize(elevations);
+            Tools.Normalize(elevations);
         }
 
-        public void generateCrater(float[,] elevations, Vector2 uvCenter, float craterDiam, float craterDepth, int minRadius = 1)
+        public void GenerateCrater(float[,] elevations, Vector2 uvCenter, float craterDiam, float craterDepth, int minRadius = 1)
         {
             //Debug.Log("Generating crater at [" + uvCenter.x + ", " + uvCenter.y + "] with craterDiam " + craterDiam + " craterDepth " + craterDepth);
 
@@ -272,7 +272,7 @@ namespace HeightMapGenerators
 
                     try
                     {
-                        val = val / radius * craterDepth * computeHeightModifier(elevations[i, j], elevations[cI, cJ], val);
+                        val = val / radius * craterDepth * ComputeHeightModifier(elevations[i, j], elevations[cI, cJ], val);
                         elevations[i, j] -= val;
                     }
                     catch (IndexOutOfRangeException)
@@ -285,7 +285,7 @@ namespace HeightMapGenerators
 
         // intensity is how strong the sphere effect is
         // threshold is the maximum value on the sphere that will be applied
-        public void applyNormalizedHalfSphere(float[,] elevations, float intensity = 1f, float size = -1, float sphereMaxValue = 1f, bool overwrite = false, bool orientation = false)
+        public void ApplyNormalizedHalfSphere(float[,] elevations, float intensity = 1f, float size = -1, float sphereMaxValue = 1f, bool overwrite = false, bool orientation = false)
         {
             size = (size < 0) ? elevations.GetLength(0) / 2 : elevations.GetLength(0) / 2 * size;
             if (size <= 0)
@@ -315,12 +315,12 @@ namespace HeightMapGenerators
                 }
             }
 
-            Tools.mergeArrays(elevations, sphere, 1f, intensity, overwrite);
+            Tools.MergeArrays(elevations, sphere, 1f, intensity, overwrite);
         }
 
-        private void flattenLinearToAverage(float[,] elevations)
+        private void FlattenLinearToAverage(float[,] elevations)
         {
-            float[] minMaxAvg = Tools.computeMinMaxAvg(elevations);
+            float[] minMaxAvg = Tools.ComputeMinMaxAvg(elevations);
             float avg = minMaxAvg[2];
 
             for (int i = 0; i < elevations.GetLength(0); i++)
@@ -333,9 +333,9 @@ namespace HeightMapGenerators
         }
 
         // flattens low elevations stronger than high elevations; crushes elevations to the min value
-        private void flattenLows(float[,] elevations)
+        private void FlattenLows(float[,] elevations)
         {
-            float[] minMaxAvg = Tools.computeMinMaxAvg(elevations);
+            float[] minMaxAvg = Tools.ComputeMinMaxAvg(elevations);
             float min = minMaxAvg[0];
             float max = minMaxAvg[1];
 
@@ -350,7 +350,7 @@ namespace HeightMapGenerators
             }
         }
 
-        private void normalizeToNElevationLevels(float[,] elevations, int levels)
+        private void NormalizeToNElevationLevels(float[,] elevations, int levels)
         {
             if (levels <= 1)
                 return;
@@ -363,11 +363,11 @@ namespace HeightMapGenerators
                 }
             }
 
-            Tools.normalize(elevations);
+            Tools.Normalize(elevations);
         }
 
         // flattens terrain
-        private void logarithmicClamp(float[,] elevations, float threshold, float intensity)
+        private void LogarithmicClamp(float[,] elevations, float threshold, float intensity)
         {
             for (int i = 0; i < elevations.GetLength(0); i++)
             {
@@ -381,27 +381,27 @@ namespace HeightMapGenerators
             }
         }
 
-        public float logisticsFunction(float value, float growth_rate = 5.0f)
+        public float LogisticsFunction(float value, float growthRate = 5.0f)
         {
-            return (float)(1.0 / (1 + Mathf.Exp(growth_rate / 2 + -growth_rate * value)));
+            return (float)(1.0 / (1 + Mathf.Exp(growthRate / 2 + -growthRate * value)));
         }
 
         // flattens the terrain
-        public void applyLogisticsFunctionToElevations(float[,] elevations)
+        public void ApplyLogisticsFunctionToElevations(float[,] elevations)
         {
             for (int i = 0; i < elevations.GetLength(0); i++)
             {
                 for (int j = 0; j < elevations.GetLength(1); j++)
                 {
-                    elevations[i, j] = logisticsFunction(elevations[i, j]);
+                    elevations[i, j] = LogisticsFunction(elevations[i, j]);
                 }
             }
         }
 
         // results in elevation = (amplify_factor * elevation) ^ amplify_factor
-        public void amplifyElevations(float[,] elevations, float amplifyFactor, float scaleFactor = 1f)
+        public void AmplifyElevations(float[,] elevations, float amplifyFactor, float scaleFactor = 1f)
         {
-            Tools.normalize(elevations);
+            Tools.Normalize(elevations);
 
             for (int i = 0; i < elevations.GetLength(0); i++)
             {
@@ -411,10 +411,10 @@ namespace HeightMapGenerators
                 }
             }
 
-            Tools.normalize(elevations);
+            Tools.Normalize(elevations);
         }
 
-        public void dampenElevations(float[,] elevations, float strength = 1f)
+        public void DampenElevations(float[,] elevations, float strength = 1f)
         {
             for (int i = 0; i < elevations.GetLength(0); i++)
             {
@@ -425,7 +425,7 @@ namespace HeightMapGenerators
             }
         }
 
-        public void convolutionFilter(float[,] elevations, float[,] weights)
+        public void ConvolutionFilter(float[,] elevations, float[,] weights)
         {
             for (int i = 1; i < elevations.GetLength(0) - 1; i++)
             {

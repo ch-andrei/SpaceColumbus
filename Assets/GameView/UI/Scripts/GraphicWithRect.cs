@@ -2,15 +2,15 @@
 
 public class GraphicWithRectModifier : ShaderControlModifier
 {
-    private static string SizeXField = "_SizeX";
-    private static string SizeYField = "_SizeY";
+    private static string _sizeXField = "_SizeX";
+    private static string _sizeYField = "_SizeY";
 
-    protected Rect rect;
+    protected Rect Rect;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        rect = shaderControl.GetComponent<RectTransform>().rect;
-        shaderControl.SetFloat(SizeXField, rect.width);
-        shaderControl.SetFloat(SizeYField, rect.height);
+        Rect = shaderControl.GetComponent<RectTransform>().rect;
+        shaderControl.SetFloat(_sizeXField, Rect.width);
+        shaderControl.SetFloat(_sizeYField, Rect.height);
     }
 }

@@ -21,28 +21,28 @@ namespace EntitySelection
             Or
         }
 
-        bool isAgent;
-        bool isBuilding;
-        bool isControlable;
-        Func<bool, bool, bool> op;
-        OwnershipInfo ownership;
+        bool _isAgent;
+        bool _isBuilding;
+        bool _isControlable;
+        Func<bool, bool, bool> _op;
+        OwnershipInfo _ownership;
 
         public SelectionCriteria(bool isAgent, bool isBuilding, bool isControlable, ECondition condition, OwnershipInfo ownership)
         {
-            this.isAgent = isAgent;
-            this.isBuilding = isBuilding;
-            this.isControlable = isControlable;
-            if (condition == ECondition.And) this.op = (a, b) => a & b; else this.op = (a, b) => a | b;
-            this.ownership = ownership;
+            this._isAgent = isAgent;
+            this._isBuilding = isBuilding;
+            this._isControlable = isControlable;
+            if (condition == ECondition.And) this._op = (a, b) => a & b; else this._op = (a, b) => a | b;
+            this._ownership = ownership;
         }
 
-        public static bool isValidSelection(SelectionCriteria criteria, Selectable selectable)
+        public static bool IsValidSelection(SelectionCriteria criteria, Selectable selectable)
         {
             if (criteria is null)
                 return true;
 
-            bool valid = criteria.isAgent == StaticGameDefs.IsAgent(selectable.gameObject);
-            valid = criteria.op(valid, criteria.isBuilding == StaticGameDefs.IsStructure(selectable.gameObject));
+            bool valid = criteria._isAgent == StaticGameDefs.IsAgent(selectable.gameObject);
+            valid = criteria._op(valid, criteria._isBuilding == StaticGameDefs.IsStructure(selectable.gameObject));
             //valid = criteria.op(valid, criteria.isControlable != selectable.gameObject.GetComponent<Owner>());
 
             return valid;
@@ -51,11 +51,11 @@ namespace EntitySelection
 
     public class SelectionEvent : GameEvent
     {
-        public bool isSelected;
+        public bool IsSelected;
 
         public SelectionEvent(bool isSelected)
         {
-            this.isSelected = isSelected;
+            this.IsSelected = isSelected;
         }
     }
 
@@ -70,7 +70,7 @@ namespace EntitySelection
 
         public bool OnEvent(SelectionEvent selectionEvent)
         {
-            if (selectionEvent.isSelected)
+            if (selectionEvent.IsSelected)
                 selectable.Select();
             else
                 selectable.Deselect();

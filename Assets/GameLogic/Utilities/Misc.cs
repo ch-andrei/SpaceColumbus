@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace Utilities.Misc
 {
@@ -13,13 +14,13 @@ namespace Utilities.Misc
     {
         public struct LineSegment
         {
-            public Vector2 p;
-            public Vector2 q;
+            public Vector2 P;
+            public Vector2 Q;
 
             public LineSegment(Vector2 p, Vector2 q)
             {
-                this.p = p;
-                this.q = q;
+                this.P = p;
+                this.Q = q;
             }
         }
 
@@ -51,7 +52,7 @@ namespace Utilities.Misc
             return (val > 0) ? 1 : 2; // clock or counterclock wise 
         }
 
-        public static bool DoIntersect(LineSegment s1, LineSegment s2) { return DoIntersect(s1.p, s1.q, s2.p, s2.q); }
+        public static bool DoIntersect(LineSegment s1, LineSegment s2) { return DoIntersect(s1.P, s1.Q, s2.P, s2.Q); }
 
         // The main function that returns true if line segment 'p1q1' 
         // and 'p2q2' intersect. 
@@ -87,7 +88,7 @@ namespace Utilities.Misc
 
     public static class Encrypt
     {
-        public static string sha256(string str)
+        public static string Sha256(string str)
         {
             SHA256Managed crypt = new SHA256Managed();
             StringBuilder hash = new StringBuilder();
@@ -102,7 +103,7 @@ namespace Utilities.Misc
 
     public static class Constants
     {
-        public const float EPSILON = 1e-9f;
+        public const float Epsilon = 1e-9f;
     }
 
     public static class LoggerDebug
@@ -116,7 +117,7 @@ namespace Utilities.Misc
 
         public static void LogT(string tag, params object[] list)
         {
-            Debug.Log(tag + ": " + Tools.BuildString(list));
+            Debug.Log($"{tag}: {Tools.BuildString(list)}");
         }
 
         public static void LogE(params object[] list)
@@ -124,9 +125,9 @@ namespace Utilities.Misc
             Debug.LogError(Tools.BuildString(list));
         }
 
-        public static void LogET(string tag, params object[] list)
+        public static void LogEt(string tag, params object[] list)
         {
-            Debug.LogError(tag + ": " + Tools.BuildString(list));
+            Debug.LogError($"{tag}: {Tools.BuildString(list)}");
         }
 
         public static void LogW(params object[] list)
@@ -134,9 +135,9 @@ namespace Utilities.Misc
             Debug.LogWarning(Tools.BuildString(list));
         }
 
-        public static void LogWT(string tag, params object[] list)
+        public static void LogWt(string tag, params object[] list)
         {
-            Debug.LogWarning(tag + ": " + Tools.BuildString(list));
+            Debug.LogWarning($"{tag}: {Tools.BuildString(list)}");
         }
     }
 
@@ -148,7 +149,7 @@ namespace Utilities.Misc
             if (pdfs.Count < 2)
                 LoggerDebug.LogT("ProbabilitySampler", "Trying to sample from a PDF with less than 2 items.");
 
-            float cdfMax = pdfs.Sum() - Constants.EPSILON; // subtract epsilon (small nudge) to ensure that cdf=1 is reachable
+            float cdfMax = pdfs.Sum() - Constants.Epsilon; // subtract epsilon (small nudge) to ensure that cdf=1 is reachable
             float cdf = 0f;
             for (int i = 0; i < pdfs.Count; i++)
             {
@@ -169,12 +170,12 @@ namespace Utilities.Misc
         }
 
 
-        public static Vector3 sampleRandomCosineHemisphere(float u, float v)
+        public static Vector3 SampleRandomCosineHemisphere(float u, float v)
         {
-            return sampleRandomCosineHemisphere(new Vector2(u, v));
+            return SampleRandomCosineHemisphere(new Vector2(u, v));
         }
 
-        public static Vector3 sampleRandomCosineHemisphere(Vector2 uv)
+        public static Vector3 SampleRandomCosineHemisphere(Vector2 uv)
         {
             uv = 2f * uv - new Vector2(1, 1);
 
@@ -199,6 +200,20 @@ namespace Utilities.Misc
 
     public static class Tools
     {
+        public static Texture2D LoadTexture(string path)
+        {
+            Texture2D tex = null;
+            byte[] fileData;
+
+            if (File.Exists(path))
+            {
+                fileData = File.ReadAllBytes(path);
+                tex = new Texture2D(2, 2);
+                tex.LoadImage(fileData); //..this will auto-resize the texture dimensions.
+            }
+            return tex;
+        }
+
         public static string BuildString(params object[] list)
         {
             StringBuilder sb = new StringBuilder();
@@ -213,14 +228,14 @@ namespace Utilities.Misc
             return sb.ToString();
         }
 
-        public static Color hexToColor(string hex)
+        public static Color HexToColor(string hex)
         {
             Color c = new Color();
             ColorUtility.TryParseHtmlString(hex, out c);
             return c;
         }
 
-        public static float[] computeMinMaxAvg(float[,] values)
+        public static float[] ComputeMinMaxAvg(float[,] values)
         {
             // get average and max elevation values
             float avg = 0, max = 0, min = float.MaxValue;
@@ -237,14 +252,14 @@ namespace Utilities.Misc
             }
 
             avg /= values.GetLength(0) * values.GetLength(0); // since elevations is 2d array nxn
-            Debug.Log("Pre min/max/avg: " + min + "/" + max + "/" + avg);
+            Debug.Log($"Pre min/max/avg: {min}/{max}/{avg}");
 
             return new float[] { min, max, avg };
         }
 
-        public static void normalize(float[,] values, bool maxOnly = false, bool rescaleSmallMax = true)
+        public static void Normalize(float[,] values, bool maxOnly = false, bool rescaleSmallMax = true)
         {
-            float[] minMaxAvg = computeMinMaxAvg(values);
+            float[] minMaxAvg = ComputeMinMaxAvg(values);
             float min = minMaxAvg[0];
             float max = minMaxAvg[1];
             float avg = minMaxAvg[2];
@@ -282,10 +297,10 @@ namespace Utilities.Misc
                         min = values[i, j];
                 }
             }
-            Debug.Log("Post min/max/avg: " + min + "/" + max + "/" + avg / (values.GetLength(0) * values.GetLength(0)));
+            Debug.Log($"Post min/max/avg: {min}/{max}/{avg / (values.GetLength(0) * values.GetLength(0))}");
         }
 
-        public static float[,] mergeArrays(float[,] a, float[,] b, float weightA, float weightB, bool overwrite = false)
+        public static float[,] MergeArrays(float[,] a, float[,] b, float weightA, float weightB, bool overwrite = false)
         {
             if (weightA <= 0 && weightB <= 0)
             {

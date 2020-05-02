@@ -11,10 +11,10 @@ namespace Utilities.XmlReader
         public string Data;
         public List<XmlNodeData> Children;
 
-        public XmlNodeData(string Name, string Data, List<XmlNodeData> children)
+        public XmlNodeData(string name, string data, List<XmlNodeData> children)
         {
-            this.Name = Name;
-            this.Data = Data;
+            this.Name = name;
+            this.Data = data;
             this.Children = children;
         }
     }
@@ -23,62 +23,62 @@ namespace Utilities.XmlReader
     {
         // TODO: add maximum number of currently open XmlDocuments, order these by open time, i.e. cache
 
-        private static Dictionary<string, XmlDocument> openDocs = new Dictionary<string, XmlDocument>();
+        private static Dictionary<string, XmlDocument> _openDocs = new Dictionary<string, XmlDocument>();
 
         // all paths passed to this class are relative to current directory
         // ex: path "/assets/xml_defs/stats.xml"
-        private static string CurDir = System.IO.Directory.GetCurrentDirectory();
+        private static string _curDir = System.IO.Directory.GetCurrentDirectory();
 
         #region NonStatic
-        private XmlDocument doc;
+        private XmlDocument _doc;
 
         // this class helps with accessing the static documents
         public XmlReader(string path)
         {
-            this.doc = GetXmlDoc(path);
+            this._doc = GetXmlDoc(path);
         }
 
-        public bool hasField(string field) { return hasField(this.doc, field); }
-        public bool hasField(List<string> fields) { return hasField(this.doc, fields); }
-        public float getFloat(string field) { return getFloat(this.doc, field); }
-        public float getFloat(List<string> fields) { return getFloat(this.doc, fields); }
-        public string getString(string field) { return getString(this.doc, field); }
-        public string getString(List<string> fields) { return getString(this.doc, fields); }
-        public List<string> getStrings(string field) { return getStrings(this.doc, field); }
-        public List<string> getStrings(List<string> fields) { return getStrings(this.doc, fields); }
-        public List<string> getChildren(string field) { return getChildren(this.doc, field); }
-        public List<string> getChildren(List<string> fields) { return getChildren(this.doc, fields); }
+        public bool HasField(string field) { return HasField(this._doc, field); }
+        public bool HasField(List<string> fields) { return HasField(this._doc, fields); }
+        public float GetFloat(string field) { return GetFloat(this._doc, field); }
+        public float GetFloat(List<string> fields) { return GetFloat(this._doc, fields); }
+        public string GetString(string field) { return GetString(this._doc, field); }
+        public string GetString(List<string> fields) { return GetString(this._doc, fields); }
+        public List<string> GetStrings(string field) { return GetStrings(this._doc, field); }
+        public List<string> GetStrings(List<string> fields) { return GetStrings(this._doc, fields); }
+        public List<string> GetChildren(string field) { return GetChildren(this._doc, field); }
+        public List<string> GetChildren(List<string> fields) { return GetChildren(this._doc, fields); }
         #endregion NonStatic
 
-        public static bool hasField(XmlDocument doc, List<string> fields)
+        public static bool HasField(XmlDocument doc, List<string> fields)
         {
-            return hasField(doc, GetFieldPathFromStringList(fields));
+            return HasField(doc, GetFieldPathFromStringList(fields));
         }
-        public static bool hasField(XmlDocument doc, string fieldPath)
+        public static bool HasField(XmlDocument doc, string fieldPath)
         {
-            XmlNode node = doc.DocumentElement.SelectSingleNode("/" + fieldPath);
+            XmlNode node = doc.DocumentElement.SelectSingleNode($"/{fieldPath}");
             return node != null;
         }
 
-        public static float getFloat(XmlDocument doc, List<string> fields)
+        public static float GetFloat(XmlDocument doc, List<string> fields)
         {
-            return getFloat(doc, GetFieldPathFromStringList(fields));
+            return GetFloat(doc, GetFieldPathFromStringList(fields));
         }
 
-        public static float getFloat(XmlDocument doc, string fieldPath)
+        public static float GetFloat(XmlDocument doc, string fieldPath)
         {
-            var s = getString(doc, fieldPath);
+            var s = GetString(doc, fieldPath);
             return float.Parse(s);
         }
 
-        public static string getString(XmlDocument doc, List<string> fields)
+        public static string GetString(XmlDocument doc, List<string> fields)
         {
-            return getString(doc, GetFieldPathFromStringList(fields));
+            return GetString(doc, GetFieldPathFromStringList(fields));
         }
 
-        public static string getString(XmlDocument doc, string fieldPath)
+        public static string GetString(XmlDocument doc, string fieldPath)
         {
-            XmlNode node = doc.DocumentElement.SelectSingleNode("/" + fieldPath);
+            XmlNode node = doc.DocumentElement.SelectSingleNode($"/{fieldPath}");
             if (node != null)
             {
                 return node.InnerText;
@@ -87,26 +87,26 @@ namespace Utilities.XmlReader
                 return "";
         }
 
-        public static List<string> getStrings(XmlDocument doc, List<string> fields)
+        public static List<string> GetStrings(XmlDocument doc, List<string> fields)
         {
-            return getStrings(doc, GetFieldPathFromStringList(fields));
+            return GetStrings(doc, GetFieldPathFromStringList(fields));
         }
 
-        public static List<string> getStrings(XmlDocument doc, string fieldPath)
+        public static List<string> GetStrings(XmlDocument doc, string fieldPath)
         {
-            XmlNodeList nodes = doc.DocumentElement.SelectNodes("/" + fieldPath);
+            XmlNodeList nodes = doc.DocumentElement.SelectNodes($"/{fieldPath}");
             return (nodes == null) ? null : RecursiveNodeToString(nodes);
         }
 
-        public static List<string> getChildren(XmlDocument doc, List<string> fields)
+        public static List<string> GetChildren(XmlDocument doc, List<string> fields)
         {
-            return getChildren(doc, GetFieldPathFromStringList(fields));
+            return GetChildren(doc, GetFieldPathFromStringList(fields));
         }
 
-        public static List<string> getChildren(XmlDocument doc, string fieldPath)
+        public static List<string> GetChildren(XmlDocument doc, string fieldPath)
         {
             List<string> strings = new List<string>();
-            XmlNodeList nodes = doc.DocumentElement.SelectNodes("/" + fieldPath);
+            XmlNodeList nodes = doc.DocumentElement.SelectNodes($"/{fieldPath}");
             if (nodes != null)
             {
                 foreach (XmlNode node in nodes)
@@ -140,27 +140,27 @@ namespace Utilities.XmlReader
         public static XmlDocument AddNewXmlDoc(string path)
         {
             XmlDocument doc = ReadXmlDocument(path);
-            openDocs.Add(path, doc);
+            _openDocs.Add(path, doc);
             return doc;
         }
 
         public static void ReloadOpenDocs()
         {
-            foreach (var path in openDocs.Keys)
+            foreach (var path in _openDocs.Keys)
             {
-                openDocs[path] = ReadXmlDocument(path);
+                _openDocs[path] = ReadXmlDocument(path);
             }
         }
 
         public static void ClearOpenDocs()
         {
-            openDocs = new Dictionary<string, XmlDocument>();
+            _openDocs = new Dictionary<string, XmlDocument>();
         }
 
         private static XmlDocument GetXmlDoc(string path)
         {
-            if (openDocs.ContainsKey(path))
-                return openDocs[path];
+            if (_openDocs.ContainsKey(path))
+                return _openDocs[path];
             else
                 return AddNewXmlDoc(path);
         }
@@ -181,7 +181,7 @@ namespace Utilities.XmlReader
         private static XmlDocument ReadXmlDocument(string path)
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load(CurDir + "/" + path);
+            doc.Load($"{_curDir}/{path}");
             return doc;
         }
     }

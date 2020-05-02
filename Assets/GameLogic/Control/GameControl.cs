@@ -10,7 +10,7 @@ using Utilities.Misc;
 using Utilities.Events;
 
 using InputControls;
-using Pathfinding;
+// using Pathfinding;
 using Regions;
 using Entities;
 using Players;
@@ -18,175 +18,202 @@ using EntitySelection;
 
 using UI.Utils;
 using UI.Menus;
+using UnityEngine.Serialization;
+
 
 public class GameControl : MonoBehaviour
 {
     #region Configuration
-    [Header("GUI configuration")]
-    public bool showGUI = true;
-    public int guiMenuWidth = 200;
-    public int guiMenuHeight = 300;
 
+    [FormerlySerializedAs("showGUI")] public bool showGui = true;
+
+    [Header("Selection GUI")]
     public Color guiColor = new Color(0.8f, 0.8f, 0.95f, 0.25f);
     public Color guiBorderColor = new Color(0.8f, 0.8f, 0.95f);
     public int guiBorderWidth = 2;
+
+    [Header("Debug GUI")]
+    public bool allowDebugMenu = true;
+    public int guiMenuWidth = 200;
+    public int guiMenuHeight = 300;
+    public int buttonHeight = 25;
+    public int toggleIconSize = 25;
+
     #endregion
 
-    private EventSystem eventSystem;
+    public enum ControlMode : byte
+    {
+        Normal,
+        SpawnAgent,
+        SpawnExplosion,
+        SpawnObject,
+        Other
+    }
 
-    //[Header("Indicators")]
-    //#region SelectionIndicators
-    //public GameObject mouseOverIndicator;
-    //public GameObject selectionIndicator;
-    //#endregion
+    public static string ActionSpawnAgentName = "Spawn Agent";
+    public static string ActionSpawnExplosionName = "Spawn Explosion";
+    public static string ActionSpawnObjectName = "Spawn Object";
 
     #region PrivateVariables
 
-    private GameSession gameSession;
-    private KeyPressManager keyPressManager;
-    private UiManager uiManager;
+    private EventSystem _eventSystem;
 
-    static GUIStyle guiStyle;
+    private ControlMode _controlMode;
 
-    private Vector3 mouseOverWorldPosition;
+    private GameSession _gameSession;
+    private UiManager _uiManager;
 
-    #region Unit Selection
-    private GameObject mouseOverObject;
-    private bool isBoxSelecting, startedBoxSelection;
-    private Vector2 mousePositionAtSelectionStart, mousePositionAtSelectionEnd;
-    #endregion Unit Selection
+    private Vector3 _mouseOverWorldPosition;
+
+    #region UnitSelection
+    private GameObject _mouseOverObject;
+    private bool _isBoxSelecting, _startedBoxSelection;
+    private Vector2 _mousePositionAtSelectionStart, _mousePositionAtSelectionEnd;
+    #endregion UnitSelection
+
+    #region DebugUi
+    private static GUIStyle _guiStyle;
+
+    private bool _showDebugGui;
+    private int _debugGuiButtonCount;
+    private Vector2 _debugGuiScrollPosition = Vector2.zero;
+    private Texture2D _debugUiIcon;
+    #endregion DebugUi
 
     #endregion
 
-    public abstract class ControlListener : KeyActiveEventListener
-    {
-        protected GameControl gameControl;
-
-        public ControlListener(GameControl gameControl, KeyInfo keyInfo) : base(keyInfo)
-        {
-            this.gameControl = gameControl;
-        }
-    }
-
-    public class AgentSpawnerControlListener : ControlListener
-    {
-        public AgentSpawnerControlListener(GameControl gameControl) : base(gameControl, GameControlsManager.leftClickDownDouble) { }
-
-        override public bool OnEvent(GameEvent gameEvent)
-        {
-            Debug.Log("Spawning agents!!!");
-            gameControl.SpawnAgent();
-
-            return true;
-        }
-    }
-
-    public class AgentMoveControlListener : ControlListener
-    {
-        public AgentMoveControlListener(GameControl gameControl) : base(gameControl, GameControlsManager.rightClickDownDouble) { }
-
-        override public bool OnEvent(GameEvent gameEvent)
-        {
-            Debug.Log("Moving agents!!!");
-            gameControl.MoveSelectedAgents();
-
-            return true;
-        }
-    }
-
-    public class AgentMoveStopListener : ControlListener
-    {
-        public AgentMoveStopListener(GameControl gameControl) : base(gameControl, GameControlsManager.agentStopHotkey) { }
-
-        override public bool OnEvent(GameEvent gameEvent)
-        {
-            Debug.Log("Stopping agents!!!");
-            gameControl.StopSelectedAgents();
-
-            return true;
-        }
-    }
-
     void Start()
     {
-        isBoxSelecting = false;
+        _controlMode = ControlMode.Normal;
 
-        mouseOverWorldPosition = new Vector3();
+        _debugUiIcon = Tools.LoadTexture("Assets/GameView/UI/OnGui/Icons/debug.png");
 
-        gameSession = (GameSession)GameObject.FindGameObjectWithTag(StaticGameDefs.GameSessionTag).GetComponent(typeof(GameSession));
-        keyPressManager = this.GetComponent<KeyPressManager>();
+        _isBoxSelecting = false;
 
-        keyPressManager.AddKeyPressListener(new AgentSpawnerControlListener(this));
-        keyPressManager.AddKeyPressListener(new AgentMoveControlListener(this));
-        keyPressManager.AddKeyPressListener(new AgentMoveStopListener(this));
+        _mouseOverWorldPosition = new Vector3();
 
-        eventSystem = (EventSystem)GameObject.FindGameObjectWithTag(StaticGameDefs.EventSystemTag).GetComponent(typeof(EventSystem));
-        uiManager = (UiManager)GameObject.FindGameObjectWithTag(StaticGameDefs.UiManagerTag).GetComponent(typeof(UiManager));
+        _gameSession = (GameSession)GameObject.FindGameObjectWithTag(StaticGameDefs.GameSessionTag).GetComponent(typeof(GameSession));
+
+        _eventSystem = (EventSystem)GameObject.FindGameObjectWithTag(StaticGameDefs.EventSystemTag).GetComponent(typeof(EventSystem));
+        _uiManager = (UiManager)GameObject.FindGameObjectWithTag(StaticGameDefs.UiManagerTag).GetComponent(typeof(UiManager));
+
+        // setup key manager
+        KeyActiveManager.NewDoubleDetector(GameControlsManager.LeftClickDown.keyPress);
+        KeyActiveManager.NewDoubleDetector(GameControlsManager.RightClickDown.keyPress);
 
         // create GUI style
-        guiStyle = new GUIStyle();
-        guiStyle.alignment = TextAnchor.LowerLeft;
-        guiStyle.normal.textColor = Tools.hexToColor("#153870");
+        _guiStyle = new GUIStyle();
+        _guiStyle.alignment = TextAnchor.LowerLeft;
+        _guiStyle.normal.textColor = Tools.HexToColor("#153870");
     }
 
     public void SpawnAgent()
     {
-        if (!IsMouseOverUi())
-            gameSession.SpawnSimpleAgent(mouseOverWorldPosition);
+        _gameSession.SpawnSimpleAgent(_mouseOverWorldPosition);
+    }
+
+    public void SpawnExplosive()
+    {
+        // TODO
+
+        //if (!IsMouseOverUi())
+        //    gameSession.SpawnExplosive(mouseOverWorldPosition);
+    }
+
+    void OnMouse0Down()
+    {
+        if (_controlMode == ControlMode.Normal)
+        {
+            
+        }
+        else if (_controlMode == ControlMode.SpawnAgent)
+        {
+            SpawnAgent();
+            _controlMode = ControlMode.Normal;
+        }
+        else if (_controlMode == ControlMode.SpawnAgent)
+        {
+            SpawnExplosive();
+            _controlMode = ControlMode.Normal;
+        }
+        else
+        {
+            _controlMode = ControlMode.Normal;
+        }
+    }
+
+    // by default, Control1 is the right mouse click
+    void OnMouse1Down()
+    {
+        if (_controlMode == ControlMode.Normal)
+        {
+            MoveSelectedAgents();
+        }
+        else
+        {
+            _controlMode = ControlMode.Normal;
+        }
     }
 
     public void MoveSelectedAgents()
     {
-        if (!IsMouseOverUi())
-            gameSession.MoveSelectedAgents(mouseOverWorldPosition);
+        _gameSession.MoveSelectedAgents(_mouseOverWorldPosition);
     }
 
     public void StopSelectedAgents()
     {
-        gameSession.StopSelectedAgents();
+        _gameSession.StopSelectedAgents();
     }
 
     public bool IsMouseOverUi()
     {
-        return eventSystem.IsPointerOverGameObject();
+        return _eventSystem.IsPointerOverGameObject();
     }
 
     void GetSelectionArea()
     {
         // If the left mouse button is pressed, save mouse location and begin selection
-        if (!IsMouseOverUi() && KeyActiveChecker.isActive(GameControlsManager.leftClickDown))
+        if (!IsMouseOverUi() && KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
         {
-            startedBoxSelection = true;
-            isBoxSelecting = true;
-            mousePositionAtSelectionStart = Input.mousePosition;
+            _startedBoxSelection = true;
+            _isBoxSelecting = true;
+            _mousePositionAtSelectionStart = Input.mousePosition;
             SelectionManager.Dirty = true;
         }
 
-        if (isBoxSelecting && KeyActiveChecker.isActive(GameControlsManager.leftClick))
+        if (_isBoxSelecting && KeyActiveManager.IsActive(GameControlsManager.LeftClick))
         {
-            mousePositionAtSelectionEnd = Input.mousePosition;
+            _mousePositionAtSelectionEnd = Input.mousePosition;
         }
 
         // If the left mouse button is released, end selection
-        if (KeyActiveChecker.isActive(GameControlsManager.leftClickUp))
+        if (KeyActiveManager.IsActive(GameControlsManager.LeftClickUp))
         {
-            isBoxSelecting = false;
+            _isBoxSelecting = false;
         }
+    }
+
+    void ResetSelecting()
+    {
+        _isBoxSelecting = false;
+
+        OnDeselectObjects();
     }
 
     void ProcessSelectionArea()
     {
         // placeholder selection
         SelectionCriteria selectionCriteria = new SelectionCriteria(
-            true, false, true, 
+            true, false, true,
             SelectionCriteria.ECondition.Or,
-            gameSession.CurrentPlayer.ownership.info
+            _gameSession.CurrentPlayer.ownership.info
             );
 
         // TODO ADD CRITERIA/SORTING of selected objects
 
-        if (!isBoxSelecting)
+        if (!_isBoxSelecting)
         {
+
             var selectedObjects = SelectionManager.CurrentlySelectedGameObjects;
 
             try
@@ -198,11 +225,11 @@ public class GameControl : MonoBehaviour
 
                     if (entity != null)
                     {
-                        uiManager.OnEvent(new SelectedEntityEvent(entity));
+                        _uiManager.OnEvent(new SelectedEntityEvent(entity));
 
                         if (entity is Agent agent)
                         {
-                            uiManager.OnEvent(new AgentUiActive(true));
+                            _uiManager.OnEvent(new AgentUiActive(true));
                         }
                     }
                 }
@@ -210,7 +237,7 @@ public class GameControl : MonoBehaviour
                 {
                     if (selectedObjects.Count == 0)
                     {
-                        SelectionManager.UpdateMouseSelection(mouseOverObject, null);
+                        SelectionManager.UpdateMouseSelection(_mouseOverObject, null);
                     }
                 }
             }
@@ -223,21 +250,21 @@ public class GameControl : MonoBehaviour
             return;
         }
 
-        if (startedBoxSelection)
+        if (_startedBoxSelection)
         {
             OnDeselectObjects();
         }
-        
-        SelectionManager.UpdateSelected(mousePositionAtSelectionStart, mousePositionAtSelectionEnd, mouseOverObject, selectionCriteria);
+
+        SelectionManager.UpdateSelected(_mousePositionAtSelectionStart, _mousePositionAtSelectionEnd, _mouseOverObject, selectionCriteria);
     }
 
     private void OnDeselectObjects()
     {
-        uiManager.OnEvent(new AgentUiActive(false));
+        _uiManager.OnEvent(new AgentUiActive(false));
 
         SelectionManager.DeselectAll();
 
-        startedBoxSelection = false;
+        _startedBoxSelection = false;
     }
 
     private void FixedUpdate()
@@ -247,14 +274,14 @@ public class GameControl : MonoBehaviour
 
     void Update()
     {
-        GetSelectionArea();
+        KeyActiveManager.Update(); // process key presses
 
-        // update selection tile
+        // trace a ray to cursor location
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
         if (Physics.Raycast(ray, out hitInfo))
         {
-            mouseOverWorldPosition = hitInfo.point;
+            _mouseOverWorldPosition = hitInfo.point;
             //Debug.Log(mouseWorldPosition);
             GameObject hitObject = hitInfo.collider.transform.gameObject;
             if (hitObject == null)
@@ -263,70 +290,36 @@ public class GameControl : MonoBehaviour
             }
             else
             {
-                mouseOverObject = hitObject;
+                _mouseOverObject = hitObject;
             }
         }
 
-        //// right click
-        //bool rightMouseClick = Input.GetMouseButtonDown(1);
-        //if (pathfindKeyControl.isActivated())
-        //{
-        //    ChangeMoveMode();
-        //}
+        if (_controlMode == ControlMode.Normal)
+        {
+            GetSelectionArea();
+        }
+        else
+        {
+            
+        }
 
-        ///*PATHFINDING PART */
-        //if (moveMode)
-        //{
-        //    DijsktraPF.maxDepth = maxActionPoints;
-        //    DijsktraPF.maxCost = actionPoints;
-
-        //    // draw move range only 
-        //    // TODO optimize this to not recalculate path on every frame
-        //    if (firstClickedTile != null)
-        //    {
-        //        DrawMoveRange();
-
-        //        if (mouseOverTile != null)
-        //        {
-        //            DrawPathTo(mouseOverTile);
-        //        }
-        //    }
-
-        //    // *** MOUSE CLICKS CONTROL PART *** //
-        //    if (rightMouseClick && mouseOverTile != null)
-        //    {
-        //        if (selectionOrder)
-        //        {
-        //            firstClickedTile = mouseOverTile;
-        //            // draw path using A* pathfinder (not Dijkstra) for faster performance
-        //        }
-        //        else
-        //        {
-        //            secondClickedTile = mouseOverTile;
-
-        //            // check if right clicked same tile twice
-        //            if (firstClickedTile.Equals(secondClickedTile))
-        //            {
-        //                //pathResult = GameControl.gameSession.playerAttemptMove(firstClickedTile, out attemptedMoveMessage, movePlayer: true);
-        //                StartCoroutine(displayPath(pathResult));
-        //                ChangeMoveMode();
-        //            }
-        //            else
-        //            {
-        //                // clicked another tile: overwrite first selection
-        //                firstClickedTile = mouseOverTile;
-
-        //                // flip selection order an extra time
-        //                selectionOrder = !selectionOrder;
-        //            }
-        //        }
-        //        // flip selection order
-        //        selectionOrder = !selectionOrder;
-        //    }
-        //}
+        ProcessControls();
     }
 
+    private void ProcessControls()
+    {
+        if (!IsMouseOverUi())
+        {
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
+                OnMouse0Down();
+        
+            if (KeyActiveManager.IsActive(GameControlsManager.RightClick))
+                OnMouse1Down();
+        }
 
+        if (KeyActiveManager.IsActive(GameControlsManager.AgentStopHotkey))
+            StopSelectedAgents();
+    }
 
     public static void DrawScreenRectBorder(Rect rect, float thickness, Color color)
     {
@@ -340,91 +333,74 @@ public class GameControl : MonoBehaviour
         OnGuiUtil.DrawScreenRect(new Rect(rect.xMin, rect.yMax - thickness, rect.width, thickness), color);
     }
 
+    void OnGuiDebugMenu()
+    {
+        // DEBUG BUTTONS
+        int groupElementCount = 0;
+        if (_showDebugGui)
+        {
+            GUI.BeginGroup(new Rect(0, toggleIconSize, guiMenuWidth, guiMenuHeight));
+
+            if (GUI.Button(new Rect(0, groupElementCount * buttonHeight, guiMenuWidth, buttonHeight), "Spawn Agent"))
+            {
+                _controlMode = ControlMode.SpawnAgent;
+                ResetSelecting();
+            }
+            groupElementCount++;
+
+            if (GUI.Button(new Rect(0, groupElementCount * buttonHeight, guiMenuWidth, buttonHeight), "Spawn Explosion"))
+            {
+                _controlMode = ControlMode.SpawnExplosion;
+                ResetSelecting();
+            }
+            groupElementCount++;
+
+            GUI.EndGroup();
+        }
+        
+        // DEBUG ICON
+        GUI.Box(new Rect(0, 0, toggleIconSize, toggleIconSize), _debugUiIcon);
+        if (GUI.Button(new Rect(0, 0, toggleIconSize, toggleIconSize), new GUIContent("", "Toggle Debug GUI")))
+        {
+            _showDebugGui = !_showDebugGui;
+        }
+        GUI.Label(new Rect(10, toggleIconSize, guiMenuWidth, guiMenuHeight), GUI.tooltip);
+    }
+
     void OnGUI()
     {
-        if (showGUI)
+        if (showGui)
         {
-            if (isBoxSelecting)
+            if (_controlMode == ControlMode.Normal)
             {
-                // Create a rect from both mouse positions
-                var rect = OnGuiUtil.GetScreenRect(mousePositionAtSelectionStart, Input.mousePosition);
-                OnGuiUtil.DrawScreenRect(rect, guiColor);
-                OnGuiUtil.DrawScreenRectBorder(rect, guiBorderWidth, guiBorderColor);
+                if (_isBoxSelecting)
+                {
+                    // Create a rect from both mouse positions
+                    var rect = OnGuiUtil.GetScreenRect(_mousePositionAtSelectionStart, Input.mousePosition);
+                    OnGuiUtil.DrawScreenRect(rect, guiColor);
+                    OnGuiUtil.DrawScreenRectBorder(rect, guiBorderWidth, guiBorderColor);
+                }
             }
 
-            //var selectedObjects = selectionManager.GetSelectedObjects();
-            //int count = selectedObjects.Count;
-            //if (count > 0)
-            //{
-            //    StringBuilder info = new StringBuilder();
+            string controlActionName = "";
+            if (_controlMode == ControlMode.SpawnAgent)
+            {
+                controlActionName = ActionSpawnAgentName;
+            }
+            else if (_controlMode == ControlMode.SpawnExplosion)
+            {
+                controlActionName = ActionSpawnExplosionName;
+            }
+            else if (_controlMode == ControlMode.SpawnObject)
+            {
+                controlActionName = ActionSpawnObjectName;
+            }
 
-            //    if (selectedObjects.Count == 1)
-            //    {
-            //        var selectedObject = selectedObjects[0];
-            //        var entity = selectedObject.GetComponent<Entity>();
-            //        if (entity != null)
-            //        {
-            //            info.Append("Entity: " + entity.Name + "\n");
+            if (controlActionName != "")
+                GUI.Label(new Rect(Input.mousePosition.x + 25, Screen.height - Input.mousePosition.y + 25, 200, 25), controlActionName);
 
-            //            if (entity.IsDamageable)
-            //                info.Append("Injury: " + entity.GetDamageState() + "\n");
-            //            else
-            //                info.Append("Cannot be damaged.\n");
-
-            //            if (entity.GetType() == typeof(Agent))
-            //            {
-            //                Agent agent = entity as Agent;
-
-            //                info.Append(agent.Body.GetHealthInfo());
-
-            //                //uiManager.Notify(new AgentUiActive(true));
-            //                //uiManager.Notify(new AgentChangedEvent(agent));
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        info.Append("Selected " + count + " entities.\n");
-            //        uiManager.Notify(new AgentUiActive(false));
-            //        // TODO: count objects and display how many of each kind
-            //    }
-
-            //    //GUI.Box(
-            //    //    new Rect(Screen.width - guiMenuWidth, Screen.height - guiMenuHeight, guiMenuWidth, guiMenuHeight),
-            //    //    info.ToString()
-            //    //    );
-
-            //}
-            //else
-            //{
-            //    //uiManager.Notify(new AgentUiActive(false));
-            //}
-
-
-            //if (selectedTile != null)
-            //{
-            //    string currentSelection = "Selected " + selectedTile.pos;
-            //    GUI.Box(new Rect(Screen.width - guiMenuWidth, Screen.height - guiMenuHeight, guiMenuWidth, guiMenuHeight), currentSelection);
-            //}
-            //if (firstClickedTile != null)
-            //{
-            //    string leftSelection = "First tile\n" + firstClickedTile.pos;
-            //    GUI.Label(new Rect(0, Screen.height - guiMenuHeight, guiMenuWidth, guiMenuHeight), leftSelection, guiStyle);
-            //}
-            //if (secondClickedTile != null)
-            //{
-            //    string rightSelection = "Second tile\n" + secondClickedTile.pos;
-            //    GUI.Label(new Rect(0, Screen.height - 2 * guiMenuHeight, guiMenuWidth, guiMenuHeight), rightSelection, guiStyle);
-            //}
-            //if (pathResult != null)
-            //{
-            //    string pathInfo = "Path cost:" + pathResult.pathCost;
-            //    foreach (Tile tile in pathResult.getTilesOnPathStartFirst())
-            //    {
-            //        pathInfo += "\n" + tile.index;
-            //    }
-            //    GUI.Label(new Rect(guiMenuWidth, Screen.height - guiMenuHeight, guiMenuWidth, guiMenuHeight), pathInfo, guiStyle);
-            //}
+            if (allowDebugMenu)
+                OnGuiDebugMenu();
         }
     }
 }

@@ -4,6 +4,11 @@ using UnityEngine;
 
 namespace Common
 {
+    public interface IUpdateable
+    {
+        void Update();
+    }
+
     public interface IDestroyable
     {
         void OnDestroy();

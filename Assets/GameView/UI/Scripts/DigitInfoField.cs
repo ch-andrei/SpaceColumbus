@@ -4,7 +4,7 @@ using UnityEngine;
 
 using TMPro;
 using Entities;
-
+using UnityEngine.Serialization;
 using Utilities.Events;
 
 public class DigitInfoChangedEvent : GameEvent
@@ -14,32 +14,32 @@ public class DigitInfoChangedEvent : GameEvent
 
 public class DigitInfoField : MonoBehaviour, IEventListener<DigitInfoChangedEvent>
 {
-    private static string SizeRichText(float ratio) { return "<size=" + (int)(ratio * 100 % 101) + "%>"; }
+    private static string SizeRichText(float ratio) { return $"<size={(int) (ratio * 100 % 101)}%>"; }
 
-    public GameObject TitleText;
-    public GameObject InfoText;
+    [FormerlySerializedAs("TitleText")] public GameObject titleText;
+    [FormerlySerializedAs("InfoText")] public GameObject infoText;
 
-    private TextMeshProUGUI _TitleText;
-    private TextMeshProUGUI _InfoText;
+    private TextMeshProUGUI _titleText;
+    private TextMeshProUGUI _infoText;
 
-    public string Title;
-    public string Value;
-    public string ValueSuffix;
-    [Range(0.1f, 1)] public float ValueSuffixScale = 0.5f;
+    [FormerlySerializedAs("Title")] public string title;
+    [FormerlySerializedAs("Value")] public string value;
+    [FormerlySerializedAs("ValueSuffix")] public string valueSuffix;
+    [FormerlySerializedAs("ValueSuffixScale")] [Range(0.1f, 1)] public float valueSuffixScale = 0.5f;
 
     // Start is called before the first frame update
     void Start()
     {
-        _TitleText = TitleText.GetComponent<TextMeshProUGUI>();
-        _InfoText = InfoText.GetComponent<TextMeshProUGUI>();
+        _titleText = titleText.GetComponent<TextMeshProUGUI>();
+        _infoText = infoText.GetComponent<TextMeshProUGUI>();
 
         UpdateTextFields();
     }
 
     public void UpdateTextFields()
     {
-        _TitleText.text = Title;
-        _InfoText.text = Value + SizeRichText(ValueSuffixScale) + ValueSuffix;
+        _titleText.text = title;
+        _infoText.text = value + SizeRichText(valueSuffixScale) + valueSuffix;
     }
 
     // Update is called once per frame

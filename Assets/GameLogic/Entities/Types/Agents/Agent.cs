@@ -25,14 +25,14 @@ namespace Entities
 
     public class AgentEventGenerator : EventGenerator<AgentChangedEvent>, IEventListener<BodyPartChangedEvent>
     {
-        private Agent agent;
-        public AgentEventGenerator(Agent agent) : base() { this.agent = agent; }
+        private Agent _agent;
+        public AgentEventGenerator(Agent agent) : base() { this._agent = agent; }
 
         public bool OnEvent(BodyPartChangedEvent bodyChangedEvent)
         {
             // TODO: any processing on event
 
-            this.Notify(new AgentChangedEvent(this.agent));
+            this.Notify(new AgentChangedEvent(this._agent));
 
             return true;
         }
@@ -46,43 +46,43 @@ namespace Entities
     {
         public Body Body { get; private set; }
 
-        override public string Name { get { return "Agent"; } }
+        public override string Name { get { return "Agent"; } }
 
-        override public bool IsDamageable { get { return this.Body.IsDamageable; } }
-        override public bool IsDamaged { get { return this.Body.IsDamaged; } }
+        public override bool IsDamageable { get { return this.Body.IsDamageable; } }
+        public override bool IsDamaged { get { return this.Body.IsDamaged; } }
 
-        AgentBrain Brain;
+        AgentBrain _brain;
 
-        AgentEventGenerator AgentEventSystem;
+        AgentEventGenerator _agentEventSystem;
 
         public void Awake()
         {
             this.entityType = EntityType.Agent;
         }
 
-        override public void Start()
+        public override void Start()
         {
             base.Start();
 
             this.Body = Body.HumanoidBody;
 
-            Debug.Log("Agent with body:\n" + Body.toString());
+            Debug.Log($"Agent with body:\n{Body.ToString()}");
 
             var moveBrain = new MoveBrain(this.GetComponent<NavMeshAgent>());
             var attackBrain = new AttackBrain();
-            Brain = new AgentBrainModerate(this.gameObject, moveBrain, attackBrain);
+            _brain = new AgentBrainModerate(this.gameObject, moveBrain, attackBrain);
 
-            AgentEventSystem = new AgentEventGenerator(this);
-            this.Body.AddListener(AgentEventSystem);
+            _agentEventSystem = new AgentEventGenerator(this);
+            this.Body.AddListener(_agentEventSystem);
         }
 
         public void MoveTo(Vector3 destination)
         {
-            this.Brain.MoveTo(destination);
+            this._brain.MoveTo(destination);
         }
 
         public void Stop() {
-            this.Brain.StopMoving();
+            this._brain.StopMoving();
         }
 
         void FixedUpdate()
@@ -92,22 +92,22 @@ namespace Entities
                 this.TakeDamage(new Damage(DamageType.Blunt, 5, 0.1f));
             }
 
-            Brain.ProcessTick();
+            _brain.ProcessTick();
         }
 
-        override public void TakeDamage(Damage damage)
+        public override void TakeDamage(Damage damage)
         {
             Body.TakeDamage(damage);
         }
 
-        override public EDamageState GetDamageState()
+        public override EDamageState GetDamageState()
         {
             return Body.GetDamageState();
         }
 
         public void AddListener(IEventListener<AgentChangedEvent> eventListener)
         {
-            this.AgentEventSystem.AddListener(eventListener);
+            this._agentEventSystem.AddListener(eventListener);
         }
 
         public void Notify(AgentChangedEvent gameEvent)

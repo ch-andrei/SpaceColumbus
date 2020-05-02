@@ -55,9 +55,9 @@ namespace Players
 
     }
 
-    public class AIPlayer : Player
+    public class AiPlayer : Player
     {
-        public AIPlayer(uint id) : base(id) { }
+        public AiPlayer(uint id) : base(id) { }
     }
 
     public static class PlayerManager

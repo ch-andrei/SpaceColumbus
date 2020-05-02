@@ -16,11 +16,11 @@ namespace EntitySelection
 
         public bool isSelected { get; private set; }
 
-        private List<ISelectable> UiElements;
+        private List<ISelectable> _uiElements;
 
         private void Start()
         {
-            UiElements = new List<ISelectable>();
+            _uiElements = new List<ISelectable>();
 
             selectionListener = new SelectionListener(this.gameObject);
 
@@ -35,7 +35,7 @@ namespace EntitySelection
             if (!isSelected)
             {
                 selectionIndicator.SetActive(true);
-                foreach (var uiElement in UiElements)
+                foreach (var uiElement in _uiElements)
                     uiElement.Select();
             }
             isSelected = true;
@@ -46,7 +46,7 @@ namespace EntitySelection
             if (isSelected)
             {
                 selectionIndicator.SetActive(false);
-                foreach (var uiElement in UiElements)
+                foreach (var uiElement in _uiElements)
                     uiElement.Deselect();
             }
             isSelected = false;
@@ -60,7 +60,7 @@ namespace EntitySelection
         public void AddUiElements(List<ISelectable> uiElements)
         {
             foreach (var uiElement in uiElements)
-                this.UiElements.Add(uiElement);
+                this._uiElements.Add(uiElement);
         }
 
         public int GetId()

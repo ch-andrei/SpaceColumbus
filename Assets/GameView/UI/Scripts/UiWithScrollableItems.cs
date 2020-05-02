@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace UI.Menus
 {
     [System.Serializable]
     public class UiWithScrollableItems : MonoBehaviour
     {
-        public UiTextField TitleTextLeft = new UiTextField();
-        public UiTextField TitleTextRight = new UiTextField();
+        [FormerlySerializedAs("TitleTextLeft")] public UiTextField titleTextLeft = new UiTextField();
+        [FormerlySerializedAs("TitleTextRight")] public UiTextField titleTextRight = new UiTextField();
 
-        public GameObject ContentRoot;
+        [FormerlySerializedAs("ContentRoot")] public GameObject contentRoot;
 
         public virtual void Awake()
         {
-            TitleTextLeft.Initialize();
-            TitleTextRight.Initialize();
+            titleTextLeft.Initialize();
+            titleTextRight.Initialize();
         }
 
         void OnValidate()

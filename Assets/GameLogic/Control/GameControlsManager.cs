@@ -7,30 +7,30 @@ using InputControls;
 public class GameControlsManager : MonoBehaviour
 {
     #region MouseClicks
-    public static KeyInfo leftClick = new KeyInfo(KeyCode.Mouse0, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo leftClickDown = new KeyInfo(KeyCode.Mouse0, KeyInfo.OnKey.Down, false);
-    public static KeyInfo leftClickDownDouble = new KeyInfo(KeyCode.Mouse0, KeyInfo.OnKey.Down, true);
-    public static KeyInfo leftClickUp = new KeyInfo(KeyCode.Mouse0, KeyInfo.OnKey.Up, false);
+    public static ControlInfo LeftClick = new ControlInfo(KeyCode.Mouse0, KeyPressType.Hold, false);
+    public static ControlInfo LeftClickDown = new ControlInfo(KeyCode.Mouse0, KeyPressType.Down, false);
+    public static ControlInfo LeftClickDownDouble = new ControlInfo(KeyCode.Mouse0, KeyPressType.Down, true);
+    public static ControlInfo LeftClickUp = new ControlInfo(KeyCode.Mouse0, KeyPressType.Up, false);
 
-    public static KeyInfo rightClick = new KeyInfo(KeyCode.Mouse1, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo rightClickDown = new KeyInfo(KeyCode.Mouse1, KeyInfo.OnKey.Down, false);
-    public static KeyInfo rightClickDownDouble = new KeyInfo(KeyCode.Mouse1, KeyInfo.OnKey.Down, true);
-    public static KeyInfo rightClickUp = new KeyInfo(KeyCode.Mouse1, KeyInfo.OnKey.Up, false);
+    public static ControlInfo RightClick = new ControlInfo(KeyCode.Mouse1, KeyPressType.Hold, false);
+    public static ControlInfo RightClickDown = new ControlInfo(KeyCode.Mouse1, KeyPressType.Down, false);
+    public static ControlInfo RightClickDownDouble = new ControlInfo(KeyCode.Mouse1, KeyPressType.Down, true);
+    public static ControlInfo RightClickUp = new ControlInfo(KeyCode.Mouse1, KeyPressType.Up, false);
 
-    public static KeyInfo middleClick = new KeyInfo(KeyCode.Mouse2, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo middleClickDown = new KeyInfo(KeyCode.Mouse2, KeyInfo.OnKey.Down, false);
+    public static ControlInfo MiddleClick = new ControlInfo(KeyCode.Mouse2, KeyPressType.Hold, false);
+    public static ControlInfo MiddleClickDown = new ControlInfo(KeyCode.Mouse2, KeyPressType.Down, false);
     #endregion MouseClicks
 
     #region CameraMovement
-    public static KeyInfo cameraForward = new KeyInfo(KeyCode.W, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo cameraBack = new KeyInfo(KeyCode.S, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo cameraLeft = new KeyInfo(KeyCode.A, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo cameraRight = new KeyInfo(KeyCode.D, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo cameraDown = new KeyInfo(KeyCode.Q, KeyInfo.OnKey.Hold, false);
-    public static KeyInfo cameraUp = new KeyInfo(KeyCode.E, KeyInfo.OnKey.Hold, false);
+    public static ControlInfo CameraForward = new ControlInfo(KeyCode.W, KeyPressType.Hold, false);
+    public static ControlInfo CameraBack = new ControlInfo(KeyCode.S, KeyPressType.Hold, false);
+    public static ControlInfo CameraLeft = new ControlInfo(KeyCode.A, KeyPressType.Hold, false);
+    public static ControlInfo CameraRight = new ControlInfo(KeyCode.D, KeyPressType.Hold, false);
+    public static ControlInfo CameraDown = new ControlInfo(KeyCode.Q, KeyPressType.Hold, false);
+    public static ControlInfo CameraUp = new ControlInfo(KeyCode.E, KeyPressType.Hold, false);
 
-    public static KeyInfo cameraSpeedModifier = new KeyInfo(KeyCode.LeftShift, KeyInfo.OnKey.Hold, false);
+    public static ControlInfo CameraSpeedModifier = new ControlInfo(KeyCode.LeftShift, KeyPressType.Hold, false);
     #endregion CameraMovement
 
-    public static KeyInfo agentStopHotkey = new KeyInfo(KeyCode.Space, KeyInfo.OnKey.Down, false);
+    public static ControlInfo AgentStopHotkey = new ControlInfo(KeyCode.Space, KeyPressType.Down, false);
 }

@@ -14,63 +14,64 @@ using Entities.Bodies.Damages;
 using Utilities.Events;
 
 using UI.Utils;
+using UnityEngine.Serialization;
 
 namespace UI.Menus
 {
     public struct VitalLogInfo
     {
-        public UiFieldVitalsLog log;
-        public GameObject go;
+        public UiFieldVitalsLog Log;
+        public GameObject Go;
 
-        public VitalLogInfo(UiFieldVitalsLog log, GameObject go) { this.log = log; this.go = go; }
+        public VitalLogInfo(UiFieldVitalsLog log, GameObject go) { this.Log = log; this.Go = go; }
     }
 
     public class UiVitalsLog : UiWithScrollableItems, IEventListener<AgentChangedEvent>
     {
-        public int NumLogsInPool = 20;
+        [FormerlySerializedAs("NumLogsInPool")] public int numLogsInPool = 20;
 
-        private static string MenuTitle = "VITALS MONITORING";
-        private static string StatusField = "INJURY: ";
+        private static string _menuTitle = "VITALS MONITORING";
+        private static string _statusField = "INJURY: ";
 
-        public GameObject VitalsLogEntryPrefab;
+        [FormerlySerializedAs("VitalsLogEntryPrefab")] public GameObject vitalsLogEntryPrefab;
 
-        private List<VitalLogInfo> VitalLogs;
-        private Agent agent;
-        private int ActiveLogs = 0;
+        private List<VitalLogInfo> _vitalLogs;
+        private Agent _agent;
+        private int _activeLogs = 0;
 
-        override public void Awake()
+        public override void Awake()
         {
             base.Awake();
 
-            TitleTextLeft.Text = MenuTitle;
-            TitleTextRight.Text = GetStatusString(EDamageState.None);
+            titleTextLeft.Text = _menuTitle;
+            titleTextRight.Text = GetStatusString(EDamageState.None);
         }
 
         public void Start()
         {
             // generate pool of available vital logs
-            VitalLogs = new List<VitalLogInfo>();
-            for (int i = 0; i < NumLogsInPool; i++)
+            _vitalLogs = new List<VitalLogInfo>();
+            for (int i = 0; i < numLogsInPool; i++)
                 AddNewVitalLogToPool();
         }
 
         private void AddNewVitalLogToPool()
         {
-             var vitalsLogObj = Instantiate(VitalsLogEntryPrefab);
+             var vitalsLogObj = Instantiate(vitalsLogEntryPrefab);
              var uiFieldVitalsLog = vitalsLogObj.GetComponent<UiFieldVitalsLog>();
 
-             vitalsLogObj.transform.parent = ContentRoot.transform;
+             vitalsLogObj.transform.SetParent(contentRoot.transform, false);
              vitalsLogObj.SetActive(false);
 
-             VitalLogs.Add(new VitalLogInfo(uiFieldVitalsLog, vitalsLogObj));
+             _vitalLogs.Add(new VitalLogInfo(uiFieldVitalsLog, vitalsLogObj));
         }
 
         public void SetObservedAgent(Agent agent)
         {
             // only update if currently observed agent is not the same as the agent we want to observe
-            if (this.agent != agent)
+            if (this._agent != agent)
             {
-                this.agent = agent;
+                this._agent = agent;
 
                 agent.AddListener(this);
 
@@ -80,45 +81,45 @@ namespace UI.Menus
 
         void DeactivateVitalsLog()
         {
-            foreach (var vli in VitalLogs)
+            foreach (var vli in _vitalLogs)
             {
-                vli.go.SetActive(false);
+                vli.Go.SetActive(false);
             }
 
-            ActiveLogs = 0;
+            _activeLogs = 0;
         }
 
         void UpdateVitalsLog()
         {
-            TitleTextRight.Text = GetStatusString(this.agent.GetDamageState());
+            titleTextRight.Text = GetStatusString(this._agent.GetDamageState());
 
             DeactivateVitalsLog();
-            ProcessVitalsLog(agent.Body);
+            ProcessVitalsLog(_agent.Body);
         }
 
-        public string GetStatusString(EDamageState DamageState)
+        public string GetStatusString(EDamageState damageState)
         {
-            return StatusField + DamageStates.DamageStateToStrWithColor(DamageState);
+            return _statusField + DamageStates.DamageStateToStrWithColor(damageState);
         }
 
-        public string HpSystemToRichString(HPSystem hpSystem)
+        public string HpSystemToRichString(HpSystem hpSystem)
         {
-            return RichStrings.WithColor("[" + hpSystem.HpCurrent + "/" + hpSystem.HpBase + "]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
+            return RichStrings.WithColor($"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
         }
 
         public void ProcessVitalsLog(BodyPart bodyPart, int depth=0)
         {
             if (bodyPart.HasHpSystem && bodyPart.IsDamaged)
             {
-                if (ActiveLogs == this.VitalLogs.Count)
+                if (_activeLogs == this._vitalLogs.Count)
                     AddNewVitalLogToPool();
 
-                var vli = this.VitalLogs[ActiveLogs];
+                var vli = this._vitalLogs[_activeLogs];
 
-                vli.log.Initialize(bodyPart);
-                vli.go.SetActive(true);
+                vli.Log.Initialize(bodyPart);
+                vli.Go.SetActive(true);
 
-                ActiveLogs++;
+                _activeLogs++;
             }
 
             if (bodyPart is BodyPartContainer bpc)
@@ -128,7 +129,7 @@ namespace UI.Menus
 
         public bool OnEvent(AgentChangedEvent gameEvent)
         {
-            bool active = gameEvent.entity == this.agent;
+            bool active = gameEvent.entity == this._agent;
 
             if (active)
                 UpdateVitalsLog();

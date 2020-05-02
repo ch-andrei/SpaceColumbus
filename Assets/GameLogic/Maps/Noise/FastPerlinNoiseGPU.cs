@@ -7,32 +7,32 @@ using Utilities.Misc;
 
 namespace Noises
 {
-    public class FastPerlinNoiseGPU : FastPerlinNoise
+    public class FastPerlinNoiseGpu : FastPerlinNoise
     {
-        public ComputeShader compute;
+        public ComputeShader Compute;
 
-        public FastPerlinNoiseGPU(int seed, FastPerlinNoiseConfig config) : base(seed, config) { }
+        public FastPerlinNoiseGpu(int seed, FastPerlinNoiseConfig config) : base(seed, config) { }
 
-        override public float[,] generateNoiseValues()
+        public override float[,] GenerateNoiseValues()
         {
-            return generateMultipleLevelPerlinNoise(octaves, levels);
+            return GenerateMultipleLevelPerlinNoise(octaves, levels);
         }
 
-        private float[,] generateMultipleLevelPerlinNoise(int octaveCount, int levels)
+        private float[,] GenerateMultipleLevelPerlinNoise(int octaveCount, int levels)
         {
-            float[,] perlinNoiseCombined = new float[getNoiseRes(), getNoiseRes()];
+            float[,] perlinNoiseCombined = new float[GetNoiseRes(), GetNoiseRes()];
             // generate 0,1,...,levels of perlin noise patterns and merge these
             for (int i = 1; i <= levels; i++)
             {
-                float[,] baseNoise = generateWhiteNoise(getNoiseRes());
-                float[,] perlinNoise = generatePerlinNoise(baseNoise, octaveCount);
+                float[,] baseNoise = GenerateWhiteNoise(GetNoiseRes());
+                float[,] perlinNoise = GeneratePerlinNoise(baseNoise, octaveCount);
                 // merge results of new perlin level with previous perlinNoise
-                perlinNoiseCombined = Tools.mergeArrays(perlinNoise, perlinNoiseCombined, 1f / levels, (float)i / levels);
+                perlinNoiseCombined = Tools.MergeArrays(perlinNoise, perlinNoiseCombined, 1f / levels, (float)i / levels);
             }
             return perlinNoiseCombined;
         }
 
-        private float[,] generateWhiteNoise(int size)
+        private float[,] GenerateWhiteNoise(int size)
         {
             float[,] noise = new float[size, size];
             for (int i = 0; i < size; i++)
@@ -45,7 +45,7 @@ namespace Noises
             return noise;
         }
 
-        private float[,] generateSmoothNoise(float[,] baseNoise, int octave)
+        private float[,] GenerateSmoothNoise(float[,] baseNoise, int octave)
         {
             int length = baseNoise.GetLength(0);
             float[,] smoothNoise = new float[length, length];
@@ -56,33 +56,33 @@ namespace Noises
             for (int i = 0; i < length; i++)
             {
                 //calculate the horizontal sampling indices
-                int sample_i0 = (i / samplePeriod) * samplePeriod;
-                int sample_i1 = (sample_i0 + samplePeriod) % length; //wrap around
-                float horizontal_blend = (i - sample_i0) * sampleFrequency;
+                int sampleI0 = (i / samplePeriod) * samplePeriod;
+                int sampleI1 = (sampleI0 + samplePeriod) % length; //wrap around
+                float horizontalBlend = (i - sampleI0) * sampleFrequency;
 
                 for (int j = 0; j < length; j++)
                 {
                     //calculate the vertical sampling indices
-                    int sample_j0 = (j / samplePeriod) * samplePeriod;
-                    int sample_j1 = (sample_j0 + samplePeriod) % length; //wrap around
-                    float vertical_blend = (j - sample_j0) * sampleFrequency;
+                    int sampleJ0 = (j / samplePeriod) * samplePeriod;
+                    int sampleJ1 = (sampleJ0 + samplePeriod) % length; //wrap around
+                    float verticalBlend = (j - sampleJ0) * sampleFrequency;
 
                     //blend the top two corners
-                    float top = Mathf.Lerp(baseNoise[sample_i0, sample_j0],
-                        baseNoise[sample_i1, sample_j0], horizontal_blend);
+                    float top = Mathf.Lerp(baseNoise[sampleI0, sampleJ0],
+                        baseNoise[sampleI1, sampleJ0], horizontalBlend);
 
                     //blend the bottom two corners
-                    float bottom = Mathf.Lerp(baseNoise[sample_i0, sample_j1],
-                        baseNoise[sample_i1, sample_j1], horizontal_blend);
+                    float bottom = Mathf.Lerp(baseNoise[sampleI0, sampleJ1],
+                        baseNoise[sampleI1, sampleJ1], horizontalBlend);
 
                     //final blend
-                    smoothNoise[i, j] = Mathf.Lerp(top, bottom, vertical_blend);
+                    smoothNoise[i, j] = Mathf.Lerp(top, bottom, verticalBlend);
                 }
             }
             return smoothNoise;
         }
 
-        private float[,] generatePerlinNoise(float[,] baseNoise, int octaveCount)
+        private float[,] GeneratePerlinNoise(float[,] baseNoise, int octaveCount)
         {
             int length = baseNoise.GetLength(0);
             float[][,] smoothNoise = new float[octaveCount][,]; //an array of 2D arrays
@@ -90,26 +90,26 @@ namespace Noises
             //generate smooth noise
             for (int i = 0; i < octaveCount; i++)
             {
-                smoothNoise[i] = generateSmoothNoise(baseNoise, i);
+                smoothNoise[i] = GenerateSmoothNoise(baseNoise, i);
             }
 
             float[,] perlinNoise = new float[length, length]; //an array of floats initialized to 0
 
             float totalAmplitude = 0.0f;
 
-            float _amplitude = amplitude;
+            float amplitude = base.amplitude;
 
             //blend noise together
             for (int octave = octaveCount - 1; octave >= 0; octave--)
             {
-                _amplitude *= persistance;
-                totalAmplitude += _amplitude;
+                amplitude *= persistance;
+                totalAmplitude += amplitude;
 
                 for (int i = 0; i < length; i++)
                 {
                     for (int j = 0; j < length; j++)
                     {
-                        perlinNoise[i, j] += smoothNoise[octave][i, j] * _amplitude;
+                        perlinNoise[i, j] += smoothNoise[octave][i, j] * amplitude;
                     }
                 }
             }

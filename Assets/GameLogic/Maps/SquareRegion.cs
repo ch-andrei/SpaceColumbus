@@ -10,7 +10,7 @@ namespace SquareRegions
 {
     public class SquareRegion : Region
     {
-        public RegionGenConfig regionGenConfig;
+        public RegionGenConfig RegionGenConfig;
 
         public SquareRegion(int seed,
             RegionGenConfig regionGenConfig,
@@ -21,105 +21,105 @@ namespace SquareRegions
         {
             // ErosionConfig erosionConfig
 
-            this.regionGenConfig = regionGenConfig;
+            this.RegionGenConfig = regionGenConfig;
 
             // compute required array dimensions
-            this.gridRadius = computeGridRadius();
+            this.GridRadius = ComputeGridRadius();
 
-            noiseConfig.resolution = (int)(this.gridRadius * heightMapConfig.resolutionScale) + 1;
-            this.heightMap = new HeightMap(seed, heightMapConfig, noiseConfig, erosionConfig);
+            noiseConfig.resolution = (int)(this.GridRadius * heightMapConfig.resolutionScale) + 1;
+            this.HeightMap = new HeightMap(seed, heightMapConfig, noiseConfig, erosionConfig);
 
-            this.tileSize = regionGenConfig.tileSize;
+            this.TileSize = regionGenConfig.tileSize;
 
-            computeTileCenterCoords();
-            computeElevationParameters();
+            ComputeTileCenterCoords();
+            ComputeElevationParameters();
 
             Debug.Log("Generated square region.");
         }
 
-        private void computeTileCenterCoords()
+        private void ComputeTileCenterCoords()
         {
             Tile[,] coords;
 
-            int arraySize = 2 * gridRadius + 1;
+            int arraySize = 2 * GridRadius + 1;
             if (arraySize < 0)
                 return;
 
             coords = new Tile[arraySize, arraySize];
 
-            this.regionSize = tileSize * arraySize * 2;
+            this.RegionSize = TileSize * arraySize * 2;
 
-            // loop over X and Y in hex cube coordinatess
-            for (int X = -gridRadius; X <= gridRadius; X++)
+            // loop over X and Y in hex cube coordinates
+            for (int X = -GridRadius; X <= GridRadius; X++)
             {
-                for (int Y = -gridRadius; Y <= gridRadius; Y++)
+                for (int Y = -GridRadius; Y <= GridRadius; Y++)
                 {
-                    int i = X + gridRadius;
-                    int j = Y + gridRadius;
+                    int i = X + GridRadius;
+                    int j = Y + GridRadius;
 
-                    Vector2 uv = new Vector2(i / 2f / gridRadius, j / 2f / gridRadius);
+                    Vector2 uv = new Vector2(i / 2f / GridRadius, j / 2f / GridRadius);
 
-                    float y = getElevation(uv.x, uv.y);
+                    float y = GetElevation(uv.x, uv.y);
 
                     // initialize tile
                     // compute tile pos in unity axis coordinates
-                    float x = tileSize * X;
-                    float z = tileSize * Y;
+                    float x = TileSize * X;
+                    float z = TileSize * Y;
                     coords[i, j] = new Tile(new Vector3(x, y, z), i, j);
                 }
             }
 
-            this.tiles = coords;
+            this.Tiles = coords;
         }
 
-        private float getElevation(float x, float y)
+        private float GetElevation(float x, float y)
         {
             // TODO: preprocess elevation here since Noise gets interpolated
 
-            return this.regionGenConfig.maxElevation * this.heightMap.getNoiseValueUV(x, y);
+            return this.RegionGenConfig.maxElevation * this.HeightMap.GetNoiseValueUv(x, y);
         }
 
         // *** TILE POSITION COMPUTATIONS AND GETTERS *** //
 
         // unity coordinate pos to storage array index
         override
-        public Tile getTileAt(Vector3 pos)
+        public Tile GetTileAt(Vector3 pos)
         {
-            Vector2 index = regionWorldCoordToIndex(new Vector2(pos.x, pos.z));
+            Vector2 index = RegionWorldCoordToIndex(new Vector2(pos.x, pos.z));
 
             int i, j;
-            i = (int)index.x + this.gridRadius;
-            j = (int)index.y + this.gridRadius;
+            i = (int)index.x + this.GridRadius;
+            j = (int)index.y + this.GridRadius;
 
-            if (i < 0 || j < 0 || i >= tiles.GetLength(0) || j >= tiles.GetLength(0))
+            if (i < 0 || j < 0 || i >= Tiles.GetLength(0) || j >= Tiles.GetLength(0))
             {
                 return null;
             }
 
-            return this.tiles[i, j];
+            return this.Tiles[i, j];
         }
 
         // unity units coordinates
         override
-        public List<Vector2Int> getNeighborDirections()
+        public List<Vector2Int> GetNeighborDirections()
         {
             return new List<Vector2Int>(SquareDirections.Neighbors);
         }
 
         // unity coordinate system to square coords
         override
-        protected Vector3 regionWorldCoordToIndex(float x, float y)
+        protected Vector3 RegionWorldCoordToIndex(float x, float y)
         {
-            float i = (int)(Mathf.Floor(x / this.tileSize + 0.5f));
-            float j = (int)(Mathf.Floor(y / this.tileSize + 0.5f));
+            float i = (int)(Mathf.Floor(x / this.TileSize + 0.5f));
+            float j = (int)(Mathf.Floor(y / this.TileSize + 0.5f));
             return new Vector3(i, j, 0);
         }
 
         // *** REGION SIZE COMPUTATIONS *** //
         override
-        protected int computeGridRadius()
+        protected int ComputeGridRadius()
         {
-            return (int)(Mathf.Floor(Mathf.Sqrt(this.regionGenConfig.numberOfTiles)) / 2) - 1;
+            return (int)(Mathf.Floor(Mathf.Sqrt(this.RegionGenConfig.numberOfTiles)) / 2) - 1;
         }
     }
 

@@ -25,15 +25,15 @@ public class CrystalGenerator : MonoBehaviour
     public int seed = 0;
     public bool useRandomSeed = false;
 
-    private System.Random randomGen;
-    private float NextRandomFloat { get { return (float)randomGen.NextDouble(); } }
+    private System.Random _randomGen;
+    private float NextRandomFloat { get { return (float)_randomGen.NextDouble(); } }
 
     public bool regenerate = true;
 
     // Start is called before the first frame update
     void Awake()
     {
-        randomGen = new System.Random(useRandomSeed ? UnityEngine.Random.Range(0, int.MaxValue): seed);
+        _randomGen = new System.Random(useRandomSeed ? UnityEngine.Random.Range(0, int.MaxValue): seed);
         GenerateCrystal();
     }
 
@@ -55,7 +55,7 @@ public class CrystalGenerator : MonoBehaviour
     //    return point; // return it
     //}
 
-    public float evaluateDensityCurve(float ratio)
+    public float EvaluateDensityCurve(float ratio)
     {
         float offset = 1f / (numCenters + 2);
         return offset + crystalDensityCurve.Evaluate(ratio) * (1f - 2 * offset);
@@ -83,7 +83,7 @@ public class CrystalGenerator : MonoBehaviour
 
             //Debug.Log("Generating a crystal lobe " + lobe);
 
-            Vector3 lobeDir = Samplers.sampleRandomCosineHemisphere(NextRandomFloat, NextRandomFloat);
+            Vector3 lobeDir = Samplers.SampleRandomCosineHemisphere(NextRandomFloat, NextRandomFloat);
             Quaternion rotation = Quaternion.LookRotation(lobeDir);
 
             List<Vector3> sides = new List<Vector3>();
@@ -92,7 +92,7 @@ public class CrystalGenerator : MonoBehaviour
             {
                 float ratio = lobeNumCenters == 1 ? 0.5f: 1f * j / (lobeNumCenters - 1);
 
-                Vector3 centerPos = lobeRoot + lobeLength * lobeDir * evaluateDensityCurve(ratio);
+                Vector3 centerPos = lobeRoot + lobeLength * lobeDir * EvaluateDensityCurve(ratio);
 
                 for (int side = 0; side < lobeNumSides; side++)
                 {
@@ -144,7 +144,7 @@ public class CrystalGenerator : MonoBehaviour
                         //Debug.Log("Indices" + s1 + " " + s2 + " " + s3);
 
                         List<Vector3> verticesLocal = new List<Vector3>() { sides[s1], sides[s2], sides[s3] };
-                        MeshTriAdder.addTriangle(new Vector3Int(0, 1, 2), verticesLocal, vertices, tris, false);
+                        MeshTriAdder.AddTriangle(new Vector3Int(0, 1, 2), verticesLocal, vertices, tris, false);
                     }
                 }
             }
@@ -179,7 +179,7 @@ public class CrystalGenerator : MonoBehaviour
                     }
 
                     List<Vector3> verticesLocal = new List<Vector3>() { v1, sides[s2], sides[s3] };
-                    MeshTriAdder.addTriangle(new Vector3Int(0, 1, 2), verticesLocal, vertices, tris, false);
+                    MeshTriAdder.AddTriangle(new Vector3Int(0, 1, 2), verticesLocal, vertices, tris, false);
                 }
 
                 isBottom = false;

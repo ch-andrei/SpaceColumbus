@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GraphicWithRamp : GraphicShaderControl
 {
-    public GraphicWithRampModifier Ramp = new GraphicWithRampModifier();
-    public GraphicWithDitherModifier Dither = new GraphicWithDitherModifier();
-    public GraphicWithBlendModeModifier Blend = new GraphicWithBlendModeModifier();
+    [FormerlySerializedAs("Ramp")] public GraphicWithRampModifier ramp = new GraphicWithRampModifier();
+    [FormerlySerializedAs("Dither")] public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
+    [FormerlySerializedAs("Blend")] public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
 
-    override public void Initialize()
+    public override void Initialize()
     {
         this.AddModifier(new GraphicWithRectModifier());
-        this.AddModifier(Blend);
-        this.AddModifier(Ramp);
-        this.AddModifier(Dither);
+        this.AddModifier(blend);
+        this.AddModifier(ramp);
+        this.AddModifier(dither);
         base.Initialize();
     }
 }
@@ -19,36 +20,36 @@ public class GraphicWithRamp : GraphicShaderControl
 [System.Serializable]
 public class GraphicWithRampModifier : ShaderControlModifier
 {
-    private static string RampPowerField = "_RampPower";
-    private static string RampScaleField = "_RampScale";
-    private static string RampDirectionField = "_RampDirection";
-    private static string RadialField = "_Radial";
-    private static string InvertField = "_Invert";
-    private static string AlphaRampField = "_ApplyAlpha";
-    private static string Color1Field = "_Color1";
-    private static string Color2Field = "_Color2";
+    private static string _rampPowerField = "_RampPower";
+    private static string _rampScaleField = "_RampScale";
+    private static string _rampDirectionField = "_RampDirection";
+    private static string _radialField = "_Radial";
+    private static string _invertField = "_Invert";
+    private static string _alphaRampField = "_ApplyAlpha";
+    private static string _color1Field = "_Color1";
+    private static string _color2Field = "_Color2";
 
-    public Vector2 RampDirection = new Vector2(1, 0);
+    [FormerlySerializedAs("RampDirection")] public Vector2 rampDirection = new Vector2(1, 0);
 
-    public Color Color1 = new Color(1, 1, 1, 1);
-    public Color Color2 = new Color(1, 1, 1, 1);
+    [FormerlySerializedAs("Color1")] public Color color1 = new Color(1, 1, 1, 1);
+    [FormerlySerializedAs("Color2")] public Color color2 = new Color(1, 1, 1, 1);
 
-    [Range(0.01f, 10)] public float Power = 1;
-    [Range(0.01f, 10)] public float Scale = 1;
+    [FormerlySerializedAs("Power")] [Range(0.01f, 10)] public float power = 1;
+    [FormerlySerializedAs("Scale")] [Range(0.01f, 10)] public float scale = 1;
 
-    public bool Radial = true;
-    public bool Invert = false;
-    public bool ApplyAlpha = true;
+    [FormerlySerializedAs("Radial")] public bool radial = true;
+    [FormerlySerializedAs("Invert")] public bool invert = false;
+    [FormerlySerializedAs("ApplyAlpha")] public bool applyAlpha = true;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        shaderControl.SetColor(Color1Field, Color1);
-        shaderControl.SetColor(Color2Field, Color2);
-        shaderControl.SetFloat(RampPowerField, Power);
-        shaderControl.SetFloat(RampScaleField, Scale);
-        shaderControl.SetBool(RadialField, Radial);
-        shaderControl.SetBool(InvertField, Invert);
-        shaderControl.SetBool(AlphaRampField, ApplyAlpha);
-        shaderControl.SetVector(RampDirectionField, RampDirection.normalized);
+        shaderControl.SetColor(_color1Field, color1);
+        shaderControl.SetColor(_color2Field, color2);
+        shaderControl.SetFloat(_rampPowerField, power);
+        shaderControl.SetFloat(_rampScaleField, scale);
+        shaderControl.SetBool(_radialField, radial);
+        shaderControl.SetBool(_invertField, invert);
+        shaderControl.SetBool(_alphaRampField, applyAlpha);
+        shaderControl.SetVector(_rampDirectionField, rampDirection.normalized);
     }
 }

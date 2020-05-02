@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Utilities.MeshTools {
     public static class MeshTriAdder {
         // adds a triangle to the mesh
-        public static void addTriangle (Vector3Int triangle, List<Vector3> verticesLocal, List<Vector3> vertices, List<int> triangles, bool reordered = true) {
+        public static void AddTriangle (Vector3Int triangle, List<Vector3> verticesLocal, List<Vector3> vertices, List<int> triangles, bool reordered = true) {
             // adds vertices clockwise along x, z plane 
             List<Vector3> temp = new List<Vector3> ();
             temp.Add (verticesLocal[triangle.x]);
@@ -36,7 +36,7 @@ namespace Utilities.MeshTools {
         }
 
         // adds a triangle to the mesh
-        public static void addTriangle (Vector3Int triangle, List<Vector3> verticesLocal, List<Vector3> vertices, List<int> triangles,
+        public static void AddTriangle (Vector3Int triangle, List<Vector3> verticesLocal, List<Vector3> vertices, List<int> triangles,
             List<Vector3> normals, List<Vector2> uvsLocal, List<Vector2> uvs, int triangleOffset = 0) {
             // adds vertices clockwise along x, z plane 
             List<VertexData> verts = new List<VertexData> ();
@@ -62,7 +62,7 @@ namespace Utilities.MeshTools {
         }
 
         // adds a triangle to the mesh
-        public static void addTriangle (Vector3Int triangle, List<Vector3> verticesLocal, Dictionary<Vector3, int> vertices, List<int> triangles,
+        public static void AddTriangle (Vector3Int triangle, List<Vector3> verticesLocal, Dictionary<Vector3, int> vertices, List<int> triangles,
             List<Vector3> normals, List<Vector2> uvsLocal, List<Vector2> uvs) {
             // adds vertices clockwise along x, z plane 
             List<VertexData> verts = new List<VertexData> ();

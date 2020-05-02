@@ -14,8 +14,7 @@ namespace Brains.Attack
             Ranged
         }
 
-        public AttackType attackType;
-
+        public AttackType Type;
     }
 
     [System.Serializable]
@@ -30,7 +29,7 @@ namespace Brains.Attack
 
         }
 
-        public float getAttackRange()
+        public float GetAttackRange()
         {
             return 0;
         }

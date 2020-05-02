@@ -4,14 +4,15 @@ using System;
 using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Jobs;
+using UnityEngine.Serialization;
 
 namespace Animation.Systems.Extractor
 {
     [System.Serializable]
     public class ExtractorAnimationBase : AnimationBase
     {
-        public float Speed = 8f;
-        public float MoveAmount = 0.7f;
+        [FormerlySerializedAs("Speed")] public float speed = 8f;
+        [FormerlySerializedAs("MoveAmount")] public float moveAmount = 0.7f;
 
         public Transform Pivot { get; private set; }
         public float TimeAtSpawn { get; private set; }
@@ -35,7 +36,7 @@ namespace Animation.Systems.Extractor
             foreach (ExtractorAnimationBase animated in this.Animated.Values)
             {
                 float t = time - animated.TimeAtSpawn;
-                float moveAmount = animated.MoveAmount * Mathf.Sin(t * animated.Speed - animated.TimeAtSpawn);
+                float moveAmount = animated.moveAmount * Mathf.Sin(t * animated.speed - animated.TimeAtSpawn);
                 var pivot = animated.Pivot.position;
                 animated.go.transform.position = pivot + new Vector3(0, moveAmount);
             }
@@ -46,39 +47,39 @@ namespace Animation.Systems.Extractor
     {
         struct ExtractorAnimationJob : IJobParallelForTransform
         {
-            [ReadOnly] public NativeArray<Vector3> pivots;
-            [ReadOnly] public NativeArray<float> moveAmounts;
-            [ReadOnly] public NativeArray<float> speeds;
-            [ReadOnly] public NativeArray<float> times;
-            public float time;
+            [ReadOnly] public NativeArray<Vector3> Pivots;
+            [ReadOnly] public NativeArray<float> MoveAmounts;
+            [ReadOnly] public NativeArray<float> Speeds;
+            [ReadOnly] public NativeArray<float> Times;
+            public float Time;
 
             public void Execute(int index, TransformAccess transform)
             {
-                transform.position = pivots[index] + new Vector3(0, moveAmounts[index] * Mathf.Sin(time * speeds[index] - times[index]));
+                transform.position = Pivots[index] + new Vector3(0, MoveAmounts[index] * Mathf.Sin(Time * Speeds[index] - Times[index]));
             }
         }
 
-        int count = 0;
-        NativeArray<Vector3> pivots;
-        NativeArray<float> moveAmounts;
-        NativeArray<float> speeds;
-        NativeArray<float> times;
-        TransformAccessArray transforms;
+        int _count = 0;
+        NativeArray<Vector3> _pivots;
+        NativeArray<float> _moveAmounts;
+        NativeArray<float> _speeds;
+        NativeArray<float> _times;
+        TransformAccessArray _transforms;
 
-        override public JobHandle ScheduleAnimationJob(float time, float deltaTime)
+        public override JobHandle ScheduleAnimationJob(float time, float deltaTime)
         {
             SetupNativeArrays(time);
 
             var animationJob = new ExtractorAnimationJob()
             {
-                pivots = pivots,
-                moveAmounts = moveAmounts,
-                speeds = speeds,
-                times = times,
-                time = time
+                Pivots = _pivots,
+                MoveAmounts = _moveAmounts,
+                Speeds = _speeds,
+                Times = _times,
+                Time = time
             };
 
-            var jobHandle = animationJob.Schedule(transforms);
+            var jobHandle = animationJob.Schedule(_transforms);
 
             return jobHandle;
         }
@@ -90,42 +91,42 @@ namespace Animation.Systems.Extractor
 
             // simple optimization: if count is the same, it was already allocated and nothing needs to be done
             // TODO: do this with event generator -> queue reallocation on Animated changed event
-            if (this.count == count)
+            if (this._count == count)
                 return;
 
-            if (this.count > 0)
+            if (this._count > 0)
                 DeallocateNativeArrays();
 
-            pivots = new NativeArray<Vector3>(count, Allocator.Persistent);
-            moveAmounts = new NativeArray<float>(count, Allocator.Persistent);
-            speeds = new NativeArray<float>(count, Allocator.Persistent);
-            times = new NativeArray<float>(count, Allocator.Persistent);
-            transforms = new TransformAccessArray(count, -1);
+            _pivots = new NativeArray<Vector3>(count, Allocator.Persistent);
+            _moveAmounts = new NativeArray<float>(count, Allocator.Persistent);
+            _speeds = new NativeArray<float>(count, Allocator.Persistent);
+            _times = new NativeArray<float>(count, Allocator.Persistent);
+            _transforms = new TransformAccessArray(count, -1);
 
-            this.count = count;
+            this._count = count;
 
             int i = 0;
             foreach (ExtractorAnimationBase animated in this.Animated.Values)
             {
-                pivots[i] = animated.Pivot.position;
-                moveAmounts[i] = animated.MoveAmount;
-                speeds[i] = animated.Speed;
-                times[i] = time;
-                transforms.Add(animated.go.transform);
+                _pivots[i] = animated.Pivot.position;
+                _moveAmounts[i] = animated.moveAmount;
+                _speeds[i] = animated.speed;
+                _times[i] = time;
+                _transforms.Add(animated.go.transform);
                 i++;
             }
         }
 
         private void DeallocateNativeArrays()
         {
-            pivots.Dispose();
-            moveAmounts.Dispose();
-            speeds.Dispose();
-            times.Dispose();
-            transforms.Dispose();
+            _pivots.Dispose();
+            _moveAmounts.Dispose();
+            _speeds.Dispose();
+            _times.Dispose();
+            _transforms.Dispose();
         }
 
-        override public void OnDestroy()
+        public override void OnDestroy()
         {
             DeallocateNativeArrays();
 

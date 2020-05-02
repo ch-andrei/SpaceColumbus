@@ -20,11 +20,12 @@ using Utilities.Misc;
 using EntitySelection;
 
 using Players;
+using UnityEngine.Serialization;
 
 public class GameSession : MonoBehaviour
 {
-    public bool DEBUG = false;
-    public bool DEBUG_MAP_GEN = false;
+    [FormerlySerializedAs("DEBUG")] public bool debug = false;
+    [FormerlySerializedAs("DEBUG_MAP_GEN")] public bool debugMapGen = false;
 
     [Header("Agent Config")]
     public bool spawnAgents = false;
@@ -50,7 +51,7 @@ public class GameSession : MonoBehaviour
     [Range(0, 100)]
     public int gizmoSkip = 0;
 
-    private Region region;
+    private Region _region;
 
     public Player CurrentPlayer { get; private set; }
 
@@ -61,12 +62,12 @@ public class GameSession : MonoBehaviour
 
     public void Initialize()
     {
-        if (DEBUG)
+        if (debug)
             return;
 
         this.seed = useRandomSeed ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : this.seed;
 
-        Debug.Log("Initializing GameSession with seed " + this.seed);
+        Debug.Log($"Initializing GameSession with seed {this.seed}");
 
         if (generateRegion)
         {
@@ -74,7 +75,7 @@ public class GameSession : MonoBehaviour
             BuildRegionView();
         }
 
-        if (DEBUG_MAP_GEN)
+        if (debugMapGen)
             return;
 
         BuildNavMeshes();
@@ -92,7 +93,7 @@ public class GameSession : MonoBehaviour
 
     public void BuildRegion()
     {
-        this.region = new SquareRegion(this.seed, regionGenConfig, heightMapConfig, noiseConfig, erosionConfig);
+        this._region = new SquareRegion(this.seed, regionGenConfig, heightMapConfig, noiseConfig, erosionConfig);
     }
 
     public void BuildRegionView()
@@ -108,7 +109,7 @@ public class GameSession : MonoBehaviour
         regionView.transform.parent = viewablesRoot.transform;
 
         SquareRegionModelGenerator squareRegionModelGenerator = regionView.AddComponent<RegionModelGenerators.SquareRegionModelGenerator>();
-        squareRegionModelGenerator.InitializeMesh(this.region);
+        squareRegionModelGenerator.InitializeMesh(this._region);
     }
 
     public void BuildNavMeshes()
@@ -123,7 +124,7 @@ public class GameSession : MonoBehaviour
         GameObject agentRoot = GameObject.FindGameObjectWithTag(StaticGameDefs.AgentRootTag);
 
         GameObject gameRoot = GameObject.FindGameObjectWithTag(StaticGameDefs.GameRootTag);
-        GameObject agentPrefab = gameRoot.GetComponent<PrefabManager>().AgentPrefab;
+        GameObject agentPrefab = gameRoot.GetComponent<PrefabManager>().agentPrefab;
 
         GameObject agent = GameObject.Instantiate(agentPrefab, position, agentPrefab.transform.rotation, agentRoot.transform);
     }
@@ -138,7 +139,7 @@ public class GameSession : MonoBehaviour
         }
         else {
             pos = Vector3.zero;
-            pos.y = this.region.getTileAt(new Vector3()).pos.y;
+            pos.y = this._region.GetTileAt(new Vector3()).Pos.y;
         }
         SpawnSimpleAgent(pos);
     }
@@ -165,9 +166,9 @@ public class GameSession : MonoBehaviour
         }
     }
 
-    public Region getRegion()
+    public Region GetRegion()
     {
-        return this.region;
+        return this._region;
     }
 
     // Use this for initialization
@@ -196,9 +197,9 @@ public class GameSession : MonoBehaviour
         AnimationManager.OnDestroy();
     }
 
-    public Color hexToColor(string hex)
+    public Color HexToColor(string hex)
     {
-        return Tools.hexToColor(hex);
+        return Tools.HexToColor(hex);
     }
 
     private void OnDrawGizmos()
@@ -208,17 +209,17 @@ public class GameSession : MonoBehaviour
             return;
         }
 
-        if (region != null)
+        if (_region != null)
         {
             // draw some floor
-            Gizmos.color = hexToColor("#000000"); // black
+            Gizmos.color = HexToColor("#000000"); // black
             //Gizmos.DrawCube (new Vector3 (0, 0, 0), new Vector3 (10000, 0, 10000));
 
             // set color and draw gizmos
             //int water_level = gameSession.mapGenerator.getRegion().getWaterLevelElevation();
             int order = 0;
             Color c;
-            foreach (Vector3 pos in region.getTileVertices())
+            foreach (Vector3 pos in _region.GetTileVertices())
             {
                 if (gizmoSkip + 1 != 0)
                 {
@@ -254,39 +255,39 @@ public class GameSession : MonoBehaviour
                     //        c = hexToColor("#004176");
                     //}
                     //else if (tile.getTileType().GetType() == typeof(LandTileType))
-                    float heigh_scaling = 0.1f;
+                    float heighScaling = 0.1f;
                     {
                         //Debug.Log("water: elevation " + elevation);
                         if (elevation < 0)
-                            c = hexToColor("#696300");
-                        else if (elevation < 10 * heigh_scaling)
-                            c = hexToColor("#00C103");
-                        else if (elevation < 20 * heigh_scaling)
-                            c = hexToColor("#59FF00");
-                        else if (elevation < 30 * heigh_scaling)
-                            c = hexToColor("#F2FF00");
-                        else if (elevation < 40 * heigh_scaling)
-                            c = hexToColor("#FFBE00");
-                        else if (elevation < 50 * heigh_scaling)
-                            c = hexToColor("#FF8C00");
-                        else if (elevation < 60 * heigh_scaling)
-                            c = hexToColor("#FF6900");
-                        else if (elevation < 70 * heigh_scaling)
-                            c = hexToColor("#E74900");
-                        else if (elevation < 80 * heigh_scaling)
-                            c = hexToColor("#E10C00");
-                        else if (elevation < 90 * heigh_scaling)
-                            c = hexToColor("#971C00");
-                        else if (elevation < 100 * heigh_scaling)
-                            c = hexToColor("#C24340");
-                        else if (elevation < 115 * heigh_scaling)
-                            c = hexToColor("#B9818A");
-                        else if (elevation < 130 * heigh_scaling)
-                            c = hexToColor("#988E8B");
-                        else if (elevation < 160 * heigh_scaling)
-                            c = hexToColor("#AEB5BD");
+                            c = HexToColor("#696300");
+                        else if (elevation < 10 * heighScaling)
+                            c = HexToColor("#00C103");
+                        else if (elevation < 20 * heighScaling)
+                            c = HexToColor("#59FF00");
+                        else if (elevation < 30 * heighScaling)
+                            c = HexToColor("#F2FF00");
+                        else if (elevation < 40 * heighScaling)
+                            c = HexToColor("#FFBE00");
+                        else if (elevation < 50 * heighScaling)
+                            c = HexToColor("#FF8C00");
+                        else if (elevation < 60 * heighScaling)
+                            c = HexToColor("#FF6900");
+                        else if (elevation < 70 * heighScaling)
+                            c = HexToColor("#E74900");
+                        else if (elevation < 80 * heighScaling)
+                            c = HexToColor("#E10C00");
+                        else if (elevation < 90 * heighScaling)
+                            c = HexToColor("#971C00");
+                        else if (elevation < 100 * heighScaling)
+                            c = HexToColor("#C24340");
+                        else if (elevation < 115 * heighScaling)
+                            c = HexToColor("#B9818A");
+                        else if (elevation < 130 * heighScaling)
+                            c = HexToColor("#988E8B");
+                        else if (elevation < 160 * heighScaling)
+                            c = HexToColor("#AEB5BD");
                         else // default
-                            c = hexToColor("#FFFFFF");
+                            c = HexToColor("#FFFFFF");
                     }
                     //else
                     //    c = new Color(0, 0, 0, 0);

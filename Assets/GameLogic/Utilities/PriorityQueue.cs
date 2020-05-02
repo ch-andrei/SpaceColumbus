@@ -7,11 +7,11 @@ namespace Utilities.PriorityQueue
     // TODO: replace this with HEAP implementation priority queue
     public class PriorityQueue<T>
     {
-        private List<PriorityQueueElement<T>> data;
+        private List<PriorityQueueElement<T>> _data;
 
         public PriorityQueue()
         {
-            this.data = new List<PriorityQueueElement<T>>();
+            this._data = new List<PriorityQueueElement<T>>();
         }
 
         // adds highest priority in the end
@@ -20,17 +20,17 @@ namespace Utilities.PriorityQueue
         {
             PriorityQueueElement<T> pqe = new PriorityQueueElement<T>(item, priority);
             // add item
-            data.Add(pqe);
-            int ci = data.Count - 1;
+            _data.Add(pqe);
+            int ci = _data.Count - 1;
             // swap items to maintain priority
             while (ci > 0)
             {
                 int pi = (ci - 1) / 2;
-                if (data[ci].ComparePriority(data[pi]) >= 0)
+                if (_data[ci].ComparePriority(_data[pi]) >= 0)
                     break;
-                PriorityQueueElement<T> tmp = data[ci];
-                data[ci] = data[pi];
-                data[pi] = tmp;
+                PriorityQueueElement<T> tmp = _data[ci];
+                _data[ci] = _data[pi];
+                _data[pi] = tmp;
                 ci = pi;
             }
         }
@@ -40,8 +40,8 @@ namespace Utilities.PriorityQueue
         {
             if (IsEmpty())
                 throw new IndexOutOfRangeException("Priority Queue: attempting to pop from an empty queue.");
-            PriorityQueueElement<T> item = data[0];
-            data.RemoveAt(0);
+            PriorityQueueElement<T> item = _data[0];
+            _data.RemoveAt(0);
             return item.item;
         }
 
@@ -49,10 +49,10 @@ namespace Utilities.PriorityQueue
         public virtual T Dequeue()
         {
             // assumes pq is not empty; up to calling code
-            int li = data.Count - 1; // last index (before removal)
-            PriorityQueueElement<T> frontItem = data[0]; // fetch the front
-            data[0] = data[li];
-            data.RemoveAt(li);
+            int li = _data.Count - 1; // last index (before removal)
+            PriorityQueueElement<T> frontItem = _data[0]; // fetch the front
+            _data[0] = _data[li];
+            _data.RemoveAt(li);
 
             --li; // last index (after removal)
             int pi = 0; // parent index. start at front of pq
@@ -61,12 +61,12 @@ namespace Utilities.PriorityQueue
                 int ci = pi * 2 + 1; // left child index of parent
                 if (ci > li) break; // no children so done
                 int rc = ci + 1; // right child
-                if (rc <= li && data[rc].ComparePriority(data[ci]) < 0) // if there is a rc (ci + 1), and it is smaller than left child, use the rc instead
+                if (rc <= li && _data[rc].ComparePriority(_data[ci]) < 0) // if there is a rc (ci + 1), and it is smaller than left child, use the rc instead
                     ci = rc;
-                if (data[pi].ComparePriority(data[ci]) <= 0) break; // parent is smaller than (or equal to) smallest child so done
-                PriorityQueueElement<T> tmp = data[pi];
-                data[pi] = data[ci];
-                data[ci] = tmp; // swap parent and child
+                if (_data[pi].ComparePriority(_data[ci]) <= 0) break; // parent is smaller than (or equal to) smallest child so done
+                PriorityQueueElement<T> tmp = _data[pi];
+                _data[pi] = _data[ci];
+                _data[ci] = tmp; // swap parent and child
                 pi = ci;
             }
             return frontItem.item;
@@ -74,7 +74,7 @@ namespace Utilities.PriorityQueue
 
         public bool IsEmpty()
         {
-            if (this.data.Count == 0)
+            if (this._data.Count == 0)
                 return true;
             else
                 return false;
@@ -82,7 +82,7 @@ namespace Utilities.PriorityQueue
 
         public int Count()
         {
-            return data.Count;
+            return _data.Count;
         }
 
         public struct PriorityQueueElement<T>

@@ -6,43 +6,44 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.Serialization;
 
 namespace UI.Menus
 {
     [System.Serializable]
     public class UiTextField
     {
-        public GameObject GameObject;
+        [FormerlySerializedAs("GameObject")] public GameObject gameObject;
 
-        private TextMeshProUGUI TextMesh;
+        private TextMeshProUGUI _textMesh;
 
-        public string DefaultText = "Text Field";
+        [FormerlySerializedAs("DefaultText")] public string defaultText = "Text Field";
 
         public string Text
         {
-            set { this.TextMesh.text = value; }
-            get { return this.TextMesh.text; }
+            set { this._textMesh.text = value; }
+            get { return this._textMesh.text; }
         }
 
-        public float FontSize { get { return this.TextMesh.fontSize; } }
-        public int NumLines { get { return this.TextMesh.textInfo.lineCount; } }
+        public float FontSize { get { return this._textMesh.fontSize; } }
+        public int NumLines { get { return this._textMesh.textInfo.lineCount; } }
 
         public void Initialize()
         {
-            this.TextMesh = this.GameObject.GetComponent<TextMeshProUGUI>();
-            this.Text = DefaultText;
+            this._textMesh = this.gameObject.GetComponent<TextMeshProUGUI>();
+            this.Text = defaultText;
         }
     }
 
     [System.Serializable]
     public class UiTwoTextField : MonoBehaviour
     {
-        public UiTextField TextLeft = new UiTextField();
-        public UiTextField TextRight = new UiTextField();
+        [FormerlySerializedAs("TextLeft")] public UiTextField textLeft = new UiTextField();
+        [FormerlySerializedAs("TextRight")] public UiTextField textRight = new UiTextField();
 
-        private LayoutElement LayoutElement;
+        private LayoutElement _layoutElement;
 
-        private bool UpdatingLayoutSize = false;
+        private bool _updatingLayoutSize = false;
 
         public virtual void Awake()
         {
@@ -51,21 +52,21 @@ namespace UI.Menus
 
         public void Initialize()
         {
-            this.LayoutElement = this.GetComponent<LayoutElement>();
+            this._layoutElement = this.GetComponent<LayoutElement>();
 
-            TextLeft.Initialize();
-            TextRight.Initialize();
+            textLeft.Initialize();
+            textRight.Initialize();
         }
 
         public void TriggerUpdateLayoutSize()
         {
-            if (!UpdatingLayoutSize)
+            if (!_updatingLayoutSize)
             {
                 try
                 {
                     if (this.gameObject.activeSelf)
                     {
-                        UpdatingLayoutSize = true;
+                        _updatingLayoutSize = true;
                         StartCoroutine(UpdateLayoutSize());
                     }
                 }
@@ -81,13 +82,13 @@ namespace UI.Menus
             // try/catch in case object is destroyed while waiting
             try
             {
-                int numLines = Mathf.Max(TextLeft.NumLines, TextRight.NumLines) - 1;
-                float fontSize = Mathf.Max(TextLeft.FontSize, TextRight.FontSize);
-                this.LayoutElement.preferredHeight = Mathf.Max(
-                    this.LayoutElement.minHeight,
-                    this.LayoutElement.minHeight + numLines * fontSize);
+                int numLines = Mathf.Max(textLeft.NumLines, textRight.NumLines) - 1;
+                float fontSize = Mathf.Max(textLeft.FontSize, textRight.FontSize);
+                this._layoutElement.preferredHeight = Mathf.Max(
+                    this._layoutElement.minHeight,
+                    this._layoutElement.minHeight + numLines * fontSize);
 
-                UpdatingLayoutSize = false;
+                _updatingLayoutSize = false;
             }
             catch (MissingReferenceException) { Debug.Log("Tried to update layout size of a null UiTwoTextField."); }
         }

@@ -13,7 +13,7 @@ namespace Animation
 {
     public static class AnimationManager
     {
-        private static Dictionary<Type, AnimationSystem> AnimationSystems = new Dictionary<Type, AnimationSystem>();
+        private static Dictionary<Type, AnimationSystem> _animationSystems = new Dictionary<Type, AnimationSystem>();
 
         public static T GetOrCreateAnimationSystem<T>() where T : AnimationSystem, new()
         {
@@ -21,10 +21,10 @@ namespace Animation
 
             AnimationSystemTypeCheck(type);
 
-            if (!AnimationSystems.ContainsKey(type))
-                AnimationSystems[type] = new T();
+            if (!_animationSystems.ContainsKey(type))
+                _animationSystems[type] = new T();
 
-            return AnimationSystems[type] as T;
+            return _animationSystems[type] as T;
         }
 
         public static void AnimationSystemTypeCheck(Type type)
@@ -46,7 +46,7 @@ namespace Animation
 
         public static void Update(float time, float deltaTime)
         {
-            foreach (var animationSystem in AnimationSystems.Values)
+            foreach (var animationSystem in _animationSystems.Values)
             {
                 animationSystem.Update(time, deltaTime);
             }
@@ -70,7 +70,7 @@ namespace Animation
 
         public static void OnDestroy()
         {
-            foreach (var animationSystem in AnimationSystems.Values)
+            foreach (var animationSystem in _animationSystems.Values)
             {
                 animationSystem.OnDestroy();
             }

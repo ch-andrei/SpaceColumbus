@@ -1,19 +1,21 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GraphicWithLine : GraphicShaderControl
 {
-    public GraphicWithMaskModifier Mask = new GraphicWithMaskModifier();
-    public GraphicWithLineModifier Line = new GraphicWithLineModifier();
-    public GraphicWithDitherModifier Dither = new GraphicWithDitherModifier();
-    public GraphicWithBlendModeModifier Blend = new GraphicWithBlendModeModifier();
+    [FormerlySerializedAs("Mask")] public GraphicWithMaskModifier mask = new GraphicWithMaskModifier();
+    [FormerlySerializedAs("Line")] public GraphicWithLineModifier line = new GraphicWithLineModifier();
+    [FormerlySerializedAs("Dither")] public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
+    [FormerlySerializedAs("Blend")] public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
 
-    override public void Initialize()
+    public override void Initialize()
     {
         this.AddModifier(new GraphicWithRectModifier());
-        this.AddModifier(Blend);
-        this.AddModifier(Mask);
-        this.AddModifier(Line);
-        this.AddModifier(Dither);
+        this.AddModifier(blend);
+        this.AddModifier(mask);
+        this.AddModifier(line);
+        this.AddModifier(dither);
         base.Initialize();
     }
 }
@@ -21,40 +23,40 @@ public class GraphicWithLine : GraphicShaderControl
 [System.Serializable]
 public class GraphicWithLineModifier : ShaderControlModifier
 {
-    private static string LineDirectionField = "_LineDirection";
-    private static string LineSizeField = "_LineSize";
-    private static string LineThicknessField = "_LineThickness";
-    private static string LineColorField = "_LineColor";
-    private static string ApplyRepeatField = "_ApplyRepeat";
-    private static string RepeatFrequencyField = "_RepeatFrequency";
+    private static string _lineDirectionField = "_LineDirection";
+    private static string _lineSizeField = "_LineSize";
+    private static string _lineThicknessField = "_LineThickness";
+    private static string _lineColorField = "_LineColor";
+    private static string _applyRepeatField = "_ApplyRepeat";
+    private static string _repeatFrequencyField = "_RepeatFrequency";
 
-    [Range(0, 360)] public float LineAngle = 0;
-    [Range(0, 1000)] public int LineSize = 5;
-    [Range(0, 1000)] public int LineThickness = 0;
+    [FormerlySerializedAs("LineAngle")] [Range(0, 360)] public float lineAngle = 0;
+    [FormerlySerializedAs("LineSize")] [Range(0, 1000)] public int lineSize = 5;
+    [FormerlySerializedAs("LineThickness")] [Range(0, 1000)] public int lineThickness = 0;
 
-    public Color LineColor = new Color(1, 1, 1, 1);
+    [FormerlySerializedAs("LineColor")] public Color lineColor = new Color(1, 1, 1, 1);
 
-    public bool ApplyRepeat = false;
-    [Range(0, 1000)] public int RepeatDistance = 1;
+    [FormerlySerializedAs("ApplyRepeat")] public bool applyRepeat = false;
+    [FormerlySerializedAs("RepeatDistance")] [Range(0, 1000)] public int repeatDistance = 1;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        float angle = Mathf.Deg2Rad * LineAngle;
-        Vector2 LineDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        float angle = Mathf.Deg2Rad * lineAngle;
+        Vector2 lineDir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
 
         // equation: a*x + b*y + c = 0, where b = -1
-        float a = LineDirection.x == 0 ? 100000f: LineDirection.y / LineDirection.x;
+        float a = (Math.Abs(lineDir.x) < 0.001f) ? 100000f: lineDir.y / lineDir.x;
         float c = 0.5f - 0.5f * a;
         float d = Mathf.Sqrt(a * a + c * c);
-        Vector3 lineDirection = new Vector3(a, c, d);
+        Vector3 lineDir2 = new Vector3(a, c, d);
 
-        shaderControl.SetVector(LineDirectionField, lineDirection);
-        shaderControl.SetFloat(LineSizeField, LineSize);
-        shaderControl.SetFloat(LineThicknessField, LineThickness);
-        shaderControl.SetColor(LineColorField, LineColor);
+        shaderControl.SetVector(_lineDirectionField, lineDir2);
+        shaderControl.SetFloat(_lineSizeField, lineSize);
+        shaderControl.SetFloat(_lineThicknessField, lineThickness);
+        shaderControl.SetColor(_lineColorField, lineColor);
 
-        shaderControl.SetBool(ApplyRepeatField, ApplyRepeat);
-        shaderControl.SetFloat(RepeatFrequencyField, RepeatDistance + 1);
+        shaderControl.SetBool(_applyRepeatField, applyRepeat);
+        shaderControl.SetFloat(_repeatFrequencyField, repeatDistance + 1);
     }
 }
 

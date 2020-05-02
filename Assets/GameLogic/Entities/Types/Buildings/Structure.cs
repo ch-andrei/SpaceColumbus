@@ -12,23 +12,23 @@ namespace Entities
     [RequireComponent(typeof(NavMeshObstacle), typeof(BoxCollider))]
     public class Structure : Entity
     {
-        override public string Name { get { return "Structure"; } }
+        public override string Name { get { return "Structure"; } }
         
         // TODO
-        override public bool IsDamageable { get { return false; } }
+        public override bool IsDamageable { get { return false; } }
         // TODO
-        override public bool IsDamaged { get { return false; } }
+        public override bool IsDamaged { get { return false; } }
 
         private void Awake()
         {
             this.entityType = EntityType.Building;
         }
 
-        override public void Start()
+        public override void Start()
         {
             base.Start();
 
-            gameObject.GetComponent<NavMeshObstacle>().size = gameObject.GetComponent<BoxCollider>().size;
+            //gameObject.GetComponent<NavMeshObstacle>().size = gameObject.GetComponent<BoxCollider>().size;
         }
 
         void Update()

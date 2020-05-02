@@ -1,30 +1,93 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 using Utilities.Events;
+using Common;
+using System;
+using UnityEngine.Serialization;
 
 namespace InputControls
 {
-    [System.Serializable]
-    public struct KeyInfo
+    public enum KeyPressType : byte
     {
-        public enum OnKey: byte
+        Down,
+        Up,
+        Hold
+    }
+
+    public struct KeyPress : IEquatable<KeyPress>, IEqualityComparer<KeyPress>
+    {
+        public KeyCode Code; // key code
+        public KeyPressType Type; // type of press
+
+        public KeyPress(KeyCode code, KeyPressType type)
         {
-            Down,
-            Up,
-            Hold
+            Code = code;
+            Type = type;
         }
 
-        public KeyCode keyCode;
-        public OnKey onKey;
+        public bool Equals(KeyPress other)
+        {
+            return GetHashCode(this) == GetHashCode(other);
+        }
+
+        public bool Equals(KeyPress x, KeyPress y)
+        {
+            return GetHashCode(x) == GetHashCode(y);
+        }
+
+        public int GetHashCode(KeyPress x)
+        {
+            // id bitwise format: 
+            // bit 0-8: code, this does not exceed 512, hence 2^9
+            // bit 9-10: type
+            return (int)x.Code + (int)x.Type << 10;
+        }
+    }
+
+    public struct MultiKeyPress
+    {
+        public int Size;
+        public KeyPress[] Keys;
+
+        public MultiKeyPress(int size)
+        {
+            this.Size = size;
+            this.Keys = new KeyPress[size];
+        }
+
+        public MultiKeyPress(List<KeyPress> keys)
+        {
+            this.Size = keys.Count;
+            this.Keys = keys.ToArray();
+        }
+    }
+
+    [System.Serializable]
+    public struct ControlInfo
+    {
+        public KeyPress keyPress;
+
         public bool isDoubleKey;
 
-        public KeyInfo(KeyCode keyCode, OnKey onKey, bool isDoubleKey)
+        public KeyCode Code
         {
-            this.keyCode = keyCode;
-            this.onKey = onKey;
+            get => keyPress.Code;
+            set => keyPress.Code = value;
+        }
+        public KeyPressType Type
+        {
+            get => keyPress.Type;
+            set => keyPress.Type = value;
+        }
+
+        public ControlInfo(KeyCode code, KeyPressType type, bool isDoubleKey)
+        {
+            this.keyPress = new KeyPress();
             this.isDoubleKey = isDoubleKey;
+            this.Code = code;
+            this.Type = type;
         }
     }
 
@@ -36,7 +99,7 @@ namespace InputControls
         public bool leftControl;
         public bool leftShift;
 
-        public bool isActive()
+        public bool IsActive()
         {
             return (!leftAlt ^ Input.GetKey(KeyCode.LeftAlt)) &&
                 (!leftControl ^ Input.GetKey(KeyCode.LeftControl)) &&
@@ -45,97 +108,136 @@ namespace InputControls
     }
 
     [System.Serializable]
-    public static class KeyActiveChecker
+    public static class KeyActiveManager
     {
-        public static bool isActive(KeyCode keyCode, KeyInfo.OnKey onKey = KeyInfo.OnKey.Down)
+        private struct KeyActiveState
         {
-            bool active;
-            if (onKey == KeyInfo.OnKey.Down)
-                active = Input.GetKeyDown(keyCode);
-            else if (onKey == KeyInfo.OnKey.Up)
-                active = Input.GetKeyUp(keyCode);
-            else
-                active = Input.GetKey(keyCode);
-
-            return active;
+            public bool Down;
+            public bool Up;
+            public bool Hold;
         }
 
-        public static bool isActive(KeyInfo keyInfo)
+        private static Dictionary<KeyCode, KeyActiveState> _activeKeys = new Dictionary<KeyCode, KeyActiveState>();
+
+        private static Dictionary<KeyPress, DoubleKeyPressDetector> _doubleKeyPressDetectors =
+            new Dictionary<KeyPress, DoubleKeyPressDetector>();
+
+        public static bool IsActive(KeyCode keyCode, KeyPressType onKey = KeyPressType.Down)
         {
-            return isActive(keyInfo.keyCode, keyInfo.onKey);
-        }
-    }
+            KeyActiveState activeState;
 
-    [System.Serializable]
-    public class KeyActiveEventGenerator : UpdatableEventGenerator
-    {
-        public List<KeyInfo> keys = new List<KeyInfo>();
-
-        public KeyActiveEventGenerator(KeyInfo[] keys) : base()
-        {
-            foreach (var key in keys)
-                this.keys.Add(key);
-        }
-
-        public KeyActiveEventGenerator(KeyInfo keyInfo) : this(new KeyInfo[] { keyInfo }) { }
-
-        public bool isActive(){
-            bool active = true;
-            foreach (var key in keys)
-                active &= KeyActiveChecker.isActive(key);
-            return active;
-        }
-
-        public override void Update()
-        {
-            if (isActive())
+            if (_activeKeys.ContainsKey(keyCode))
             {
-                Notify(null);
+                activeState = _activeKeys[keyCode];
+            }
+            else
+            {
+                activeState.Down = Input.GetKeyDown(keyCode);
+                activeState.Up = Input.GetKeyUp(keyCode);
+                activeState.Hold = Input.GetKey(keyCode);
+                _activeKeys.Add(keyCode, activeState);
+            }
+
+            if (onKey == KeyPressType.Down)
+                return activeState.Down;
+            else if (onKey == KeyPressType.Up)
+                return activeState.Up;
+            else if (onKey == KeyPressType.Hold)
+                return activeState.Hold;
+            else
+                return false;
+        }
+
+        public static bool IsActive(KeyPress keyPress)
+        {
+            return IsActive(keyPress.Code, keyPress.Type);
+        }
+
+        public static bool IsActive(ControlInfo control)
+        {
+            if (control.isDoubleKey)
+            {
+                return IsActiveDouble(control.keyPress);
+            }
+            else
+            {
+                return IsActive(control.Code, control.Type);
+            }
+        }
+
+        public static bool IsActive(ControlInfo[] controls)
+        {
+            bool active = true;
+            foreach (var control in controls)
+                active &= IsActive(control);
+            return active;
+        }
+
+        public static DoubleKeyPressDetector NewDoubleDetector(KeyPress key)
+        {
+            var detector = new DoubleKeyPressDetector(key);
+
+            // save to existing detectors
+            _doubleKeyPressDetectors[key] = detector;
+
+            return detector;
+        }
+
+        private static bool IsActiveDouble(KeyPress key)
+        {
+            if (_doubleKeyPressDetectors.ContainsKey(key))
+                return _doubleKeyPressDetectors[key].isActive;
+            else
+            {
+                var detector = NewDoubleDetector(key);
+                return detector.isActive;
+            }
+        }
+
+        public static void Update()
+        {
+            _activeKeys = new Dictionary<KeyCode, KeyActiveState>();
+
+            foreach (var detector in _doubleKeyPressDetectors.Values)
+            {
+                detector.Update();
             }
         }
     }
 
     [System.Serializable]
-    public abstract class KeyActiveEventListener : IEventListener<GameEvent>
+    public class DoubleKeyPressDetector : IUpdateable
     {
-        public List<KeyInfo> keys = new List<KeyInfo>();
+        private KeyPress _key;
+        private float _doubleKeyTime;
+        private float _timeSinceLastPress;
 
-        public KeyActiveEventListener(KeyInfo[] keys)
+        [FormerlySerializedAs("IsActive")] public bool isActive;
+
+        public DoubleKeyPressDetector(KeyPress key, float doubleKeyTime = 0.2f)
         {
-            foreach (var key in keys)
-                this.keys.Add(key);
+            this._doubleKeyTime = doubleKeyTime;
+            this._timeSinceLastPress = doubleKeyTime;
+            this._key = key;
+
+            if (key.Type == KeyPressType.Hold)
+                Debug.Log("Warning: Initialized a DoubleKeyPressDetector with key type Hold.");
         }
 
-        public KeyActiveEventListener(KeyInfo keyInfo) : this(new KeyInfo[] { keyInfo }) { }
-
-        // extend from this class and override this method to perform some action
-        public abstract bool OnEvent(GameEvent gameEvent);
-    }
-
-    [System.Serializable]
-    public class DoubleKeyPressEventGenerator : KeyActiveEventGenerator
-    {
-        private float doubleKeyTime;
-        private float timeSinceLastPress = 0f;
-
-        public DoubleKeyPressEventGenerator(KeyInfo keyInfo, float doubleKeyTime = 0.2f) : base(keyInfo)
+        public void Update()
         {
-            this.doubleKeyTime = doubleKeyTime;
-        }
+            isActive = false;
+            _timeSinceLastPress += Time.deltaTime;
 
-        override public void Update()
-        {
-            timeSinceLastPress += Time.deltaTime;
+            bool timeout = _timeSinceLastPress > _doubleKeyTime;
 
-            bool timeout = timeSinceLastPress > doubleKeyTime;
-
-            if (isActive())
+            if (KeyActiveManager.IsActive(this._key))
             {
-                timeSinceLastPress = 0f;
+                _timeSinceLastPress = 0f;
 
                 if (!timeout)
                 {
-                    Notify(null);
+                    isActive = true;
                 }
             }
         }

@@ -7,43 +7,43 @@ using UnityEngine.EventSystems;
 
 using TMPro;
 using Entities;
-
+using UnityEngine.Serialization;
 using Utilities.Events;
 
 namespace UI.Menus
 {
     public class UiNotificationsLog : UiWithScrollableItems, IPointerDownHandler
     {
-        private static int MaxNotifications = 10;
+        private static int _maxNotifications = 10;
 
-        private static string MenuTitle = "NOTIFICATIONS LOG";
-        private static string NewField = "NEW";
+        private static string _menuTitle = "NOTIFICATIONS LOG";
+        private static string _newField = "NEW";
 
-        public GameObject NofificationPrefab;
+        [FormerlySerializedAs("NofificationPrefab")] public GameObject nofificationPrefab;
 
-        private int NewNotificationsCount = 0;
-        private string NewNotificationsCountString { get { return NewNotificationsCount + " " + NewField; } }
+        private int _newNotificationsCount = 0;
+        private string NewNotificationsCountString { get { return $"{_newNotificationsCount} {_newField}"; } }
 
-        private GameObject[] Notifications;
-        private int NotificationsCount = 0;
+        private GameObject[] _notifications;
+        private int _notificationsCount = 0;
 
-        override public void Awake()
+        public override void Awake()
         {
             base.Awake();
 
-            NewNotificationsCount = 0;
-            NotificationsCount = 0;
-            Notifications = new GameObject[MaxNotifications];
+            _newNotificationsCount = 0;
+            _notificationsCount = 0;
+            _notifications = new GameObject[_maxNotifications];
 
-            TitleTextLeft.Text = MenuTitle;
-            TitleTextRight.Text = NewNotificationsCountString;
+            titleTextLeft.Text = _menuTitle;
+            titleTextRight.Text = NewNotificationsCountString;
         }
 
         // reset new notification count when mouse touches this window
         public void OnPointerDown(PointerEventData pointerEventData)
         {
-            NewNotificationsCount = 0;
-            TitleTextRight.Text = NewNotificationsCountString;
+            _newNotificationsCount = 0;
+            titleTextRight.Text = NewNotificationsCountString;
         }
 
         void Start()
@@ -75,28 +75,28 @@ namespace UI.Menus
 
         public void AddNewNotification(string notification = "")
         {
-            NewNotificationsCount++; // TODO: fix this on interaction
-            TitleTextRight.Text = NewNotificationsCountString;
+            _newNotificationsCount++; // TODO: fix this on interaction
+            titleTextRight.Text = NewNotificationsCountString;
 
             // add a new notification text
-            var notifObj = Instantiate(NofificationPrefab);
+            var notifObj = Instantiate(nofificationPrefab);
 
             // setup text fields
             var uiFieldNotification = notifObj.GetComponent<UiFieldNotification>();
             uiFieldNotification.Initialize(DateTime.Now.ToString("hh:mm:ss"), notification);
 
             // parent it to scrollable view
-            notifObj.transform.parent = ContentRoot.transform;
+            notifObj.transform.SetParent(contentRoot.transform, false);
 
             // add to notifications list
             // check if need to overwrite existing notification
-            if (Notifications[NotificationsCount] != null)
-                Destroy(Notifications[NotificationsCount]);
+            if (_notifications[_notificationsCount] != null)
+                Destroy(_notifications[_notificationsCount]);
 
-            Notifications[NotificationsCount] = notifObj;
+            _notifications[_notificationsCount] = notifObj;
 
             // increment notification count
-            NotificationsCount = (NotificationsCount + 1) % MaxNotifications;
+            _notificationsCount = (_notificationsCount + 1) % _maxNotifications;
         }
 
         public void Update()

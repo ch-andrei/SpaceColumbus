@@ -19,7 +19,7 @@ namespace Entities.Bodies.Damages
         Electric,
         Chemical,
         Psychological,
-        EMP,
+        Emp,
     }
 
     public class Damage
@@ -33,27 +33,27 @@ namespace Entities.Bodies.Damages
         public const string DamageElectricName = "Electric";
         public const string DamageChemicalName = "Chemical";
         public const string DamagePsychologicalName = "Psychological";
-        public const string DamageEMPName = "EMP";
+        public const string DamageEmpName = "EMP";
         #endregion XmlDefs
 
         #region StaticDefs
-        private static List<DamageType> _DamageTypes = null;
+        private static List<DamageType> _damageTypes = null;
         public static List<DamageType> DamageTypes
         {
             get
             {
                 // this will be built on first call
-                if (_DamageTypes is null)
+                if (_damageTypes is null)
                 {
-                    _DamageTypes = new List<DamageType>();
+                    _damageTypes = new List<DamageType>();
                     foreach (DamageType damageType in DamageType.GetValues(typeof(DamageType)))
                     {
                         if (damageType != DamageType.None)
-                            _DamageTypes.Add(damageType);
+                            _damageTypes.Add(damageType);
                     }
                 }
 
-                return _DamageTypes;
+                return _damageTypes;
             }
         }
 
@@ -75,8 +75,8 @@ namespace Entities.Bodies.Damages
                     return DamageChemicalName;
                 case DamageType.Psychological:
                     return DamagePsychologicalName;
-                case DamageType.EMP:
-                    return DamageEMPName;
+                case DamageType.Emp:
+                    return DamageEmpName;
                 default:
                     return DamageNoneName;
             }
@@ -100,8 +100,8 @@ namespace Entities.Bodies.Damages
                     return DamageType.Chemical;
                 case DamagePsychologicalName:
                     return DamageType.Psychological;
-                case DamageEMPName:
-                    return DamageType.EMP;
+                case DamageEmpName:
+                    return DamageType.Emp;
                 default:
                     return DamageType.None;
             }
@@ -111,24 +111,24 @@ namespace Entities.Bodies.Damages
         {
             float totalDamage = 0f;
             foreach (var damage in damages)
-                totalDamage += damage.amount;
+                totalDamage += damage.Amount;
             return totalDamage;
         }
 
         #endregion StaticDefs
 
-        public DamageType damageType;
-        public float amount;
-        public float dispersion;
+        public DamageType DamageType;
+        public float Amount;
+        public float Dispersion;
 
         public Damage(DamageType damageType, float amount, float dispersion=1f)
         {
-            this.damageType = damageType;
-            this.amount = amount;
-            this.dispersion = Mathf.Clamp(dispersion, 0, 1);
+            this.DamageType = damageType;
+            this.Amount = amount;
+            this.Dispersion = Mathf.Clamp(dispersion, 0, 1);
         }
 
-        public Damage(Damage damage) : this(damage.damageType, damage.amount, damage.dispersion) { }
+        public Damage(Damage damage) : this(damage.DamageType, damage.Amount, damage.Dispersion) { }
 
         public float GetDamageAmountAfterMultiplier(DamageMultiplier damageMultiplier)
         {
@@ -137,10 +137,10 @@ namespace Entities.Bodies.Damages
 
         public float GetDamageAmountAfterMultiplier(List<DamageMultiplier> multipliers)
         {
-            float damageAmount = this.amount;
+            float damageAmount = this.Amount;
             foreach (var multiplier in multipliers)
-                if (this.damageType == multiplier.damageType)
-                    damageAmount *= multiplier.amount;
+                if (this.DamageType == multiplier.DamageType)
+                    damageAmount *= multiplier.Amount;
             return damageAmount;
         }
 
@@ -157,7 +157,7 @@ namespace Entities.Bodies.Damages
         // less than 1 implies resistance
         // higher than 1 implies weakness
         public DamageMultiplier(DamageType damageType, float amount) : base(damageType, amount) { }
-        public DamageMultiplier(DamageMultiplier mult) : base(mult.damageType, mult.amount) { }
+        public DamageMultiplier(DamageMultiplier mult) : base(mult.DamageType, mult.Amount) { }
 
         #region StaticFunctions
 
@@ -187,15 +187,15 @@ namespace Entities.Bodies.Damages
 
                     var m2 = mults[j];
 
-                    if (m1.damageType == m2.damageType)
+                    if (m1.DamageType == m2.DamageType)
                     {
                         if (weightsIn == null)
-                            m1.amount *= m2.amount;
+                            m1.Amount *= m2.Amount;
                         else
                         {
-                            m1.amount = m1.amount * weights[i] + m2.amount * weights[j];
+                            m1.Amount = m1.Amount * weights[i] + m2.Amount * weights[j];
                             weights[i] += weights[j];
-                            m1.amount /= weights[i];
+                            m1.Amount /= weights[i];
                             weights.RemoveAt(j);
                         }
                         mults.RemoveAt(j);
@@ -231,7 +231,7 @@ namespace Entities.Bodies.Damages
                 damage.GetDamageAmountAfterMultiplier(multipliers);
 
                 foreach (var multiplier in multipliers)
-                    damageAfterMultiplier.amount = damageAfterMultiplier.GetDamageAmountAfterMultiplier(multiplier);
+                    damageAfterMultiplier.Amount = damageAfterMultiplier.GetDamageAmountAfterMultiplier(multiplier);
 
                 damagesAfterMultiplier.Add(damageAfterMultiplier);
             }

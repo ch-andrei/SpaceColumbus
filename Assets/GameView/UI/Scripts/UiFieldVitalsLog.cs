@@ -17,20 +17,20 @@ namespace UI.Menus
 {
     public class UiFieldVitalsLog : UiTwoTextField
     {
-        override public void Awake()
+        public override void Awake()
         {
             base.Awake();
         }
 
-        public string HpSystemToRichString(HPSystem hpSystem)
+        public string HpSystemToRichString(HpSystem hpSystem)
         {
-            return RichStrings.WithColor("[" + hpSystem.HpCurrent + "/" + hpSystem.HpBase + "]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
+            return RichStrings.WithColor($"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
         }
 
         public void Initialize(BodyPart bodyPart)
         {
-            this.TextLeft.Text = bodyPart.NameCustom;
-            this.TextRight.Text = HpSystemToRichString(bodyPart.hpSystem); // assume BodyPart has hpSystem
+            this.textLeft.Text = bodyPart.NameCustom;
+            this.textRight.Text = HpSystemToRichString(bodyPart.HpSystem); // assume BodyPart has hpSystem
 
             TriggerUpdateLayoutSize();
         }

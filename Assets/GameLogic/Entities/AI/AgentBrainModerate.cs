@@ -5,101 +5,102 @@ using UnityEngine.AI;
 
 using Brains.Movement;
 using Brains.Attack;
+using UnityEngine.Serialization;
 
 namespace Brains
 {
     [System.Serializable]
     public class AgentBrainModerate : AgentBrain
     {
-        [Range(0, 1f)] public float NonIdleProbability = 0.005f;
-        [Range(0, 1f)] public float IdleRoamingProbability = 0.5f;
+        [FormerlySerializedAs("NonIdleProbability")] [Range(0, 1f)] public float nonIdleProbability = 0.005f;
+        [FormerlySerializedAs("IdleRoamingProbability")] [Range(0, 1f)] public float idleRoamingProbability = 0.5f;
 
-        [Range(2f, 10f)] public float MaxIdleMoveMultiplier = 2f;
-        [Range(0f, 100f)] public float MaxIdleMoveDistance = 10f;
+        [FormerlySerializedAs("MaxIdleMoveMultiplier")] [Range(2f, 10f)] public float maxIdleMoveMultiplier = 2f;
+        [FormerlySerializedAs("MaxIdleMoveDistance")] [Range(0f, 100f)] public float maxIdleMoveDistance = 10f;
 
-        private static int MaxPathFindAttempts = 10;
+        private static int _maxPathFindAttempts = 10;
 
         // Start is called before the first frame update
         public AgentBrainModerate(GameObject entityObject, MoveBrain moveBrain, AttackBrain attackBrain) : base(entityObject, moveBrain, attackBrain)
         {
-            this.intelligence = Intelligence.Moderate;
-            this.behaviourState = BehaviourState.Idle;
+            this.Intelligence = AgentBrain.IntelligenceLevel.Moderate;
+            this.Behaviour = AgentBrain.BehaviourState.Idle;
         }
 
-        override protected void MakeDecision()
+        protected override void MakeDecision()
         {
             float r1 = UnityEngine.Random.value;
             float r2 = UnityEngine.Random.value;
             float r3 = UnityEngine.Random.value;
 
             // Agent AI Final State Machine
-            if (this.behaviourState == BehaviourState.Idle)
+            if (this.Behaviour == AgentBrain.BehaviourState.Idle)
             {
                 // transition to non-idle
-                if (r1 < NonIdleProbability)
+                if (r1 < nonIdleProbability)
                 {
                     // decide where to go
                     Vector3 crtPos = this.entityObject.transform.position;
                     bool success = false;
                     int numAttempt = 0;
-                    while (!success && numAttempt++ < MaxPathFindAttempts)
+                    while (!success && numAttempt++ < _maxPathFindAttempts)
                     {
-                        var movement = UnityEngine.Random.insideUnitCircle * MaxIdleMoveDistance;
+                        var movement = UnityEngine.Random.insideUnitCircle * maxIdleMoveDistance;
                         Vector3 destination = crtPos + new Vector3(movement.x, 0, movement.y);
 
-                        success = this.moveBrain.SetDestination(destination);
+                        success = this.MoveBrain.SetDestination(destination);
                     }
 
-                    this.behaviourState = BehaviourState.IdleRoaming;
+                    this.Behaviour = AgentBrain.BehaviourState.IdleRoaming;
                 }
             }
-            else if (this.behaviourState == BehaviourState.Moving)
+            else if (this.Behaviour == AgentBrain.BehaviourState.Moving)
             {
-                if (this.moveBrain.AtDestination())
-                    this.behaviourState = BehaviourState.Idle;
+                if (this.MoveBrain.AtDestination())
+                    this.Behaviour = AgentBrain.BehaviourState.Idle;
             }
-            else if (this.behaviourState == BehaviourState.IdleRoaming)
+            else if (this.Behaviour == AgentBrain.BehaviourState.IdleRoaming)
             {
-                if (this.moveBrain.AtDestination())
-                    this.behaviourState = BehaviourState.Idle;
+                if (this.MoveBrain.AtDestination())
+                    this.Behaviour = AgentBrain.BehaviourState.Idle;
             }
-            else if (this.behaviourState == BehaviourState.IdleAgressive)
+            else if (this.Behaviour == AgentBrain.BehaviourState.IdleAgressive)
             {
-                this.behaviourState = BehaviourState.IdleRoaming; // placeholder
+                this.Behaviour = AgentBrain.BehaviourState.IdleRoaming; // placeholder
             }
-            else if (this.behaviourState == BehaviourState.AttackMoving)
-            {
-
-            }
-            else if (this.behaviourState == BehaviourState.AttackTargeting)
+            else if (this.Behaviour == AgentBrain.BehaviourState.AttackMoving)
             {
 
             }
-            else if (this.behaviourState == BehaviourState.AttackEngaging)
+            else if (this.Behaviour == AgentBrain.BehaviourState.AttackTargeting)
+            {
+
+            }
+            else if (this.Behaviour == AgentBrain.BehaviourState.AttackEngaging)
             {
 
             }
             else
             {
-                this.behaviourState = BehaviourState.Idle;
+                this.Behaviour = AgentBrain.BehaviourState.Idle;
             }
         }
 
-        override public bool MoveTo(Vector3 destination)
+        public override bool MoveTo(Vector3 destination)
         {
-            bool success = this.moveBrain.SetDestination(destination);
+            bool success = this.MoveBrain.SetDestination(destination);
             if (success)
-                this.behaviourState = BehaviourState.Moving;
+                this.Behaviour = AgentBrain.BehaviourState.Moving;
             return success;
         }
 
-        override public void StopMoving()
+        public override void StopMoving()
         {
-            this.moveBrain.StopMoving();
-            this.behaviourState = BehaviourState.Idle;
+            this.MoveBrain.StopMoving();
+            this.Behaviour = AgentBrain.BehaviourState.Idle;
         }
 
-        override protected void Act()
+        protected override void Act()
         {
 
         }

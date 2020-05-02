@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PrefabManager : MonoBehaviour
 {
-    public GameObject AgentPrefab;
-    public GameObject SelectionPrefab;
+    [FormerlySerializedAs("AgentPrefab")] public GameObject agentPrefab;
+    [FormerlySerializedAs("SelectionPrefab")] public GameObject selectionPrefab;
 }

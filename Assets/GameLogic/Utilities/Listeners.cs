@@ -75,7 +75,7 @@ namespace Utilities.Events
         }
     }
 
-    public class EventGenerator : EventGenerator<GameEvent> { }
+    //public class EventGenerator : EventGenerator<GameEvent> { }
 
     public abstract class UpdatableEventGenerator : EventGenerator<GameEvent>
     {

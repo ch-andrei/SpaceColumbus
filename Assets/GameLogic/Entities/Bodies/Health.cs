@@ -121,19 +121,19 @@ namespace Entities.Bodies.Health
 
     public class HpSystemChangedEvent : EntityComponentChangedEvent
     {
-        public readonly HPSystem hpSystem;
-        public readonly List<Damage> damages;
-        public readonly float healthDelta;
+        public readonly HpSystem HpSystem;
+        public readonly List<Damage> Damages;
+        public readonly float HealthDelta;
 
-        public HpSystemChangedEvent(HPSystem hpSystem, List<Damage> damages, float healthDelta)
+        public HpSystemChangedEvent(HpSystem hpSystem, List<Damage> damages, float healthDelta)
         {
-            this.hpSystem = hpSystem;
-            this.damages = damages;
-            this.healthDelta = healthDelta;
+            this.HpSystem = hpSystem;
+            this.Damages = damages;
+            this.HealthDelta = healthDelta;
         }
     }
 
-    public class HPSystem : EventGenerator<HpSystemChangedEvent>, IDamageable
+    public class HpSystem : EventGenerator<HpSystemChangedEvent>, IDamageable
     {
         public bool IsDamageable { get { return true; } }
 
@@ -147,27 +147,27 @@ namespace Entities.Bodies.Health
         public int HpCurrent { get { return Mathf.RoundToInt(Health * HpBase); } }
         public int HpPrev { get; private set; }
 
-        public string AsText { get { return "HP: [" + HpCurrent + "/" + HpBase + "]"; } }
+        public string AsText { get { return $"HP: [{HpCurrent}/{HpBase}]"; } }
 
         public List<DamageMultiplier> damageMultipliers { get; private set; }
 
-        public HPSystem(int HpBase) : base()
+        public HpSystem(int hpBase) : base()
         {
             this.Health = 1f;
-            this.HpBase = HpBase;
-            this.HpPrev = HpBase;
+            this.HpBase = hpBase;
+            this.HpPrev = hpBase;
             this.damageMultipliers = new List<DamageMultiplier>();
         }
 
-        public HPSystem(int HpBase, List<DamageMultiplier> damageMultipliers) : this(HpBase)
+        public HpSystem(int hpBase, List<DamageMultiplier> damageMultipliers) : this(hpBase)
         {
             foreach (var mult in damageMultipliers)
                 this.damageMultipliers.Add(new DamageMultiplier(mult));
         }
 
-        public HPSystem(int HpBase, DamageMultiplier damageMultiplier) : this(HpBase, new List<DamageMultiplier>() { damageMultiplier }) { }
+        public HpSystem(int hpBase, DamageMultiplier damageMultiplier) : this(hpBase, new List<DamageMultiplier>() { damageMultiplier }) { }
 
-        public HPSystem(HPSystem hpSystem) : this(hpSystem.HpBase, hpSystem.damageMultipliers)
+        public HpSystem(HpSystem hpSystem) : this(hpSystem.HpBase, hpSystem.damageMultipliers)
         {
             this.HpPrev = hpSystem.HpPrev;
             this.Health = hpSystem.Health;

@@ -19,20 +19,20 @@ namespace EntitySelection
         public static List<SelectionListener> CurrentlySelectedListeners { get; private set; }
         public static List<GameObject> CurrentlySelectedGameObjects { get; private set; }
 
-        private static Dictionary<int, SelectionListener> SelectionListeners;
+        private static Dictionary<int, SelectionListener> _selectionListeners;
 
-        private static Vector3[] SelectionScreenCoords = new Vector3[2];
+        private static Vector3[] _selectionScreenCoords = new Vector3[2];
 
-        private static float TimeSinceLastSelectionUpdate;
+        private static float _timeSinceLastSelectionUpdate;
 
-        private static GameObject MouseOverObject;
+        private static GameObject _mouseOverObject;
 
         public static bool Dirty { get; set; }
 
         public static void Initialize()
         {
-            SelectionListeners = new Dictionary<int, SelectionListener>();
-            TimeSinceLastSelectionUpdate = TimeBetweenSelectionUpdates;
+            _selectionListeners = new Dictionary<int, SelectionListener>();
+            _timeSinceLastSelectionUpdate = TimeBetweenSelectionUpdates;
             ProcessSelected();
         }
 
@@ -40,16 +40,16 @@ namespace EntitySelection
         {
             int id = selectable.GetId();
 
-            if (!SelectionListeners.ContainsKey(id))
-                SelectionListeners.Add(id, selectable.selectionListener);
+            if (!_selectionListeners.ContainsKey(id))
+                _selectionListeners.Add(id, selectable.selectionListener);
         }
 
         public static void RemoveSelectable(Selectable selectable)
         {
             int id = selectable.GetId();
 
-            if (SelectionListeners.ContainsKey(id))
-                SelectionListeners.Remove(id);
+            if (_selectionListeners.ContainsKey(id))
+                _selectionListeners.Remove(id);
         }
 
         //public List<SelectionListener> GetSelectedListeners() { return this.currentlySelectedListeners; }
@@ -66,7 +66,7 @@ namespace EntitySelection
             List<SelectionListener> selectedListeners = new List<SelectionListener>();
             List<GameObject> selectedObjects = new List<GameObject>();
 
-            foreach (var selectionListener in SelectionListeners.Values)
+            foreach (var selectionListener in _selectionListeners.Values)
             {
                 var selectable = selectionListener.selectable;
                 if (selectable.isSelected)
@@ -85,9 +85,9 @@ namespace EntitySelection
 
         public static void DeselectAll()
         {
-            MouseOverObject = null;
+            _mouseOverObject = null;
 
-            foreach (var selectionListener in SelectionListeners.Values)
+            foreach (var selectionListener in _selectionListeners.Values)
             {
                 var selectable = selectionListener.selectable;
                 if (selectable.isSelected)
@@ -120,7 +120,7 @@ namespace EntitySelection
 
         public static void Select(Selectable selectable, SelectionCriteria selectionCriteria = null)
         {
-            if (!selectable.isSelected && SelectionCriteria.isValidSelection(selectionCriteria, selectable))
+            if (!selectable.isSelected && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
                 selectable.Select();
         }
 
@@ -138,9 +138,9 @@ namespace EntitySelection
             //if (this.mouseOverObject == mouseOverObject)
             //    return;
 
-            Deselect(MouseOverObject);
-            MouseOverObject = mouseOverObject;
-            Select(MouseOverObject, selectionCriteria);
+            Deselect(_mouseOverObject);
+            _mouseOverObject = mouseOverObject;
+            Select(_mouseOverObject, selectionCriteria);
         }
 
         public static void UpdateSelected(Vector3 s1, Vector3 s2, GameObject mouseOverObject, SelectionCriteria selectionCriteria = null)
@@ -150,7 +150,7 @@ namespace EntitySelection
                 Dirty = false;
 
                 // update controls vars
-                TimeSinceLastSelectionUpdate = 0f;
+                _timeSinceLastSelectionUpdate = 0f;
 
                 UpdateBoxSelection(s1, s2, selectionCriteria);
                 UpdateMouseSelection(mouseOverObject, selectionCriteria);
@@ -160,16 +160,16 @@ namespace EntitySelection
 
         public static void UpdateBoxSelection(Vector3 s1, Vector3 s2, SelectionCriteria selectionCriteria = null)
         {
-            foreach (var selectionListener in SelectionListeners.Values)
+            foreach (var selectionListener in _selectionListeners.Values)
             {
                 var selectable = selectionListener.selectable;
 
-                if (selectionCriteria != null && SelectionCriteria.isValidSelection(selectionCriteria, selectable))
+                if (selectionCriteria != null && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
                 {
                     Vector3 p = Camera.main.WorldToScreenPoint(selectable.transform.position);
-                    Vector2 s1p = Vector2.Min(s1, s2);
-                    Vector2 s2p = Vector2.Max(s1, s2);
-                    bool selected = s1p.x <= p.x && p.x <= s2p.x && s1p.y <= p.y && p.y <= s2p.y;
+                    Vector2 s1P = Vector2.Min(s1, s2);
+                    Vector2 s2P = Vector2.Max(s1, s2);
+                    bool selected = s1P.x <= p.x && p.x <= s2P.x && s1P.y <= p.y && p.y <= s2P.y;
 
                     // update and notify only selection changes
                     if (selected)
@@ -189,21 +189,21 @@ namespace EntitySelection
         {
             bool dirty = false;
 
-            TimeSinceLastSelectionUpdate += Time.deltaTime;
+            _timeSinceLastSelectionUpdate += Time.deltaTime;
 
             List<Vector3> selectionScreenCoordsNew = new List<Vector3>() { s1, s2 };
             selectionScreenCoordsNew = selectionScreenCoordsNew.OrderBy(v => v.x).ToList();
 
-            if (SelectionScreenCoords[0] != selectionScreenCoordsNew[0] || SelectionScreenCoords[1] != selectionScreenCoordsNew[1])
+            if (_selectionScreenCoords[0] != selectionScreenCoordsNew[0] || _selectionScreenCoords[1] != selectionScreenCoordsNew[1])
             {
                 dirty = true;
-                SelectionScreenCoords[0] = selectionScreenCoordsNew[0];
-                SelectionScreenCoords[1] = selectionScreenCoordsNew[1];
+                _selectionScreenCoords[0] = selectionScreenCoordsNew[0];
+                _selectionScreenCoords[1] = selectionScreenCoordsNew[1];
             }
 
             // harder control
-            dirty &= TimeSinceLastSelectionUpdate >= TimeBetweenSelectionUpdates;
-            dirty |= TimeSinceLastSelectionUpdate >= TimeBetweenSelectionUpdates;
+            dirty &= _timeSinceLastSelectionUpdate >= TimeBetweenSelectionUpdates;
+            dirty |= _timeSinceLastSelectionUpdate >= TimeBetweenSelectionUpdates;
 
             return dirty;
         }

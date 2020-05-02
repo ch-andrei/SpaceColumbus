@@ -29,7 +29,7 @@ namespace Entities.Bodies
         private const string MaterialsNameField = "name";
         private const string MaterialsSizeField = "size";
 
-        private static XmlReader BodyPartXmlReader = new XmlReader(BodiesXmlPath);
+        private static XmlReader _bodyPartXmlReader = new XmlReader(BodiesXmlPath);
         #endregion XmlDefs
 
         #region BodiesGeneration
@@ -61,7 +61,7 @@ namespace Entities.Bodies
             }
             catch (KeyNotFoundException e)
             {
-                LoggerDebug.LogE("Could not find body: " + variant);
+                LoggerDebug.LogE($"Could not find body: {variant}");
                 return null;
             }
         }
@@ -79,7 +79,7 @@ namespace Entities.Bodies
             }
             catch (KeyNotFoundException e)
             {
-                LoggerDebug.LogE("Could not find body part: " + variant + "/" + name);
+                LoggerDebug.LogE($"Could not find body part: {variant}/{name}");
                 return null;
             }
         }
@@ -92,12 +92,12 @@ namespace Entities.Bodies
 
             // STEP 1:
             // read names only
-            List<string> bodyVariantsNames = BodyPartXmlReader.getChildren(new List<string>() { RootField, BaseStatsField });
+            List<string> bodyVariantsNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, BaseStatsField });
             List<List<string>> bodyPartNamesPerVariant = new List<List<string>>();
             int countVariants = 0;
             foreach (var variantName in bodyVariantsNames)
             {
-                List<string> bodyPartNames = BodyPartXmlReader.getChildren(new List<string>() { RootField, BaseStatsField, variantName });
+                List<string> bodyPartNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, BaseStatsField, variantName });
 
                 bodyPartNamesPerVariant.Add(new List<string>());
                 foreach (var bodyPartName in bodyPartNames)
@@ -123,13 +123,13 @@ namespace Entities.Bodies
 
                 foreach (var bodyPartName in bodyPartNamesPerVariant[i])
                 {
-                    bool isContainer = BodyPartXmlReader.getFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, IsContainerField }) == 1;
-                    float hp = BodyPartXmlReader.getFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, HpField });
-                    float size = BodyPartXmlReader.getFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, SizeField });
+                    bool isContainer = _bodyPartXmlReader.GetFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, IsContainerField }) == 1;
+                    float hp = _bodyPartXmlReader.GetFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, HpField });
+                    float size = _bodyPartXmlReader.GetFloat(new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, SizeField });
 
-                    List<string> materialNames = BodyPartXmlReader.getStrings(
+                    List<string> materialNames = _bodyPartXmlReader.GetStrings(
                         new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, MaterialsField, ItemField, MaterialsNameField });
-                    List<string> materialWeights = BodyPartXmlReader.getStrings(
+                    List<string> materialWeights = _bodyPartXmlReader.GetStrings(
                         new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, MaterialsField, ItemField, MaterialsSizeField });
 
                     List<DamageMultiplier> multipliers = new List<DamageMultiplier>();
@@ -151,7 +151,7 @@ namespace Entities.Bodies
 
                     multipliers = DamageMultiplier.Simplify(multipliers, weights);
 
-                    HPSystem hpSystem = new HPSystem((int)hp, multipliers);
+                    HpSystem hpSystem = new HpSystem((int)hp, multipliers);
 
                     BodyPart bodyPart;
                     if (isContainer)
@@ -170,12 +170,12 @@ namespace Entities.Bodies
             
             // STEP 3:
             // build bodies and add parts for containers
-            List<string> variantNames = BodyPartXmlReader.getChildren(new List<string>() { RootField, InclusionField });
+            List<string> variantNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField });
             foreach (var variantName in variantNames)
             {
                 Body body = new Body(variantName);
 
-                List<string> containerNames = BodyPartXmlReader.getChildren(new List<string>() { RootField, InclusionField, variantName });
+                List<string> containerNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField, variantName });
 
                 foreach (var bodyPartName in containerNames)
                 {
@@ -193,14 +193,14 @@ namespace Entities.Bodies
                         container = new BodyPartContainer(bodyPart);
                     }
 
-                    List<string> partsList = BodyPartXmlReader.getChildren(
+                    List<string> partsList = _bodyPartXmlReader.GetChildren(
                         new List<string>() { RootField, InclusionField, variantName, bodyPartName });
 
                     foreach (var partName in partsList)
                     {
                         //Debug.Log(variantName + " " + bodyPartName + " getting a new " + partName);
 
-                        List<string> customNames = BodyPartXmlReader.getStrings(
+                        List<string> customNames = _bodyPartXmlReader.GetStrings(
                             new List<string>() { RootField, InclusionField, variantName, bodyPartName, partName, ItemField });
 
                         if (customNames.Count == 0)

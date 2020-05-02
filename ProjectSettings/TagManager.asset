@@ -16,6 +16,7 @@ TagManager:
   - BuildingsRoot
   - UiManager
   - EventSystem
+  - springs
   layers:
   - Default
   - TransparentFX

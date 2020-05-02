@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GraphicWithBorder : GraphicShaderControl
 {
-    public GraphicWithMaskModifier Mask = new GraphicWithMaskModifier();
-    public GraphicWithBorderModifier Border = new GraphicWithBorderModifier();
-    public GraphicWithDitherModifier Dither = new GraphicWithDitherModifier();
-    public GraphicWithBlendModeModifier Blend = new GraphicWithBlendModeModifier();
+    [FormerlySerializedAs("Mask")] public GraphicWithMaskModifier mask = new GraphicWithMaskModifier();
+    [FormerlySerializedAs("Border")] public GraphicWithBorderModifier border = new GraphicWithBorderModifier();
+    [FormerlySerializedAs("Dither")] public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
+    [FormerlySerializedAs("Blend")] public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
 
-    override public void Initialize()
+    public override void Initialize()
     {
         this.AddModifier(new GraphicWithRectModifier());
-        this.AddModifier(Blend);
-        this.AddModifier(Mask);
-        this.AddModifier(Border);
-        this.AddModifier(Dither);
+        this.AddModifier(blend);
+        this.AddModifier(mask);
+        this.AddModifier(border);
+        this.AddModifier(dither);
         base.Initialize();
     }
 }
@@ -21,24 +22,24 @@ public class GraphicWithBorder : GraphicShaderControl
 [System.Serializable]
 public class GraphicWithBorderModifier : ShaderControlModifier
 {
-    private static string BorderSizeField = "_BorderSize";
-    private static string BorderThicknessField = "_BorderThickness";
-    private static string BorderColorField = "_BorderColor";
-    private static string RenderBorderOnlyField = "_BorderOnly";
+    private static string _borderSizeField = "_BorderSize";
+    private static string _borderThicknessField = "_BorderThickness";
+    private static string _borderColorField = "_BorderColor";
+    private static string _renderBorderOnlyField = "_BorderOnly";
 
-    [Range(0, 1000)] public int BorderSize = 5;
-    [Range(0, 1000)] public int BorderThickness = 0;
+    [FormerlySerializedAs("BorderSize")] [Range(0, 1000)] public int borderSize = 5;
+    [FormerlySerializedAs("BorderThickness")] [Range(0, 1000)] public int borderThickness = 0;
 
-    public Color BorderColor = new Color(1, 1, 1, 1);
+    [FormerlySerializedAs("BorderColor")] public Color borderColor = new Color(1, 1, 1, 1);
 
-    public bool RenderBorderOnly = true;
+    [FormerlySerializedAs("RenderBorderOnly")] public bool renderBorderOnly = true;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        shaderControl.SetFloat(BorderSizeField, BorderSize);
-        shaderControl.SetFloat(BorderThicknessField, BorderThickness);
-        shaderControl.SetColor(BorderColorField, BorderColor);
-        shaderControl.SetBool(RenderBorderOnlyField, RenderBorderOnly);
+        shaderControl.SetFloat(_borderSizeField, borderSize);
+        shaderControl.SetFloat(_borderThicknessField, borderThickness);
+        shaderControl.SetColor(_borderColorField, borderColor);
+        shaderControl.SetBool(_renderBorderOnlyField, renderBorderOnly);
     }
 }
 

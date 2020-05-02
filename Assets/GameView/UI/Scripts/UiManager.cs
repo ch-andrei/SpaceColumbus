@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Entities;
-
+using UnityEngine.Serialization;
 using Utilities.Events;
 
 namespace UI.Menus
@@ -20,9 +20,9 @@ namespace UI.Menus
 
     public class SelectedEntityEvent : UiEvent
     {
-        public Entity entity;
+        public Entity Entity;
 
-        public SelectedEntityEvent(Entity entity) { this.entity = entity; }
+        public SelectedEntityEvent(Entity entity) { this.Entity = entity; }
     }
 
     public abstract class UiEvent : GameEvent
@@ -33,24 +33,24 @@ namespace UI.Menus
     [System.Serializable]
     public struct UiComponent
     {
-        public GameObject Obj;
-        public bool Active;
+        [FormerlySerializedAs("Obj")] public GameObject obj;
+        [FormerlySerializedAs("Active")] public bool active;
     }
 
     public class UiManager : MonoBehaviour, IEventListener<UiEvent>
     {
-        public Canvas MainCanvas;
+        [FormerlySerializedAs("MainCanvas")] public Canvas mainCanvas;
 
         //public UiComponent EntityUi;
-        public UiComponent AgentVitalsUi;
+        [FormerlySerializedAs("AgentVitalsUi")] public UiComponent agentVitalsUi;
 
-        public GameObject VitalsMonitoring;
-        UiVitalsLog vitalsMenu;
+        [FormerlySerializedAs("VitalsMonitoring")] public GameObject vitalsMonitoring;
+        UiVitalsLog _vitalsMenu;
 
         // Start is called before the first frame update
         void Start()
         {
-            vitalsMenu = VitalsMonitoring.GetComponent<UiVitalsLog>();
+            _vitalsMenu = vitalsMonitoring.GetComponent<UiVitalsLog>();
 
             OnEvent(new AgentUiActive(true)); // enable, to make sure that it can be disabled
             OnEvent(new AgentUiActive(false)); // disable
@@ -60,16 +60,16 @@ namespace UI.Menus
         {
             if (gameEvent is AgentUiActive activeStateEvent)
             {
-                if (this.AgentVitalsUi.Active != activeStateEvent.ActiveState)
+                if (this.agentVitalsUi.active != activeStateEvent.ActiveState)
                 {
-                    this.AgentVitalsUi.Active = activeStateEvent.ActiveState;
-                    this.AgentVitalsUi.Obj.SetActive(activeStateEvent.ActiveState);
+                    this.agentVitalsUi.active = activeStateEvent.ActiveState;
+                    this.agentVitalsUi.obj.SetActive(activeStateEvent.ActiveState);
                 }
             }
             else if (gameEvent is SelectedEntityEvent entityEvent)
             {
-                if (entityEvent.entity is Agent agent)
-                    this.vitalsMenu.SetObservedAgent(agent);
+                if (entityEvent.Entity is Agent agent)
+                    this._vitalsMenu.SetObservedAgent(agent);
                 else
                     Debug.Log("Selected something that isnt an agent.");
             }

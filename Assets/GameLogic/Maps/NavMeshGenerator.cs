@@ -7,17 +7,17 @@ namespace Navigation
 {
     public class NavMeshGenerator : MonoBehaviour
     {
-        private GameObject navMeshRoot = null;
+        private GameObject _navMeshRoot = null;
 
-        private List<GameObject> navMeshElements = new List<GameObject>(); // TODO: generate only using nav mesh elements
+        private List<GameObject> _navMeshElements = new List<GameObject>(); // TODO: generate only using nav mesh elements
 
-        private bool navMeshInitialized = false;
+        private bool _navMeshInitialized = false;
 
         private void Awake()
         {
-            if (navMeshRoot == null)
+            if (_navMeshRoot == null)
             {
-                navMeshRoot = this.gameObject;
+                _navMeshRoot = this.gameObject;
             }
         }
 
@@ -26,7 +26,7 @@ namespace Navigation
             Awake();
 
             // remove existing navMeshSurfaces
-            foreach (NavMeshSurface navMeshSurface in navMeshRoot.GetComponents<NavMeshSurface>())
+            foreach (NavMeshSurface navMeshSurface in _navMeshRoot.GetComponents<NavMeshSurface>())
                 Destroy(navMeshSurface);
 
             int agentTypeCount = UnityEngine.AI.NavMesh.GetSettingsCount();
@@ -34,8 +34,8 @@ namespace Navigation
             for (int i = 0; i < agentTypeCount; ++i)
             {
                 NavMeshBuildSettings settings = UnityEngine.AI.NavMesh.GetSettingsByIndex(i);
-                NavMeshSurface navMeshSurface = navMeshRoot.AddComponent<NavMeshSurface>();
-                navMeshSurface.agentTypeID = settings.agentTypeID;
+                NavMeshSurface navMeshSurface = _navMeshRoot.AddComponent<NavMeshSurface>();
+                navMeshSurface.AgentTypeId = settings.agentTypeID;
 
                 NavMeshBuildSettings actualSettings = navMeshSurface.GetBuildSettings();
 
@@ -51,7 +51,7 @@ namespace Navigation
                 navMeshSurface.BuildNavMesh();
             }
 
-            this.navMeshInitialized = true;
+            this._navMeshInitialized = true;
         }
     }
 }

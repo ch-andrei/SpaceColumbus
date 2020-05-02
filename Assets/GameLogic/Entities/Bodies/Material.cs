@@ -26,7 +26,7 @@ namespace Entities.Materials
         private const string FlamabilityField = "Flammability";
         private const string DamageMultipliersField = "DamageMultipliers";
 
-        private static XmlReader MaterialXmlReader = new XmlReader(MaterialsXmlPath);
+        private static XmlReader _materialXmlReader = new XmlReader(MaterialsXmlPath);
         #endregion XmlDefs
 
         public float Hardness { get; private set; }
@@ -36,17 +36,17 @@ namespace Entities.Materials
 
         public string Name { get; private set; }
 
-        private EntityMaterial(string Name)
+        private EntityMaterial(string name)
         {
-            this.Name = Name;
+            this.Name = name;
             InitializeFromXml();
         }
 
         private void InitializeFromXml()
         {
-            this.Hardness = MaterialXmlReader.getFloat(new List<string>() { RootField, this.Name, HardnessField });
-            this.Restoration = MaterialXmlReader.getFloat(new List<string>() { RootField, this.Name, RestorationField });
-            this.Flamability = MaterialXmlReader.getFloat(new List<string>() { RootField, this.Name, FlamabilityField });
+            this.Hardness = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, HardnessField });
+            this.Restoration = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, RestorationField });
+            this.Flamability = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, FlamabilityField });
             InitializeDamageMultipliersFromXml();
         }
 
@@ -59,7 +59,7 @@ namespace Entities.Materials
                 try
                 {
                     // try read damage type multipliers from xml file
-                    float multiplier = MaterialXmlReader.getFloat(
+                    float multiplier = _materialXmlReader.GetFloat(
                         new List<string>() { RootField, this.Name, DamageMultipliersField, Damage.DamageType2Str(damageType) }
                         );
                     this.DamageMultipliers.Add(new DamageMultiplier(damageType, multiplier));

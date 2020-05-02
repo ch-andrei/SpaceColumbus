@@ -68,7 +68,7 @@ namespace Animation.Systems
     public abstract class AnimationSystem<T> : AnimationSystem
         where T : AnimationBase
     {
-        override public void AddAnimated(AnimationBase ab)
+        public override void AddAnimated(AnimationBase ab)
         {
             if (ab is T abT)
                 AddAnimated(abT);
@@ -89,14 +89,14 @@ namespace Animation.Systems
 
         public abstract JobHandle ScheduleAnimationJob(float time, float deltaTime);
 
-        override public void Update(float time, float deltaTime)
+        public override void Update(float time, float deltaTime)
         {
             AnimationJobHandle.Complete(); // wait for previous job to complete
 
             AnimationJobHandle = ScheduleAnimationJob(time, deltaTime); // schedule next job
         }
 
-        override public void OnDestroy()
+        public override void OnDestroy()
         {
             AnimationJobHandle.Complete();
         }

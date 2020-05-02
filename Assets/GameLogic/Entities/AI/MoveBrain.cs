@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace Brains.Movement
 {
     [System.Serializable]
     public class MoveBrain
     {
-        private NavMeshAgent navMeshAgent;
+        private NavMeshAgent _navMeshAgent;
 
-        public float StuckDistanceThreshold = 0.05f; // minimal distance to destination to consider that destination is reached
+        [FormerlySerializedAs("StuckDistanceThreshold")] public float stuckDistanceThreshold = 0.05f; // minimal distance to destination to consider that destination is reached
 
         #region StuckConfig
         public float stuckTimeout = 2f; // in seconds
@@ -21,42 +22,42 @@ namespace Brains.Movement
         public float remainingDistance = 0;
         #endregion StuckConfig
 
-        public Vector3 position { get { return this.navMeshAgent.nextPosition; } }
+        public Vector3 position { get { return this._navMeshAgent.nextPosition; } }
 
         // Start is called before the first frame update
         public MoveBrain(NavMeshAgent navMeshAgent)
         {
             this.posAtStuck = Vector3.positiveInfinity;
-            this.navMeshAgent = navMeshAgent;
+            this._navMeshAgent = navMeshAgent;
         }
 
         public bool SetDestination(Vector3 destination)
         {
-            if (!this.navMeshAgent.isOnNavMesh)
+            if (!this._navMeshAgent.isOnNavMesh)
                 return false;
 
             NavMeshPath path = new NavMeshPath();
-            bool success = this.navMeshAgent.SetDestination(destination);
+            bool success = this._navMeshAgent.SetDestination(destination);
 
-            remainingDistance = this.navMeshAgent.remainingDistance;
+            remainingDistance = this._navMeshAgent.remainingDistance;
 
             return success;
         }
 
         public void StopMoving()
         {
-            if (!this.navMeshAgent.isOnNavMesh)
+            if (!this._navMeshAgent.isOnNavMesh)
                 return;
 
-            float v = this.navMeshAgent.velocity.magnitude;
-            float distToStop = v * v / this.navMeshAgent.acceleration / 2f;
-            this.navMeshAgent.SetDestination(position + distToStop * this.navMeshAgent.velocity.normalized);
+            float v = this._navMeshAgent.velocity.magnitude;
+            float distToStop = v * v / this._navMeshAgent.acceleration / 2f;
+            this._navMeshAgent.SetDestination(position + distToStop * this._navMeshAgent.velocity.normalized);
         }
 
         // TODO: make sure this works properly
-        public void checkStuck()
+        public void CheckStuck()
         {
-            if (this.navMeshAgent.pathPending)
+            if (this._navMeshAgent.pathPending)
             {
                 this.stuck = false;
                 return;
@@ -64,8 +65,8 @@ namespace Brains.Movement
 
             bool stuck = false;
             Vector3 curPos = position;
-            stuck |= (posAtStuck - curPos).magnitude < StuckDistanceThreshold;
-            stuck |= (Mathf.Abs(remainingDistance - this.navMeshAgent.remainingDistance)) <= this.navMeshAgent.stoppingDistance;
+            stuck |= (posAtStuck - curPos).magnitude < stuckDistanceThreshold;
+            stuck |= (Mathf.Abs(remainingDistance - this._navMeshAgent.remainingDistance)) <= this._navMeshAgent.stoppingDistance;
             if (stuck && !this.stuck) // newly stuck; update position at stuck
                 posAtStuck = curPos;
             this.stuck = stuck;
@@ -73,10 +74,10 @@ namespace Brains.Movement
 
         public bool AtDestination()
         {
-            if (!this.navMeshAgent.isOnNavMesh)
+            if (!this._navMeshAgent.isOnNavMesh)
                 return true;
 
-            checkStuck();
+            CheckStuck();
             if (this.stuck)
             {
                 timeSinceStuck += Time.deltaTime;
@@ -88,9 +89,9 @@ namespace Brains.Movement
                 timeSinceStuck = 0f;
             }
 
-            remainingDistance = this.navMeshAgent.remainingDistance;
+            remainingDistance = this._navMeshAgent.remainingDistance;
 
-            return this.navMeshAgent.remainingDistance <= this.navMeshAgent.stoppingDistance;
+            return this._navMeshAgent.remainingDistance <= this._navMeshAgent.stoppingDistance;
         }
     }
 }

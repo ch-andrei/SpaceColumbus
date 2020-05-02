@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class GraphicWithMaskModifier : ShaderControlModifier
 {
-    private static string MaskField = "_MaskTex";
-    private static string MaskWeightField = "_MaskWeight";
+    private static string _maskField = "_MaskTex";
+    private static string _maskWeightField = "_MaskWeight";
 
-    public Texture2D Mask;
-    [Range(0, 1)] public float MaskWeight = 0.1f;
+    [FormerlySerializedAs("Mask")] public Texture2D mask;
+    [FormerlySerializedAs("MaskWeight")] [Range(0, 1)] public float maskWeight = 0.1f;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        shaderControl.SetTexture(MaskField, Mask);
-        shaderControl.SetFloat(MaskWeightField, MaskWeight);
+        shaderControl.SetTexture(_maskField, mask);
+        shaderControl.SetFloat(_maskWeightField, maskWeight);
     }
 }

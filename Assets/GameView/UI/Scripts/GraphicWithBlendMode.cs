@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class GraphicWithBlendModeModifier : ShaderControlModifier
 {
-    private static string SrcBlendField = "_SrcBlend";
-    private static string DstBlendField = "_DstBlend";
+    private static string _srcBlendField = "_SrcBlend";
+    private static string _dstBlendField = "_DstBlend";
 
-    public UnityEngine.Rendering.BlendMode SrcBlend = UnityEngine.Rendering.BlendMode.SrcAlpha;
-    public UnityEngine.Rendering.BlendMode DstBlend = UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha;
+    [FormerlySerializedAs("SrcBlend")] public UnityEngine.Rendering.BlendMode srcBlend = UnityEngine.Rendering.BlendMode.SrcAlpha;
+    [FormerlySerializedAs("DstBlend")] public UnityEngine.Rendering.BlendMode dstBlend = UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha;
 
-    override public void ApplyModifier(GraphicShaderControl shaderControl)
+    public override void ApplyModifier(GraphicShaderControl shaderControl)
     {
-        shaderControl.SetInt(SrcBlendField, (int)SrcBlend);
-        shaderControl.SetInt(DstBlendField, (int)DstBlend);
+        shaderControl.SetInt(_srcBlendField, (int)srcBlend);
+        shaderControl.SetInt(_dstBlendField, (int)dstBlend);
     }
 }

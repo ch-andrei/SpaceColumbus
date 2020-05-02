@@ -10,20 +10,21 @@ using Entities.Bodies.Damages;
 using Utilities.Events;
 
 using TMPro;
+using UnityEngine.Serialization;
 
 public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<AgentChangedEvent>
 {
     public static string StatusField = "INJURY: ";
 
-    public GameObject StatusText;
-    public GameObject LeftInfoField;
-    public GameObject RightInfoField;
+    [FormerlySerializedAs("StatusText")] public GameObject statusText;
+    [FormerlySerializedAs("LeftInfoField")] public GameObject leftInfoField;
+    [FormerlySerializedAs("RightInfoField")] public GameObject rightInfoField;
 
-    private Agent agent;
+    private Agent _agent;
 
-    private TextMeshProUGUI _StatusTextMesh;
-    private TextMeshProUGUI _LeftInfoFieldTextMesh;
-    private TextMeshProUGUI _RightInfoFieldTextMesh;
+    private TextMeshProUGUI _statusTextMesh;
+    private TextMeshProUGUI _leftInfoFieldTextMesh;
+    private TextMeshProUGUI _rightInfoFieldTextMesh;
 
     void Start()
     {
@@ -32,29 +33,29 @@ public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<AgentChangedEv
 
     public void Initialize()
     {
-        _StatusTextMesh = StatusText.GetComponent<TextMeshProUGUI>();
-        _LeftInfoFieldTextMesh = LeftInfoField.GetComponent<TextMeshProUGUI>();
-        _RightInfoFieldTextMesh = RightInfoField.GetComponent<TextMeshProUGUI>();
+        _statusTextMesh = statusText.GetComponent<TextMeshProUGUI>();
+        _leftInfoFieldTextMesh = leftInfoField.GetComponent<TextMeshProUGUI>();
+        _rightInfoFieldTextMesh = rightInfoField.GetComponent<TextMeshProUGUI>();
     }
 
     void UpdateView()
     {
-        if (this.agent == null)
+        if (this._agent == null)
             return;
 
-        _StatusTextMesh.text = GetStatusString(this.agent.GetDamageState());
+        _statusTextMesh.text = GetStatusString(this._agent.GetDamageState());
     }
 
-    public string GetStatusString(EDamageState DamageState)
+    public string GetStatusString(EDamageState damageState)
     {
-        return StatusField + DamageStates.DamageStateToStrWithColor(DamageState);
+        return StatusField + DamageStates.DamageStateToStrWithColor(damageState);
     }
 
     public void SetObservedAgent(Agent agent)
     {
-        if (this.agent != agent)
+        if (this._agent != agent)
         {
-            this.agent = agent;
+            this._agent = agent;
             agent.AddListener(this);
             UpdateView();
         }
@@ -62,7 +63,7 @@ public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<AgentChangedEv
 
     public bool OnEvent(AgentChangedEvent gameEvent)
     {
-        bool active = gameEvent.entity == this.agent;
+        bool active = gameEvent.entity == this._agent;
 
         if (active)
             UpdateView();

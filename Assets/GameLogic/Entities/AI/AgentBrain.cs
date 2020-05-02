@@ -12,7 +12,7 @@ namespace Brains
     {
         public GameObject entityObject { get; private set; }
 
-        public enum Intelligence
+        public enum IntelligenceLevel
         {
             Primitive,
             Low,
@@ -31,17 +31,17 @@ namespace Brains
             AttackEngaging,
         }
 
-        protected MoveBrain moveBrain = null;
-        protected AttackBrain attackBrain = null;
+        protected MoveBrain MoveBrain = null;
+        protected AttackBrain AttackBrain = null;
 
-        protected Intelligence intelligence;
-        protected BehaviourState behaviourState;
+        protected IntelligenceLevel Intelligence;
+        protected BehaviourState Behaviour;
 
         public AgentBrain(GameObject entityObject, MoveBrain moveBrain, AttackBrain attackBrain)
         {
             this.entityObject = entityObject;
-            this.moveBrain = moveBrain;
-            this.attackBrain = attackBrain;
+            this.MoveBrain = moveBrain;
+            this.AttackBrain = attackBrain;
         }
         public void ProcessTick()
         {

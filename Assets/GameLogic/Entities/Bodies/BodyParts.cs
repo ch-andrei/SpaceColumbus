@@ -33,20 +33,22 @@ namespace Entities.Bodies
     IEventListener<BodyPartChangedEvent>, // from other BodyParts
     IEventListener<HpSystemChangedEvent> // from HpSystem
     {
-        BodyPart bodyPart;
+        BodyPart _bodyPart;
 
-        public BodyPartChangedEventGenerator(BodyPart bodyPart) : base() { this.bodyPart = bodyPart; }
+        public BodyPartChangedEventGenerator(BodyPart bodyPart) : base() { this._bodyPart = bodyPart; }
 
         public bool OnEvent(HpSystemChangedEvent hpSystemEvent)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(bodyPart.NameCustom + " HpSystemEvent: " + hpSystemEvent.hpSystem.HpPrev + "->" + hpSystemEvent.hpSystem.HpCurrent + "HP:");
-            foreach (var damage in hpSystemEvent.damages)
-                sb.Append("\t" + Damage.DamageType2Str(damage.damageType) + " damage with " + damage.amount + " total damage amount;");
+            sb.Append(
+                $"{_bodyPart.NameCustom} HpSystemEvent: {hpSystemEvent.HpSystem.HpPrev}->{hpSystemEvent.HpSystem.HpCurrent}HP:");
+            foreach (var damage in hpSystemEvent.Damages)
+                sb.Append(
+                    $"\t{Damage.DamageType2Str(damage.DamageType)} damage with {damage.Amount} total damage amount;");
             Debug.Log(sb.ToString());
 
             // for external observers, e.g. UI
-            Notify(new BodyPartChangedEvent(this.bodyPart, hpSystemEvent));
+            Notify(new BodyPartChangedEvent(this._bodyPart, hpSystemEvent));
 
             return true;
         }
@@ -62,7 +64,7 @@ namespace Entities.Bodies
 
     public class BodyPart : INamed, IDamageable, IWithListeners<BodyPartChangedEvent>
     {
-        public HPSystem hpSystem = null;
+        public HpSystem HpSystem = null;
 
         public string Name { get; set; }
 
@@ -70,10 +72,10 @@ namespace Entities.Bodies
 
         public virtual float Size { get; set; }
 
-        public bool HasHpSystem { get { return this.hpSystem != null; } }
+        public bool HasHpSystem { get { return this.HpSystem != null; } }
 
         public virtual bool IsDamageable { get { return HasHpSystem; } } // can be defined differently
-        public virtual bool IsDamaged { get { return HasHpSystem && this.hpSystem.IsDamaged; } } // can be defined differently
+        public virtual bool IsDamaged { get { return HasHpSystem && this.HpSystem.IsDamaged; } } // can be defined differently
 
         protected BodyPartChangedEventGenerator BodyPartChangedSystem;
 
@@ -86,18 +88,18 @@ namespace Entities.Bodies
             this.BodyPartChangedSystem = new BodyPartChangedEventGenerator(this);
         }
 
-        public BodyPart(string name, float size, HPSystem hpSystem) : this(name, size)
+        public BodyPart(string name, float size, HpSystem hpSystem) : this(name, size)
         {
-            this.hpSystem = hpSystem;
+            this.HpSystem = hpSystem;
 
             if (this.HasHpSystem)
-                this.hpSystem.AddListener(this.BodyPartChangedSystem);
+                this.HpSystem.AddListener(this.BodyPartChangedSystem);
         }
 
         public BodyPart(BodyPart bodyPart) : this (
             new string(bodyPart.Name.ToCharArray()),
             bodyPart.Size,
-            (bodyPart.hpSystem == null) ? null : new HPSystem(bodyPart.hpSystem)
+            (bodyPart.HpSystem == null) ? null : new HpSystem(bodyPart.HpSystem)
             )
         {
             this.NameCustom = bodyPart.NameCustom;
@@ -105,13 +107,13 @@ namespace Entities.Bodies
 
         public virtual EDamageState GetDamageState()
         {
-            return (HasHpSystem) ? this.hpSystem.GetDamageState() : EDamageState.None;
+            return (HasHpSystem) ? this.HpSystem.GetDamageState() : EDamageState.None;
         }
 
         public virtual void TakeDamage(Damage damage)
         {
             if (this.HasHpSystem)
-                hpSystem.TakeDamage(damage);
+                HpSystem.TakeDamage(damage);
         }
 
         public virtual BodyPart Clone()
@@ -127,14 +129,14 @@ namespace Entities.Bodies
         public virtual string GetHealthInfo()
         {
             if (this.IsDamaged)
-                return this.hpSystem.AsText;
+                return this.HpSystem.AsText;
             else
                 return "";
         }
 
-        public virtual string toString()
+        public virtual string ToString()
         {
-            return "BODYPART " + this.NameCustom;
+            return $"BODYPART {this.NameCustom}";
         }
     }
 
@@ -142,7 +144,7 @@ namespace Entities.Bodies
     {
         public List<BodyPart> BodyParts { get; private set; }
 
-        override public bool IsDamageable
+        public override bool IsDamageable
         { 
             get 
             { 
@@ -155,7 +157,7 @@ namespace Entities.Bodies
             } 
         }
 
-        override public bool IsDamaged 
+        public override bool IsDamaged 
         {
             get
             {
@@ -186,7 +188,7 @@ namespace Entities.Bodies
             this.BodyParts = new List<BodyPart>();
         }
 
-        public BodyPartContainer(string name, float size, HPSystem hpSystem) : base(name, size, hpSystem)
+        public BodyPartContainer(string name, float size, HpSystem hpSystem) : base(name, size, hpSystem)
         {
             this.BodyParts = new List<BodyPart>();
         }
@@ -218,7 +220,7 @@ namespace Entities.Bodies
                 AddBodyPart(bodyPart);
         }
 
-        override public void TakeDamage(Damage damage)
+        public override void TakeDamage(Damage damage)
         {
             base.TakeDamage(damage);
 
@@ -226,7 +228,7 @@ namespace Entities.Bodies
                 this.BodyParts[0].TakeDamage(damage);
             else
             {
-                Vector2Int indices = Samplers.SampleFromPdf(UnityEngine.Random.value, this.GetBodyPartSizes, damage.dispersion);
+                Vector2Int indices = Samplers.SampleFromPdf(UnityEngine.Random.value, this.GetBodyPartSizes, damage.Dispersion);
 
                 foreach (var bodyPart in this.BodyParts.ToArray().Slice(indices.x, indices.y + 1))
                 {
@@ -235,7 +237,7 @@ namespace Entities.Bodies
             }
         }
 
-        override public EDamageState GetDamageState()
+        public override EDamageState GetDamageState()
         {
             EDamageState worstDamageState = base.GetDamageState();
             foreach (var bodyPart in this.BodyParts)
@@ -243,36 +245,36 @@ namespace Entities.Bodies
             return worstDamageState;
         }
 
-        override public BodyPart Clone()
+        public override BodyPart Clone()
         {
             return new BodyPartContainer(this);
         }
 
-        override public string GetHealthInfo()
+        public override string GetHealthInfo()
         {
             StringBuilder sb = new StringBuilder();
 
             if (this.HasHpSystem)
-                sb.Append("HP: " + this.hpSystem.AsText + "\n");
+                sb.Append($"HP: {this.HpSystem.AsText}\n");
 
             foreach (var bodyPart in this.BodyParts)
             {
                 if (bodyPart.IsDamaged)
-                    sb.Append(bodyPart.NameCustom + " " + bodyPart.GetHealthInfo() + "\n");
+                    sb.Append($"{bodyPart.NameCustom} {bodyPart.GetHealthInfo()}\n");
             }
 
             return sb.ToString();
         }
 
-        override public string toString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("BODYPARTCONTAINER: " + this.NameCustom);
+            sb.Append($"BODYPARTCONTAINER: {this.NameCustom}");
 
             foreach (var bodyPart in this.BodyParts)
             {
-                sb.Append("," + bodyPart.NameCustom);
+                sb.Append($",{bodyPart.NameCustom}");
             }
 
             return sb.ToString();
@@ -287,7 +289,7 @@ namespace Entities.Bodies
 
         public Body(Body body) : base(body as BodyPartContainer) { }
 
-        override public BodyPart Clone()
+        public override BodyPart Clone()
         {
             return new Body(this);
         }
