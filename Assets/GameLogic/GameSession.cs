@@ -24,8 +24,8 @@ using UnityEngine.Serialization;
 
 public class GameSession : MonoBehaviour
 {
-    [FormerlySerializedAs("DEBUG")] public bool debug = false;
-    [FormerlySerializedAs("DEBUG_MAP_GEN")] public bool debugMapGen = false;
+    public bool debug = false;
+    public bool debugMapGen = false;
 
     [Header("Agent Config")]
     public bool spawnAgents = false;

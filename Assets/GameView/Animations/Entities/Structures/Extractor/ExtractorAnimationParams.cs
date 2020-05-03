@@ -11,8 +11,8 @@ namespace Animation.Systems.Extractor
     [System.Serializable]
     public class ExtractorAnimationBase : AnimationBase
     {
-        [FormerlySerializedAs("Speed")] public float speed = 8f;
-        [FormerlySerializedAs("MoveAmount")] public float moveAmount = 0.7f;
+        public float speed = 8f;
+        public float moveAmount = 0.7f;
 
         public Transform Pivot { get; private set; }
         public float TimeAtSpawn { get; private set; }

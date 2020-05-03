@@ -19,7 +19,7 @@ namespace UI.Menus
         private static string _menuTitle = "NOTIFICATIONS LOG";
         private static string _newField = "NEW";
 
-        [FormerlySerializedAs("NofificationPrefab")] public GameObject nofificationPrefab;
+        public GameObject nofificationPrefab;
 
         private int _newNotificationsCount = 0;
         private string NewNotificationsCountString { get { return $"{_newNotificationsCount} {_newField}"; } }

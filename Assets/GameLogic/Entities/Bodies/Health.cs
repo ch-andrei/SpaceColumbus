@@ -165,7 +165,8 @@ namespace Entities.Bodies.Health
                 this.damageMultipliers.Add(new DamageMultiplier(mult));
         }
 
-        public HpSystem(int hpBase, DamageMultiplier damageMultiplier) : this(hpBase, new List<DamageMultiplier>() { damageMultiplier }) { }
+        public HpSystem(int hpBase, DamageMultiplier damageMultiplier) : 
+            this(hpBase, new List<DamageMultiplier>(){ damageMultiplier }) { }
 
         public HpSystem(HpSystem hpSystem) : this(hpSystem.HpBase, hpSystem.damageMultipliers)
         {

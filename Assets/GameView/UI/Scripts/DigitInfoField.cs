@@ -16,16 +16,16 @@ public class DigitInfoField : MonoBehaviour, IEventListener<DigitInfoChangedEven
 {
     private static string SizeRichText(float ratio) { return $"<size={(int) (ratio * 100 % 101)}%>"; }
 
-    [FormerlySerializedAs("TitleText")] public GameObject titleText;
-    [FormerlySerializedAs("InfoText")] public GameObject infoText;
+    public GameObject titleText;
+    public GameObject infoText;
 
     private TextMeshProUGUI _titleText;
     private TextMeshProUGUI _infoText;
 
-    [FormerlySerializedAs("Title")] public string title;
-    [FormerlySerializedAs("Value")] public string value;
-    [FormerlySerializedAs("ValueSuffix")] public string valueSuffix;
-    [FormerlySerializedAs("ValueSuffixScale")] [Range(0.1f, 1)] public float valueSuffixScale = 0.5f;
+    public string title;
+    public string value;
+    public string valueSuffix;
+    [Range(0.1f, 1)] public float valueSuffixScale = 0.5f;
 
     // Start is called before the first frame update
     void Start()

@@ -86,19 +86,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 760115da459140044bb15fec85889cde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Material: {fileID: 2100000, guid: d98dbdc2ab8fada4daff18d820310e01, type: 2}
-  Ramp:
-    RampDirection: {x: 1, y: 0}
-    Color1: {r: 1, g: 1, b: 1, a: 0}
-    Color2: {r: 0.9009434, g: 0.9019608, b: 1, a: 0.09803922}
-    Power: 1
-    Scale: 0.5
-    Radial: 1
-    Invert: 0
-    ApplyAlpha: 1
-  Dither:
-    ApplyDither: 1
-    DitherStrengthInverse: 256
-  Blend:
-    SrcBlend: 5
-    DstBlend: 10
+  material: {fileID: 2100000, guid: d98dbdc2ab8fada4daff18d820310e01, type: 2}
+  ramp:
+    rampDirection: {x: 1, y: 0}
+    color1: {r: 1, g: 1, b: 1, a: 1}
+    color2: {r: 1, g: 1, b: 1, a: 1}
+    power: 1
+    scale: 1
+    radial: 1
+    invert: 0
+    applyAlpha: 1
+  dither:
+    applyDither: 0
+    ditherStrengthInverse: 128
+  blend:
+    srcBlend: 5
+    dstBlend: 10

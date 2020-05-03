@@ -7,8 +7,8 @@ public class GraphicWithMaskModifier : ShaderControlModifier
     private static string _maskField = "_MaskTex";
     private static string _maskWeightField = "_MaskWeight";
 
-    [FormerlySerializedAs("Mask")] public Texture2D mask;
-    [FormerlySerializedAs("MaskWeight")] [Range(0, 1)] public float maskWeight = 0.1f;
+    public Texture2D mask;
+    [Range(0, 1)] public float maskWeight = 0.1f;
 
     public override void ApplyModifier(GraphicShaderControl shaderControl)
     {

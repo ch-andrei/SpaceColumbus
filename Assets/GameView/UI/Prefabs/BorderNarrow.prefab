@@ -86,18 +86,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7007b32c746a614a898b4837d776076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Material: {fileID: 2100000, guid: 186e44d3eb9b27142b7e2877839978b7, type: 2}
-  Mask:
-    Mask: {fileID: 2800000, guid: c1362889bf39be242afe0214b0d39bf7, type: 3}
-    MaskWeight: 0
-  Border:
-    BorderSize: 1
-    BorderThickness: 25
-    BorderColor: {r: 0.9019608, g: 0.9019608, b: 1, a: 0.019607844}
-    RenderBorderOnly: 1
-  Dither:
-    ApplyDither: 0
-    DitherStrengthInverse: 128
-  Blend:
-    SrcBlend: 5
-    DstBlend: 10
+  material: {fileID: 2100000, guid: 186e44d3eb9b27142b7e2877839978b7, type: 2}
+  mask:
+    mask: {fileID: 0}
+    maskWeight: 0.1
+  border:
+    borderSize: 5
+    borderThickness: 0
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    renderBorderOnly: 1
+  dither:
+    applyDither: 0
+    ditherStrengthInverse: 128
+  blend:
+    srcBlend: 5
+    dstBlend: 10

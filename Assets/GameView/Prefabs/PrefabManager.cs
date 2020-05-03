@@ -5,6 +5,6 @@ using UnityEngine.Serialization;
 
 public class PrefabManager : MonoBehaviour
 {
-    [FormerlySerializedAs("AgentPrefab")] public GameObject agentPrefab;
-    [FormerlySerializedAs("SelectionPrefab")] public GameObject selectionPrefab;
+    public GameObject agentPrefab;
+    public GameObject selectionPrefab;
 }

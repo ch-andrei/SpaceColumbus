@@ -9,10 +9,10 @@ namespace UI.Menus
     [System.Serializable]
     public class UiWithScrollableItems : MonoBehaviour
     {
-        [FormerlySerializedAs("TitleTextLeft")] public UiTextField titleTextLeft = new UiTextField();
-        [FormerlySerializedAs("TitleTextRight")] public UiTextField titleTextRight = new UiTextField();
+        public UiTextField titleTextLeft = new UiTextField();
+        public UiTextField titleTextRight = new UiTextField();
 
-        [FormerlySerializedAs("ContentRoot")] public GameObject contentRoot;
+        public GameObject contentRoot;
 
         public virtual void Awake()
         {

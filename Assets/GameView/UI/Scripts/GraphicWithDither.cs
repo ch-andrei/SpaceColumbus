@@ -7,10 +7,11 @@ public class GraphicWithDitherModifier : ShaderControlModifier
     private static string _applyDitherField = "_ApplyDither";
     private static string _ditherStrengthField = "_DitherStrength";
 
+
     public static bool GlobalAllowDither = true;
 
-    [FormerlySerializedAs("ApplyDither")] public bool applyDither = false;
-    [FormerlySerializedAs("DitherStrengthInverse")] [Range(1, 1024)] public float ditherStrengthInverse = 128;
+    public bool applyDither = false;
+    [Range(1, 1024)] public float ditherStrengthInverse = 128;
 
     public override void ApplyModifier(GraphicShaderControl shaderControl)
     {

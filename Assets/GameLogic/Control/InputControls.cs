@@ -212,7 +212,7 @@ namespace InputControls
         private float _doubleKeyTime;
         private float _timeSinceLastPress;
 
-        [FormerlySerializedAs("IsActive")] public bool isActive;
+        public bool isActive;
 
         public DoubleKeyPressDetector(KeyPress key, float doubleKeyTime = 0.2f)
         {

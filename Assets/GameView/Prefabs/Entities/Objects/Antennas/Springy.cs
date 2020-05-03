@@ -13,7 +13,7 @@ public class Springy : MonoBehaviour
     public float drag = 4f;//drag
     public float springForce = 100.0f;//Spring
     
-	[FormerlySerializedAs("GeoParent")] [Space(12)]
+    [Space(12)]
     public Transform geoParent;
 
     Rigidbody _springRb;

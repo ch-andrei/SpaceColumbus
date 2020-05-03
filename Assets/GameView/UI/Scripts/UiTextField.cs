@@ -13,11 +13,11 @@ namespace UI.Menus
     [System.Serializable]
     public class UiTextField
     {
-        [FormerlySerializedAs("GameObject")] public GameObject gameObject;
+        public GameObject gameObject;
 
         private TextMeshProUGUI _textMesh;
 
-        [FormerlySerializedAs("DefaultText")] public string defaultText = "Text Field";
+        public string defaultText = "Text Field";
 
         public string Text
         {
@@ -38,8 +38,8 @@ namespace UI.Menus
     [System.Serializable]
     public class UiTwoTextField : MonoBehaviour
     {
-        [FormerlySerializedAs("TextLeft")] public UiTextField textLeft = new UiTextField();
-        [FormerlySerializedAs("TextRight")] public UiTextField textRight = new UiTextField();
+        public UiTextField textLeft = new UiTextField();
+        public UiTextField textRight = new UiTextField();
 
         private LayoutElement _layoutElement;
 

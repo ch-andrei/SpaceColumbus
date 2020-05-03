@@ -13,7 +13,7 @@ namespace RegionModelGenerators
 {
     public class SquareRegionModelGenerator : RegionModelGenerator
     {
-        override public void InitializeMesh(Region region)
+        public override void InitializeMesh(Region region)
         {
             Debug.Log("Initializing region Mesh...");
 
@@ -26,7 +26,7 @@ namespace RegionModelGenerators
             List<int> tris = new List<int>();
 
             // copy vertice vectors
-            Tile[,] tiles = region.getTiles();
+            Tile[,] tiles = region.GetTiles();
 
             Dictionary<string, bool> trisDict = new Dictionary<string, bool>();
 
@@ -69,7 +69,7 @@ namespace RegionModelGenerators
                                 string triStringKey = "";
                                 foreach (float f in triInds)
                                 {
-                                    triStringKey += f + "-";
+                                    triStringKey += $"{f}-";
                                 }
 
                                 // add triangle only if it wasnt added already
@@ -77,18 +77,18 @@ namespace RegionModelGenerators
                                 {
                                     trisDict.Add(triStringKey, true);
 
-                                    yTotal += tiles[i, j].pos.y + tiles[ind1.x, ind1.y].pos.y + tiles[ind2.x, ind2.y].pos.y;
+                                    yTotal += tiles[i, j].Pos.y + tiles[ind1.x, ind1.y].Pos.y + tiles[ind2.x, ind2.y].Pos.y;
                                     List<Vector3> verticesLocal = new List<Vector3>();
-                                    verticesLocal.Add(tiles[i, j].pos);
-                                    verticesLocal.Add(tiles[ind1.x, ind1.y].pos);
-                                    verticesLocal.Add(tiles[ind2.x, ind2.y].pos);
+                                    verticesLocal.Add(tiles[i, j].Pos);
+                                    verticesLocal.Add(tiles[ind1.x, ind1.y].Pos);
+                                    verticesLocal.Add(tiles[ind2.x, ind2.y].Pos);
 
                                     List<Vector2> uvsLocal = new List<Vector2>();
-                                    uvsLocal.Add(region.pos2UV(tiles[i, j].pos));
-                                    uvsLocal.Add(region.pos2UV(tiles[ind1.x, ind1.y].pos));
-                                    uvsLocal.Add(region.pos2UV(tiles[ind2.x, ind2.y].pos));
+                                    uvsLocal.Add(region.Pos2Uv(tiles[i, j].Pos));
+                                    uvsLocal.Add(region.Pos2Uv(tiles[ind1.x, ind1.y].Pos));
+                                    uvsLocal.Add(region.Pos2Uv(tiles[ind2.x, ind2.y].Pos));
 
-                                    MeshTriAdder.addTriangle(new Vector3Int(0, 1, 2), verticesLocal, verticesDict, tris, normals, uvsLocal, uvs);
+                                    MeshTriAdder.AddTriangle(new Vector3Int(0, 1, 2), verticesLocal, verticesDict, tris, normals, uvsLocal, uvs);
                                     trisCount++;
                                 }
                             }
@@ -101,8 +101,9 @@ namespace RegionModelGenerators
                 }
             }
 
-            Debug.Log("Tiles with size " + length);
-            Debug.Log("Built a mesh with " + verticesDict.Keys.Count + " vertices and " + trisCount + " triangles; total height " + yTotal + ".");
+            Debug.Log($"Tiles with size {length}");
+            Debug.Log(
+                $"Built a mesh with {verticesDict.Keys.Count} vertices and {trisCount} triangles; total height {yTotal}.");
 
             Mesh mesh = new Mesh();
 

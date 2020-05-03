@@ -512,14 +512,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42f37e1ee90c37242ba3e38a4836e776, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TitleTextLeft:
-    GameObject: {fileID: 6347263569028444329}
-    DefaultText: Text Field
-  TitleTextRight:
-    GameObject: {fileID: 927611749328766530}
-    DefaultText: Text Field
-  ContentRoot: {fileID: 7136316529990823754}
-  VitalsLogEntryPrefab: {fileID: 8377239322556107832, guid: fda940cc69f83b541baa3015f99554ce,
+  titleTextLeft:
+    gameObject: {fileID: 6347263569028444329}
+    defaultText: Text Field
+  titleTextRight:
+    gameObject: {fileID: 927611749328766530}
+    defaultText: Text Field
+  contentRoot: {fileID: 7136316529990823754}
+  numLogsInPool: 20
+  vitalsLogEntryPrefab: {fileID: 8377239322556107832, guid: fda940cc69f83b541baa3015f99554ce,
     type: 3}
 --- !u!1 &4862650090849834027
 GameObject:
@@ -1120,6 +1121,16 @@ PrefabInstance:
         type: 3}
       propertyPath: Dither.DitherStrengthInverse
       value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineThickness
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineSize
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}

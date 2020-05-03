@@ -3,11 +3,11 @@ using UnityEngine.Serialization;
 
 public class GraphicWithRamp : GraphicShaderControl
 {
-    [FormerlySerializedAs("Ramp")] public GraphicWithRampModifier ramp = new GraphicWithRampModifier();
-    [FormerlySerializedAs("Dither")] public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
-    [FormerlySerializedAs("Blend")] public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
+    public GraphicWithRampModifier ramp = new GraphicWithRampModifier();
+    public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
+    public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
 
-    public override void Initialize()
+    protected override void Initialize()
     {
         this.AddModifier(new GraphicWithRectModifier());
         this.AddModifier(blend);
@@ -29,17 +29,17 @@ public class GraphicWithRampModifier : ShaderControlModifier
     private static string _color1Field = "_Color1";
     private static string _color2Field = "_Color2";
 
-    [FormerlySerializedAs("RampDirection")] public Vector2 rampDirection = new Vector2(1, 0);
+    public Vector2 rampDirection = new Vector2(1, 0);
 
-    [FormerlySerializedAs("Color1")] public Color color1 = new Color(1, 1, 1, 1);
-    [FormerlySerializedAs("Color2")] public Color color2 = new Color(1, 1, 1, 1);
+    public Color color1 = new Color(1, 1, 1, 1);
+    public Color color2 = new Color(1, 1, 1, 1);
 
-    [FormerlySerializedAs("Power")] [Range(0.01f, 10)] public float power = 1;
-    [FormerlySerializedAs("Scale")] [Range(0.01f, 10)] public float scale = 1;
+    [Range(0.01f, 10)] public float power = 1;
+    [Range(0.01f, 10)] public float scale = 1;
 
-    [FormerlySerializedAs("Radial")] public bool radial = true;
-    [FormerlySerializedAs("Invert")] public bool invert = false;
-    [FormerlySerializedAs("ApplyAlpha")] public bool applyAlpha = true;
+    public bool radial = true;
+    public bool invert = false;
+    public bool applyAlpha = true;
 
     public override void ApplyModifier(GraphicShaderControl shaderControl)
     {

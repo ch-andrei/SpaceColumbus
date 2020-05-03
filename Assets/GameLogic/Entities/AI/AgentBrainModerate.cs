@@ -12,11 +12,11 @@ namespace Brains
     [System.Serializable]
     public class AgentBrainModerate : AgentBrain
     {
-        [FormerlySerializedAs("NonIdleProbability")] [Range(0, 1f)] public float nonIdleProbability = 0.005f;
-        [FormerlySerializedAs("IdleRoamingProbability")] [Range(0, 1f)] public float idleRoamingProbability = 0.5f;
+        [Range(0, 1f)] public float nonIdleProbability = 0.005f;
+        [Range(0, 1f)] public float idleRoamingProbability = 0.5f;
 
-        [FormerlySerializedAs("MaxIdleMoveMultiplier")] [Range(2f, 10f)] public float maxIdleMoveMultiplier = 2f;
-        [FormerlySerializedAs("MaxIdleMoveDistance")] [Range(0f, 100f)] public float maxIdleMoveDistance = 10f;
+        [Range(2f, 10f)] public float maxIdleMoveMultiplier = 2f;
+        [Range(0f, 100f)] public float maxIdleMoveDistance = 10f;
 
         private static int _maxPathFindAttempts = 10;
 

@@ -16,9 +16,9 @@ public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<AgentChangedEv
 {
     public static string StatusField = "INJURY: ";
 
-    [FormerlySerializedAs("StatusText")] public GameObject statusText;
-    [FormerlySerializedAs("LeftInfoField")] public GameObject leftInfoField;
-    [FormerlySerializedAs("RightInfoField")] public GameObject rightInfoField;
+    public GameObject statusText;
+    public GameObject leftInfoField;
+    public GameObject rightInfoField;
 
     private Agent _agent;
 

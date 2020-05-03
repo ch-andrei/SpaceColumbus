@@ -393,7 +393,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.7688679, g: 0.8476451, b: 1, a: 1}
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -458,10 +458,10 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -1520, y: -880}
+  m_SizeDelta: {x: 360, y: 200}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &5964633488196291809
 MonoBehaviour:
@@ -475,14 +475,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be80f2354dd3fe949ab58ac80328c183, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TitleTextLeft:
-    GameObject: {fileID: 6347263569028444329}
-    DefaultText: 
-  TitleTextRight:
-    GameObject: {fileID: 927611749328766530}
-    DefaultText: 
-  ContentRoot: {fileID: 7136316529990823754}
-  NofificationPrefab: {fileID: 8377239322556107832, guid: ee51a1988a3814648876d7872661b3bb,
+  titleTextLeft:
+    gameObject: {fileID: 6347263569028444329}
+    defaultText: Text Field
+  titleTextRight:
+    gameObject: {fileID: 927611749328766530}
+    defaultText: Text Field
+  contentRoot: {fileID: 7136316529990823754}
+  nofificationPrefab: {fileID: 8377239322556107832, guid: ee51a1988a3814648876d7872661b3bb,
     type: 3}
 --- !u!222 &295970870919067729
 CanvasRenderer:
@@ -1010,7 +1010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.76862746, g: 0.84705883, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -1046,6 +1046,31 @@ PrefabInstance:
         type: 3}
       propertyPath: Dither.DitherStrengthInverse
       value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineThickness
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 0.76862746
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 0.84705883
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.b
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
@@ -1197,6 +1222,26 @@ PrefabInstance:
       propertyPath: Line.LineColor.a
       value: 0.19607843
       objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineThickness
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 0.76862746
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 0.84705883
+      objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
       propertyPath: m_Name
@@ -1346,6 +1391,26 @@ PrefabInstance:
         type: 3}
       propertyPath: Line.LineColor.a
       value: 0.19607843
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineThickness
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 0.76862746
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 0.84705883
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}

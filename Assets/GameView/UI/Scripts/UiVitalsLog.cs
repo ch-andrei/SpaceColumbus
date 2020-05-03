@@ -28,12 +28,12 @@ namespace UI.Menus
 
     public class UiVitalsLog : UiWithScrollableItems, IEventListener<AgentChangedEvent>
     {
-        [FormerlySerializedAs("NumLogsInPool")] public int numLogsInPool = 20;
+        public int numLogsInPool = 20;
 
         private static string _menuTitle = "VITALS MONITORING";
         private static string _statusField = "INJURY: ";
 
-        [FormerlySerializedAs("VitalsLogEntryPrefab")] public GameObject vitalsLogEntryPrefab;
+        public GameObject vitalsLogEntryPrefab;
 
         private List<VitalLogInfo> _vitalLogs;
         private Agent _agent;

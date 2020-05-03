@@ -25,7 +25,7 @@ public class GameControl : MonoBehaviour
 {
     #region Configuration
 
-    [FormerlySerializedAs("showGUI")] public bool showGui = true;
+    public bool showGui = true;
 
     [Header("Selection GUI")]
     public Color guiColor = new Color(0.8f, 0.8f, 0.95f, 0.25f);
@@ -336,24 +336,21 @@ public class GameControl : MonoBehaviour
     void OnGuiDebugMenu()
     {
         // DEBUG BUTTONS
-        int groupElementCount = 0;
         if (_showDebugGui)
         {
             GUI.BeginGroup(new Rect(0, toggleIconSize, guiMenuWidth, guiMenuHeight));
 
-            if (GUI.Button(new Rect(0, groupElementCount * buttonHeight, guiMenuWidth, buttonHeight), "Spawn Agent"))
+            if (GUI.Button(new Rect(0, 0, guiMenuWidth, buttonHeight), "Spawn Agent"))
             {
                 _controlMode = ControlMode.SpawnAgent;
                 ResetSelecting();
             }
-            groupElementCount++;
 
-            if (GUI.Button(new Rect(0, groupElementCount * buttonHeight, guiMenuWidth, buttonHeight), "Spawn Explosion"))
+            if (GUI.Button(new Rect(0, buttonHeight, guiMenuWidth, buttonHeight), "Spawn Explosion"))
             {
                 _controlMode = ControlMode.SpawnExplosion;
                 ResetSelecting();
             }
-            groupElementCount++;
 
             GUI.EndGroup();
         }
@@ -397,7 +394,8 @@ public class GameControl : MonoBehaviour
             }
 
             if (controlActionName != "")
-                GUI.Label(new Rect(Input.mousePosition.x + 25, Screen.height - Input.mousePosition.y + 25, 200, 25), controlActionName);
+                GUI.Label(new Rect(Input.mousePosition.x + 25, Screen.height - Input.mousePosition.y + 25, 200, 25),
+                    controlActionName);
 
             if (allowDebugMenu)
                 OnGuiDebugMenu();

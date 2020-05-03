@@ -63,7 +63,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100<size=50%>%
+  m_text: <size=50%>
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dd9deca368611a748856c9c805a8e97d, type: 2}
   m_sharedMaterial: {fileID: -8222556509275451512, guid: dd9deca368611a748856c9c805a8e97d,
@@ -133,13 +133,13 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 9029228865120268904}
-    characterCount: 4
+    characterCount: 0
     spriteCount: 0
     spaceCount: 0
-    wordCount: 1
+    wordCount: 0
     linkCount: 0
-    lineCount: 1
-    pageCount: 1
+    lineCount: 0
+    pageCount: 0
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -219,7 +219,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Fuel Capacity
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dd9deca368611a748856c9c805a8e97d, type: 2}
   m_sharedMaterial: {fileID: -8222556509275451512, guid: dd9deca368611a748856c9c805a8e97d,
@@ -289,13 +289,13 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 5337563376919406076}
-    characterCount: 13
+    characterCount: 0
     spriteCount: 0
-    spaceCount: 1
-    wordCount: 2
+    spaceCount: 0
+    wordCount: 0
     linkCount: 0
-    lineCount: 1
-    pageCount: 1
+    lineCount: 0
+    pageCount: 0
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -363,12 +363,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 625f552194472c24794cfacb52c23cea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TitleText: {fileID: 2038883352627181198}
-  InfoText: {fileID: 1025438438263703124}
-  Title: Fuel Capacity
-  Value: 100
-  ValueSuffix: '%'
-  ValueSuffixScale: 0.5
+  titleText: {fileID: 2038883352627181198}
+  infoText: {fileID: 1025438438263703124}
+  title: 
+  value: 
+  valueSuffix: 
+  valueSuffixScale: 0.5
 --- !u!1001 &8862089918732854150
 PrefabInstance:
   m_ObjectHideFlags: 0

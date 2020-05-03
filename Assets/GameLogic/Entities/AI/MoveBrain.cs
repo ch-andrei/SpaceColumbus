@@ -11,7 +11,7 @@ namespace Brains.Movement
     {
         private NavMeshAgent _navMeshAgent;
 
-        [FormerlySerializedAs("StuckDistanceThreshold")] public float stuckDistanceThreshold = 0.05f; // minimal distance to destination to consider that destination is reached
+        public float stuckDistanceThreshold = 0.025f; // minimal distance to destination to consider that destination is reached
 
         #region StuckConfig
         public float stuckTimeout = 2f; // in seconds

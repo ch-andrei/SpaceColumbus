@@ -33,18 +33,18 @@ namespace UI.Menus
     [System.Serializable]
     public struct UiComponent
     {
-        [FormerlySerializedAs("Obj")] public GameObject obj;
-        [FormerlySerializedAs("Active")] public bool active;
+        public GameObject obj;
+        public bool active;
     }
 
     public class UiManager : MonoBehaviour, IEventListener<UiEvent>
     {
-        [FormerlySerializedAs("MainCanvas")] public Canvas mainCanvas;
+        public Canvas mainCanvas;
 
         //public UiComponent EntityUi;
-        [FormerlySerializedAs("AgentVitalsUi")] public UiComponent agentVitalsUi;
+        public UiComponent agentVitalsUi;
 
-        [FormerlySerializedAs("VitalsMonitoring")] public GameObject vitalsMonitoring;
+        public GameObject vitalsMonitoring;
         UiVitalsLog _vitalsMenu;
 
         // Start is called before the first frame update

@@ -4,12 +4,12 @@ using UnityEngine.Serialization;
 
 public class GraphicWithLine : GraphicShaderControl
 {
-    [FormerlySerializedAs("Mask")] public GraphicWithMaskModifier mask = new GraphicWithMaskModifier();
-    [FormerlySerializedAs("Line")] public GraphicWithLineModifier line = new GraphicWithLineModifier();
-    [FormerlySerializedAs("Dither")] public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
-    [FormerlySerializedAs("Blend")] public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
+    public GraphicWithMaskModifier mask = new GraphicWithMaskModifier();
+    public GraphicWithLineModifier line = new GraphicWithLineModifier();
+    public GraphicWithDitherModifier dither = new GraphicWithDitherModifier();
+    public GraphicWithBlendModeModifier blend = new GraphicWithBlendModeModifier();
 
-    public override void Initialize()
+    protected override void Initialize()
     {
         this.AddModifier(new GraphicWithRectModifier());
         this.AddModifier(blend);
@@ -30,14 +30,14 @@ public class GraphicWithLineModifier : ShaderControlModifier
     private static string _applyRepeatField = "_ApplyRepeat";
     private static string _repeatFrequencyField = "_RepeatFrequency";
 
-    [FormerlySerializedAs("LineAngle")] [Range(0, 360)] public float lineAngle = 0;
-    [FormerlySerializedAs("LineSize")] [Range(0, 1000)] public int lineSize = 5;
-    [FormerlySerializedAs("LineThickness")] [Range(0, 1000)] public int lineThickness = 0;
+    [Range(0, 360)] public float lineAngle = 0;
+    [Range(0, 1000)] public int lineSize = 5;
+    [Range(0, 1000)] public int lineThickness = 0;
 
-    [FormerlySerializedAs("LineColor")] public Color lineColor = new Color(1, 1, 1, 1);
+    public Color lineColor = new Color(1, 1, 1, 1);
 
-    [FormerlySerializedAs("ApplyRepeat")] public bool applyRepeat = false;
-    [FormerlySerializedAs("RepeatDistance")] [Range(0, 1000)] public int repeatDistance = 1;
+    public bool applyRepeat = false;
+    [Range(0, 1000)] public int repeatDistance = 1;
 
     public override void ApplyModifier(GraphicShaderControl shaderControl)
     {

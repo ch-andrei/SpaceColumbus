@@ -8,12 +8,12 @@ public class PathfindCompute : MonoBehaviour
 {
     const int ThreadGroupSize = 1024;
 
-    [FormerlySerializedAs("FlowCompute")] public ComputeShader flowCompute;
+    public ComputeShader flowCompute;
 
     public int iterations = 50;
 
-    [FormerlySerializedAs("Height")] public int height;
-    [FormerlySerializedAs("Width")] public int width;
+    public int height;
+    public int width;
 
     public float decay = 0.9f;
 

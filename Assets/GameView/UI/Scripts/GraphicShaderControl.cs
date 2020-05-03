@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 [ExecuteInEditMode]
 public abstract class GraphicShaderControl : MonoBehaviour
 {
-    [FormerlySerializedAs("Material")] public Material material;
+    public Material material;
 
     protected Image Graphic;
 
@@ -17,7 +17,7 @@ public abstract class GraphicShaderControl : MonoBehaviour
         this._modifiers = new List<ShaderControlModifier>();
     }
 
-    public void AddModifier(ShaderControlModifier modifier)
+    protected void AddModifier(ShaderControlModifier modifier)
     {
         this._modifiers.Add(modifier);
     }
@@ -33,7 +33,7 @@ public abstract class GraphicShaderControl : MonoBehaviour
         Start();
     }
 
-    public virtual void Initialize()
+    protected virtual void Initialize()
     {
         if (material == null)
             Debug.Log($"{this.name} has no Material assigned.");

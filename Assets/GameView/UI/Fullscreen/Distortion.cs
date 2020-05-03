@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// The serializable data representation of our custom Post Process effect.
@@ -14,20 +15,20 @@ public class Distortion : PostProcessEffectSettings
     /// A global scale on the magnitude of distortion effects.
     /// </summary>
     [Range(0f, 1.0f), Tooltip("The magnitude in texels of distortion fx.")]
-    public FloatParameter Magnitude = new FloatParameter { value = 1.0f };
+    public FloatParameter magnitude = new FloatParameter { value = 1.0f };
 
     /// <summary>
     /// A down scale factor applied to the distortion texture. Increasing this value results in 
     /// a smaller RenderTexture being used, saving on fill-rate.
     /// </summary>
     [Range(0, 4), Tooltip("The down-scale factor to apply to the generated texture.")]
-    public IntParameter DownScaleFactor = new IntParameter { value = 0 };
+    public IntParameter downScaleFactor = new IntParameter { value = 0 };
 
     /// <summary>
     /// Toggles the debug view to show the distortion effects in the world as color values.
     /// </summary>
     [Tooltip("Displays the Distortion Effects in debug view.")]
-    public BoolParameter DebugView = new BoolParameter { value = false };
+    public BoolParameter debugView = new BoolParameter { value = false };
 }
 
 /// <summary>
@@ -38,7 +39,7 @@ public class DistortionRenderer : PostProcessEffectRenderer<Distortion>
     /// <summary>
     /// Cached PropertyToID lookup for the shader uniform variable named "_GlobalDistortionTex".
     /// </summary>
-    private int _globalDistortionTexID;
+    private int _globalDistortionTexId;
 
     /// <summary>
     /// Cached reference to the shader containing our custom post process.
@@ -58,7 +59,7 @@ public class DistortionRenderer : PostProcessEffectRenderer<Distortion>
     /// </summary>
     public override void Init()
     {
-        _globalDistortionTexID = Shader.PropertyToID("_GlobalDistortionTex");
+        _globalDistortionTexId = Shader.PropertyToID("_GlobalDistortionTex");
         _distortionShader = Shader.Find("Hidden/Custom/Distortion");
         base.Init();
     }
@@ -71,15 +72,15 @@ public class DistortionRenderer : PostProcessEffectRenderer<Distortion>
     public override void Render(PostProcessRenderContext context)
     {
         var sheet = context.propertySheets.Get(_distortionShader);
-        sheet.properties.SetFloat("_Magnitude", settings.Magnitude);
+        sheet.properties.SetFloat("_Magnitude", settings.magnitude);
 
-        if (!settings.DebugView)
+        if (!settings.debugView)
         {
-            context.command.GetTemporaryRT(_globalDistortionTexID,
-                context.camera.pixelWidth >> settings.DownScaleFactor,
-                context.camera.pixelHeight >> settings.DownScaleFactor,
+            context.command.GetTemporaryRT(_globalDistortionTexId,
+                context.camera.pixelWidth >> settings.downScaleFactor,
+                context.camera.pixelHeight >> settings.downScaleFactor,
                 0, FilterMode.Bilinear, RenderTextureFormat.RGFloat);
-            context.command.SetRenderTarget(_globalDistortionTexID);
+            context.command.SetRenderTarget(_globalDistortionTexId);
             context.command.ClearRenderTarget(false, true, Color.clear);
         }
 
