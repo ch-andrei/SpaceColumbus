@@ -19,7 +19,7 @@ namespace Entities
 {
     public enum EntityType : byte
     {
-        Building,
+        Structure,
         Agent
     }
 

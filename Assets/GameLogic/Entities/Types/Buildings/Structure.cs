@@ -21,7 +21,7 @@ namespace Entities
 
         private void Awake()
         {
-            this.entityType = EntityType.Building;
+            this.entityType = EntityType.Structure;
         }
 
         public override void Start()

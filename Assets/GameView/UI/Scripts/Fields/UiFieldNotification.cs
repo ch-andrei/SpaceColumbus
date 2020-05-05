@@ -1,4 +1,4 @@
-﻿namespace UI.Menus
+﻿namespace UI.Fields
 {
     public class UiFieldNotification : UiTwoTextField
     {

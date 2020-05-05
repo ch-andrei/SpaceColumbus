@@ -13,7 +13,7 @@ using Utilities.Events;
 
 using UI.Utils;
 
-namespace UI.Menus
+namespace UI.Fields
 {
     public class UiFieldVitalsLog : UiTwoTextField
     {

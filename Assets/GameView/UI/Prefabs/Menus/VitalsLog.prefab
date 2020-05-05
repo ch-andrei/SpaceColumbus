@@ -1012,7 +1012,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.13725491, g: 0.17254902, b: 0.2, a: 0.5882353}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.039215688}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -1131,6 +1131,16 @@ PrefabInstance:
         type: 3}
       propertyPath: line.lineSize
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
@@ -1282,6 +1292,16 @@ PrefabInstance:
       propertyPath: Line.LineColor.a
       value: 0.19607843
       objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
       propertyPath: m_Name
@@ -1431,6 +1451,16 @@ PrefabInstance:
         type: 3}
       propertyPath: Line.LineColor.a
       value: 0.19607843
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.g
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}

@@ -39,17 +39,19 @@ namespace UI.Menus
 
     public class UiManager : MonoBehaviour, IEventListener<UiEvent>
     {
-        public Canvas mainCanvas;
-
         //public UiComponent EntityUi;
         public UiComponent agentVitalsUi;
 
         public GameObject vitalsMonitoring;
         UiVitalsLog _vitalsMenu;
 
+        [FormerlySerializedAs("_contextManager")] public UiContextManager contextManager; 
+        
         // Start is called before the first frame update
         void Start()
         {
+            // contextManager = new UiContextManager();
+            
             _vitalsMenu = vitalsMonitoring.GetComponent<UiVitalsLog>();
 
             OnEvent(new AgentUiActive(true)); // enable, to make sure that it can be disabled
@@ -71,7 +73,7 @@ namespace UI.Menus
                 if (entityEvent.Entity is Agent agent)
                     this._vitalsMenu.SetObservedAgent(agent);
                 else
-                    Debug.Log("Selected something that isnt an agent.");
+                    Debug.Log("Selected something that isn't an agent.");
             }
 
             return true;

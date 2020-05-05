@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace UI.Menus
+namespace UI.Fields
 {
     [System.Serializable]
     public class UiWithScrollableItems : MonoBehaviour

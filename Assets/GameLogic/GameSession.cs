@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -149,9 +150,14 @@ public class GameSession : MonoBehaviour
         var selectedObjects = SelectionManager.GetSelectedObjects();
         foreach (var selectedObject in selectedObjects)
         {
-            var agent = selectedObject.GetComponent<Agent>();
-            if (agent != null)
+            try
+            {
+                var agent = selectedObject.GetComponent<Agent>();
                 agent.MoveTo(destination);
+            }
+            // these may occur when an object is destroyed
+            catch (MissingReferenceException e) { }
+            catch (NullReferenceException e) { }
         }
     }
 

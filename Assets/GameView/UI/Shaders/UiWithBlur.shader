@@ -53,7 +53,7 @@ Shader "UI/Background Gaussian Blur"
 
             GrabPass
             {
-                "_GRAB_TEX_1"
+//                "_GRAB_TEX_1"
             }
             
             Pass
@@ -72,14 +72,14 @@ Shader "UI/Background Gaussian Blur"
 
                 #define BLUR_PASS_1
                 #define BLUR_SHADER_FUNCS // remove this line, if want to define vert and frag functions
-                #define _GRAB_TEX _GRAB_TEX_1 // must match texture name in most recent grabpass
+                #define _GRAB_TEX _GrabTexture  // must match texture name in most recent grabpass
                 #include "Assets/GameView/Shaders/fast-gaussian-blur.cginc"
             ENDCG
             }
 
             GrabPass
             {
-                "_GRAB_TEX_2"
+//                "_GRAB_TEX_2"
             }
 
             Pass
@@ -98,7 +98,7 @@ Shader "UI/Background Gaussian Blur"
 
                 #define BLUR_PASS_2
                 #define BLUR_SHADER_FUNCS // remove this line, if want to define vert and frag functions
-                #define _GRAB_TEX _GRAB_TEX_2 // must match texture name in most recent grabpass
+                #define _GRAB_TEX _GrabTexture  // must match texture name in most recent grabpass
                 #include "Assets/GameView/Shaders/fast-gaussian-blur.cginc"
             ENDCG
             }

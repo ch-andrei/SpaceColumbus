@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.13725491, g: 0.17254902, b: 0.2, a: 0.5882353}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.5882353}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -249,7 +249,7 @@ PrefabInstance:
     - target: {fileID: 5337563376919406076, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: Pressure
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5519840354081144866, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
@@ -394,7 +394,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 98<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}
@@ -599,7 +599,7 @@ PrefabInstance:
     - target: {fileID: 5337563376919406076, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: O2 CAPACITY
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5519840354081144866, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
@@ -744,7 +744,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 63<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}
@@ -789,12 +789,12 @@ PrefabInstance:
     - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
       propertyPath: line.lineColor.r
-      value: 0.76862746
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
       propertyPath: line.lineColor.g
-      value: 0.84705883
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}
@@ -954,7 +954,7 @@ PrefabInstance:
     - target: {fileID: 5337563376919406076, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: Integrity
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5519840354081144866, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
@@ -1099,7 +1099,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 78<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}
@@ -1144,7 +1144,7 @@ PrefabInstance:
     - target: {fileID: 5337563376919406076, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: Batt. capacity
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5519840354081144866, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
@@ -1289,7 +1289,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 95<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}
@@ -1469,7 +1469,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 45<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}
@@ -1514,7 +1514,7 @@ PrefabInstance:
     - target: {fileID: 5337563376919406076, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: CPU
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5519840354081144866, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
@@ -1659,7 +1659,7 @@ PrefabInstance:
     - target: {fileID: 9029228865120268904, guid: 45a20ec983c8d424aae2f29655f8b94d,
         type: 3}
       propertyPath: m_text
-      value: 04<size=50%>%
+      value: <size=50%>
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45a20ec983c8d424aae2f29655f8b94d, type: 3}

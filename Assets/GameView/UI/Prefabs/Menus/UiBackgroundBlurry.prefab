@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: 934fd6a3c0437834d827112c4f8ea23f, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.70825917, g: 0.7743276, b: 0.8679245, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -299,10 +299,100 @@ PrefabInstance:
       propertyPath: Blend.DstBlend
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: dither.applyDither
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: dither.ditherStrengthInverse
+      value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color1.r
+      value: 0.1245995
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color1.g
+      value: 0.12899014
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color1.b
+      value: 0.1509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color2.r
+      value: 0.16487186
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color2.g
+      value: 0.16692519
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color2.b
+      value: 0.1792453
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color2.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.power
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.color1.a
+      value: 0.6862745
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.applyAlpha
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: ramp.invert
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: blend.srcBlend
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3554508478313551580, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: blend.dstBlend
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 7174333897406875934, guid: b3cd18ba76099dd469f150e319c00841,
         type: 3}
       propertyPath: m_Material
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7174333897406875934, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.9622642
+      objectReference: {fileID: 0}
+    - target: {fileID: 7174333897406875934, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.9622642
+      objectReference: {fileID: 0}
+    - target: {fileID: 7174333897406875934, guid: b3cd18ba76099dd469f150e319c00841,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.9622642
       objectReference: {fileID: 0}
     - target: {fileID: 7662342495529716684, guid: b3cd18ba76099dd469f150e319c00841,
         type: 3}
@@ -312,7 +402,7 @@ PrefabInstance:
     - target: {fileID: 7662342495529716684, guid: b3cd18ba76099dd469f150e319c00841,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b3cd18ba76099dd469f150e319c00841, type: 3}
@@ -393,6 +483,46 @@ PrefabInstance:
         type: 3}
       propertyPath: Line.LineColor.b
       value: 0.42700002
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.applyRepeat
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineThickness
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.repeatDistance
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: line.lineColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: blend.srcBlend
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: blend.dstBlend
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118601800480480896, guid: 780004cad29a4cf45a8959e62647baec,
+        type: 3}
+      propertyPath: dither.applyDither
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2739728723680230747, guid: 780004cad29a4cf45a8959e62647baec,
         type: 3}

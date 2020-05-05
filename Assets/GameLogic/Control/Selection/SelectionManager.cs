@@ -69,15 +69,33 @@ namespace EntitySelection
             foreach (var selectionListener in _selectionListeners.Values)
             {
                 var selectable = selectionListener.selectable;
-                if (selectable.isSelected)
+                if (selectionListener.selectable.isSelected)
                 {
                     selectedListeners.Add(selectionListener);
-                    selectedObjects.Add(selectionListener.selectable.gameObject);
+                    selectedObjects.Add(selectable.gameObject);
                 }
             }
 
             CurrentlySelectedListeners = selectedListeners;
             CurrentlySelectedGameObjects = selectedObjects;
+        }
+
+        private static void CheckMissingSelected()
+        {
+            int removed = 0;
+            for (int i = 0; i < CurrentlySelectedListeners.Count; i++)
+            {
+                int index = i - removed;
+                
+                var listener = CurrentlySelectedListeners[index];
+                var go = CurrentlySelectedGameObjects[index];
+
+                if (listener is null || go is null)
+                {
+                    CurrentlySelectedListeners.RemoveAt(index);
+                    CurrentlySelectedGameObjects.RemoveAt(index);
+                }
+            }
         }
 
         //public void SetDirty(bool dirty) { this.dirty = dirty; }
@@ -156,6 +174,10 @@ namespace EntitySelection
                 UpdateMouseSelection(mouseOverObject, selectionCriteria);
                 ProcessSelected();
             }
+            else
+            {
+                CheckMissingSelected();
+            }
         }
 
         public static void UpdateBoxSelection(Vector3 s1, Vector3 s2, SelectionCriteria selectionCriteria = null)
@@ -208,6 +230,4 @@ namespace EntitySelection
             return dirty;
         }
     }
-
-
 }

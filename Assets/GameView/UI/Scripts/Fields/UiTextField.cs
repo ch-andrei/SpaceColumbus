@@ -8,7 +8,7 @@ using TMPro;
 using System.Collections;
 using UnityEngine.Serialization;
 
-namespace UI.Menus
+namespace UI.Fields
 {
     [System.Serializable]
     public class UiTextField

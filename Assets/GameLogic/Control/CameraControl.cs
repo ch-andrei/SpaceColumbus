@@ -9,6 +9,9 @@ using UnityEngine;
 using Regions;
 using InputControls;
 
+namespace Controls
+{
+
 [AddComponentMenu("Camera/CameraControl")]
 public class CameraControl : MonoBehaviour
 {
@@ -366,4 +369,5 @@ public class CameraControl : MonoBehaviour
     {
         return /*GameControl.gameSession.humanPlayer.getPos()*/ new Vector3(0, 0, 0) - transform.forward * viewCenterOnPlayerOffset;
     }
+}
 }

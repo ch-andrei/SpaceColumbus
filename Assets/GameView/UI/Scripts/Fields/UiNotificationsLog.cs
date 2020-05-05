@@ -10,7 +10,7 @@ using Entities;
 using UnityEngine.Serialization;
 using Utilities.Events;
 
-namespace UI.Menus
+namespace UI.Fields
 {
     public class UiNotificationsLog : UiWithScrollableItems, IPointerDownHandler
     {

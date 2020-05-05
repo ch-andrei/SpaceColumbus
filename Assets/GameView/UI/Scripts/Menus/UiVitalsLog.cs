@@ -16,6 +16,8 @@ using Utilities.Events;
 using UI.Utils;
 using UnityEngine.Serialization;
 
+using UI.Fields;
+
 namespace UI.Menus
 {
     public struct VitalLogInfo

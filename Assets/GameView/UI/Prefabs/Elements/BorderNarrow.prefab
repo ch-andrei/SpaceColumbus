@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 8590693462457931696}
   - component: {fileID: 4835866586044443747}
   - component: {fileID: 7899734102081496811}
-  - component: {fileID: 2118601800480480896}
+  - component: {fileID: 7675484191190786009}
   m_Layer: 0
-  m_Name: Line
+  m_Name: BorderNarrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &2118601800480480896
+--- !u!114 &7675484191190786009
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -83,20 +83,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 2739728723680230747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8456bfc447b3f0b4ea72bd039f81a6e4, type: 3}
+  m_Script: {fileID: 11500000, guid: b7007b32c746a614a898b4837d776076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: c232c14e99dab0c40b7946159a40a877, type: 2}
+  material: {fileID: 2100000, guid: 186e44d3eb9b27142b7e2877839978b7, type: 2}
   mask:
     mask: {fileID: 0}
     maskWeight: 0.1
-  line:
-    lineAngle: 0
-    lineSize: 0
-    lineThickness: 2
-    lineColor: {r: 0.76862746, g: 0.84705883, b: 1, a: 1}
-    applyRepeat: 0
-    repeatDistance: 1
+  border:
+    borderSize: 1
+    borderThickness: 0
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    renderBorderOnly: 1
   dither:
     applyDither: 0
     ditherStrengthInverse: 128
