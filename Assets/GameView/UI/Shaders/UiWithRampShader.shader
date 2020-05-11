@@ -13,12 +13,13 @@ Shader "UI/Default With Ramp"
         [PerRendererData] _RampPower("Ramp Power", Range(0.1, 10)) = 1
         [PerRendererData] _RampScale("Ramp Scale", Range(0.01, 10)) = 1
         [PerRendererData] _RampDirection("Ramp Direction", Vector) = (1,1,1,1)
-        [PerRendererData, Toggle] _Radial("Radial", float) = 1
-        [PerRendererData, Toggle] _Invert("Invert ramp", float) = 1
-        [PerRendererData, Toggle] _ApplyAlpha("Apply alpha", float) = 1
+        [PerRendererData][Toggle] _Radial("Radial", float) = 1
+        [PerRendererData][Toggle] _Invert("Invert ramp", float) = 1
+        [PerRendererData][Toggle] _ApplyAlpha("Apply alpha", float) = 1
 
-        [PerRendererData, Toggle] _ApplyDither("Apply Dither", Float) = 1
+        [PerRendererData][Toggle] _ApplyDither("Apply Dither", Float) = 1
         [PerRendererData] _DitherStrength("Dither Strength", Range(0, 1)) = 0.001
+        [PerRendererData] _DitherScale("Dither Scae", Range(0.1, 10)) = 1
 
         [PerRendererData] _SrcBlend("__src", Float) = 1.0
         [PerRendererData] _DstBlend("__dst", Float) = 0.0
@@ -111,9 +112,6 @@ Shader "UI/Default With Ramp"
                 float _Radial;
                 float _ApplyAlpha;
 
-                float _ApplyDither;
-                float _DitherStrength;
-
                 v2f vert(appdata_t v)
                 {
                     v2f OUT;
@@ -156,7 +154,7 @@ Shader "UI/Default With Ramp"
                     if (_ApplyAlpha)
                         color.a *= ramp;
 
-                    APPLY_DITHER(color);
+                    APPLY_DITHER(color, IN.uv.xy);
 
                     #ifdef UNITY_UI_CLIP_RECT
                     color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);

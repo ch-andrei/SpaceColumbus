@@ -1,36 +1,18 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using Utilities.Misc;
-using Utilities.Events;
+
 using InputControls;
-// using Pathfinding;
-using Regions;
 using Entities;
-using Players;
 using EntitySelection;
+
 using UI.Utils;
-using UI.Menus;
-using UnityEngine.Serialization;
+using UI;
 
 namespace Controls
 {
     public class GameControl : MonoBehaviour
     {
-        #region Configuration
-
-        public bool showGui = true;
-
-        [Header("Selection GUI")] public Color guiColor = new Color(0.8f, 0.8f, 0.95f, 0.25f);
-        public Color guiBorderColor = new Color(0.8f, 0.8f, 0.95f);
-        public int guiBorderWidth = 2;
-
-        #endregion
-
-        public enum ControlMode : byte
+        private enum EControlType
         {
             Default,
             Menu,
@@ -38,43 +20,40 @@ namespace Controls
             Other
         }
 
-        public ControlMode controlMode;
+        #region Configuration
+
+        public bool showGui = true;
+
+        [Header("Selection GUI")]
+        public Color guiColor = new Color(0.8f, 0.8f, 0.95f, 0.25f);
+        public Color guiBorderColor = new Color(0.8f, 0.8f, 0.95f);
+        public int guiBorderWidth = 2;
+
+        #endregion
+
         public Vector3 mouseOverWorldPosition;
 
         public GameSession gameSession { get; private set; }
 
         #region PrivateVariables
 
+        private EControlType _controlType;
+
         private EventSystem _eventSystem;
-        private UiManager _uiManager;
-
-        #region UnitSelection
-
-        private GameObject _mouseOverObject;
-        private bool _isBoxSelecting, _startedBoxSelection;
-        private Vector2 _mousePositionAtSelectionStart, _mousePositionAtSelectionEnd;
-
-        #endregion UnitSelection
-
-        #region DebugUi
-
-        private static GUIStyle _guiStyle;
-
-        private bool _showDebugGui;
-        private int _debugGuiButtonCount;
-        private Vector2 _debugGuiScrollPosition = Vector2.zero;
-        private Texture2D _debugUiIcon;
+        public UiManager _uiManager;
 
         private DebugMenu _debugMenu;
 
-        #endregion DebugUi
+        #region UnitSelection
+        private GameObject _mouseOverObject;
+        private bool _isBoxSelecting, _startedBoxSelection;
+        private Vector2 _mousePositionAtSelectionStart, _mousePositionAtSelectionEnd;
+        #endregion UnitSelection
 
         #endregion
 
         void Start()
         {
-            controlMode = ControlMode.Default;
-
             _debugMenu = this.GetComponent<DebugMenu>();
 
             _isBoxSelecting = false;
@@ -93,54 +72,93 @@ namespace Controls
             KeyActiveManager.NewDoubleDetector(GameControlsManager.LeftClickDown.keyPress);
             KeyActiveManager.NewDoubleDetector(GameControlsManager.RightClickDown.keyPress);
 
-            // create GUI style
-            _guiStyle = new GUIStyle();
-            _guiStyle.alignment = TextAnchor.LowerLeft;
-            _guiStyle.normal.textColor = Tools.HexToColor("#153870");
+            DefaultMode();
         }
 
-        public void DebugMode()
+        public void SetDebugMenu()
         {
-            controlMode = ControlMode.DebugMenu;
-            ResetSelecting();
+            _controlType = EControlType.DebugMenu;
+            ResetSelection();
+            ResetUi();
+        }
+
+        public void SetMenu(int menu)
+        {
+            _controlType = EControlType.Menu;
+            _uiManager.OpenMenu(menu);
         }
 
         void OnMouse0Down()
         {
-            switch (controlMode)
+            switch (_controlType)
             {
-                case ControlMode.Default:
+                case EControlType.Default:
+                    if (!IsMouseOverUi())
+                        SelectionStart();
                     break;
-                case ControlMode.DebugMenu:
+                case EControlType.DebugMenu:
                     _debugMenu.OnMouse0();
                     break;
                 default:
-                    controlMode = ControlMode.Default;
                     break;
             }
+        }
+
+        void SelectionStart()
+        {
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
+            {
+                _startedBoxSelection = true;
+                _isBoxSelecting = true;
+                _mousePositionAtSelectionStart = Input.mousePosition;
+                SelectionManager.Dirty = true;
+            }
+        }
+
+        void OnMouse0Hold()
+        {
+            if (_controlType == EControlType.Default)
+                _mousePositionAtSelectionEnd = Input.mousePosition;
+        }
+
+        void OnMouse0Up()
+        {
+            if (_controlType == EControlType.Default)
+                _isBoxSelecting = false;
         }
 
         // by default, Control1 is the right mouse click
         void OnMouse1Down()
         {
-            switch (controlMode)
+            switch (_controlType)
             {
-                case ControlMode.Default:
-                    MoveSelectedAgents();
+                case EControlType.Default:
+                    OrderMoveSelectedAgents();
                     break;
-                default:
+                case EControlType.Menu:
+                    int depth = _uiManager.CloseNewestMenu();
+                    if (depth <= 1)
+                        DefaultMode();
+                    break;
+                case EControlType.DebugMenu:
                     _debugMenu.ResetMode();
-                    controlMode = ControlMode.Default;
+                    DefaultMode();
                     break;
             }
         }
 
-        private void MoveSelectedAgents()
+        private void DefaultMode()
+        {
+            _controlType = EControlType.Default;
+            ResetSelection();
+        }
+
+        private void OrderMoveSelectedAgents()
         {
             gameSession.MoveSelectedAgents(mouseOverWorldPosition);
         }
 
-        private void StopSelectedAgents()
+        private void OrderStopSelectedAgents()
         {
             gameSession.StopSelectedAgents();
         }
@@ -150,34 +168,15 @@ namespace Controls
             return _eventSystem.IsPointerOverGameObject();
         }
 
-        void GetSelectionArea()
-        {
-            // If the left mouse button is pressed, save mouse location and begin selection
-            if (!IsMouseOverUi() && KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
-            {
-                _startedBoxSelection = true;
-                _isBoxSelecting = true;
-                _mousePositionAtSelectionStart = Input.mousePosition;
-                SelectionManager.Dirty = true;
-            }
-
-            if (_isBoxSelecting && KeyActiveManager.IsActive(GameControlsManager.LeftClick))
-            {
-                _mousePositionAtSelectionEnd = Input.mousePosition;
-            }
-
-            // If the left mouse button is released, end selection
-            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickUp))
-            {
-                _isBoxSelecting = false;
-            }
-        }
-
-        void ResetSelecting()
+        void ResetSelection()
         {
             _isBoxSelecting = false;
-
             OnDeselectObjects();
+        }
+
+        void ResetUi()
+        {
+            _uiManager.Reset();
         }
 
         void ProcessSelectionArea()
@@ -191,6 +190,7 @@ namespace Controls
 
             // TODO ADD CRITERIA/SORTING of selected objects
 
+            // If selecting with mouse pointer only (no box selection)
             if (!_isBoxSelecting)
             {
                 var selectedObjects = SelectionManager.CurrentlySelectedGameObjects;
@@ -204,26 +204,17 @@ namespace Controls
 
                         if (entity != null)
                         {
-                            _uiManager.OnEvent(new SelectedEntityEvent(entity));
-
-                            if (entity is Agent agent)
-                            {
-                                _uiManager.OnEvent(new AgentUiActive(true));
-                            }
+                            _uiManager.OnSelectEntity(entity);
                         }
                     }
-                    else
-                    {
-                        if (selectedObjects.Count == 0)
-                        {
-                            SelectionManager.UpdateMouseSelection(_mouseOverObject, null);
-                        }
-                    }
+                    else if (selectedObjects.Count == 0)
+                        SelectionManager.UpdateMouseSelection(_mouseOverObject, null);
                 }
                 catch (MissingReferenceException e)
                 {
                     // if object gets destroyed, it may still be referenced here if selection manager doesnt update 'currently selected'
                     Debug.Log("Warning: trying to inspect a destroyed object.");
+                    SelectionManager.CheckMissingSelected(); // TODO: optionally remove this
                 }
 
                 return;
@@ -240,23 +231,23 @@ namespace Controls
 
         private void OnDeselectObjects()
         {
-            _uiManager.OnEvent(new AgentUiActive(false));
-
             SelectionManager.DeselectAll();
-
+            _uiManager.OnDeselect();
             _startedBoxSelection = false;
-        }
-
-        private void FixedUpdate()
-        {
-            if (!IsMouseOverUi())
-                ProcessSelectionArea();
         }
 
         void Update()
         {
-            KeyActiveManager.Update(); // process key presses
+            RayToCursorPosition();
 
+            ProcessControls();
+
+            if (!IsMouseOverUi())
+                ProcessSelectionArea();
+        }
+
+        private void RayToCursorPosition()
+        {
             // trace a ray to cursor location
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hitInfo))
@@ -272,38 +263,33 @@ namespace Controls
                     _mouseOverObject = hitObject;
                 }
             }
-
-            if (controlMode == ControlMode.Default)
-            {
-                GetSelectionArea();
-            }
-            else
-            {
-            }
-
-            ProcessControls();
         }
 
         private void ProcessControls()
         {
-            if (!IsMouseOverUi())
-            {
-                if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
-                    OnMouse0Down();
+            KeyActiveManager.Update(); // process key presses
 
-                if (KeyActiveManager.IsActive(GameControlsManager.RightClick))
-                    OnMouse1Down();
-            }
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
+                OnMouse0Down();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClick))
+                OnMouse0Hold();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickUp))
+                OnMouse0Up();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.RightClickDown))
+                OnMouse1Down();
 
             if (KeyActiveManager.IsActive(GameControlsManager.AgentStopHotkey))
-                StopSelectedAgents();
+                OrderStopSelectedAgents();
         }
 
         void OnGUI()
         {
             if (showGui)
             {
-                if (controlMode == ControlMode.Default)
+                if (_controlType == EControlType.Default)
                 {
                     if (_isBoxSelecting)
                     {

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 using Utilities.Misc;
 
@@ -10,6 +11,9 @@ namespace Controls
         private const string ActionSpawnAgentName = "Spawn Agent";
         private const string ActionSpawnExplosionName = "Spawn Explosion";
         private const string ActionSpawnObjectName = "Spawn Object";
+        private const string Menu1ToggleName = "Open Menu 1";
+        private const string Menu2ToggleName = "Open Menu 2";
+        private const string Menu3ToggleName = "Open Menu 3";
         
         public bool allowDebug = true;
 
@@ -19,9 +23,7 @@ namespace Controls
         public int buttonHeight = 25;
         public int toggleIconSize = 25;
 
-        private Texture2D _debugUiIcon;
-
-        public enum DebugMode : byte
+        public enum EDebugMode : byte
         {
             SpawnAgent,
             SpawnExplosion,
@@ -29,9 +31,11 @@ namespace Controls
             Other
         }
 
-        private DebugMode _mode;
+        private EDebugMode _mode;
 
         private bool _showDebugGui;
+
+        private Texture2D _debugUiIcon;
 
         private GameControl _gameControl;
 
@@ -39,7 +43,7 @@ namespace Controls
         {
             _debugUiIcon = Tools.LoadTexture("Assets/GameView/UI/OnGui/Icons/debug.png");
 
-            _mode = DebugMode.Other;
+            _mode = EDebugMode.Other;
             _gameControl = this.GetComponent<GameControl>();
         }
 
@@ -47,10 +51,10 @@ namespace Controls
         {
             switch (_mode)
             {
-                case DebugMode.SpawnAgent:
+                case EDebugMode.SpawnAgent:
                     _gameControl.gameSession.SpawnSimpleAgent(_gameControl.mouseOverWorldPosition);
                     break;
-                case DebugMode.SpawnExplosion:
+                case EDebugMode.SpawnExplosion:
                     break;
                 default:
                     break;
@@ -59,7 +63,7 @@ namespace Controls
 
         public void ResetMode()
         {
-            _mode = DebugMode.Other;
+            _mode = EDebugMode.Other;
         }
 
         private void OnGuiDebugMenu()
@@ -69,16 +73,31 @@ namespace Controls
             {
                 GUI.BeginGroup(new Rect(0, toggleIconSize, guiMenuWidth, guiMenuHeight));
 
-                if (GUI.Button(new Rect(0, 0, guiMenuWidth, buttonHeight), ActionSpawnAgentName))
+                if (GUI.Button(new Rect(0, 0 * buttonHeight, guiMenuWidth, buttonHeight), ActionSpawnAgentName))
                 {
-                    _mode = DebugMode.SpawnAgent;
-                    _gameControl.DebugMode();
+                    _mode = EDebugMode.SpawnAgent;
+                    _gameControl.SetDebugMenu();
                 }
 
-                if (GUI.Button(new Rect(0, buttonHeight, guiMenuWidth, buttonHeight), ActionSpawnExplosionName))
+                if (GUI.Button(new Rect(0, 1 * buttonHeight, guiMenuWidth, buttonHeight), ActionSpawnExplosionName))
                 {
-                    _mode = DebugMode.SpawnExplosion;
-                    _gameControl.DebugMode();
+                    _mode = EDebugMode.SpawnExplosion;
+                    _gameControl.SetDebugMenu();
+                }
+                
+                if (GUI.Button(new Rect(0, 2 * buttonHeight, guiMenuWidth, buttonHeight), Menu1ToggleName))
+                {
+                    _gameControl.SetMenu(1);
+                }
+                
+                if (GUI.Button(new Rect(0, 3 * buttonHeight, guiMenuWidth, buttonHeight), Menu2ToggleName))
+                {
+                    _gameControl.SetMenu(2);
+                }
+                
+                if (GUI.Button(new Rect(0, 4 * buttonHeight, guiMenuWidth, buttonHeight), Menu3ToggleName))
+                {
+                    _gameControl.SetMenu(3);
                 }
 
                 GUI.EndGroup();
@@ -103,14 +122,16 @@ namespace Controls
             string controlActionName = "";
             switch (_mode)
             {
-                case DebugMode.SpawnAgent:
+                case EDebugMode.SpawnAgent:
                     controlActionName = ActionSpawnAgentName;
                     break;
-                case DebugMode.SpawnExplosion:
+                case EDebugMode.SpawnExplosion:
                     controlActionName = ActionSpawnExplosionName;
                     break;
-                case DebugMode.SpawnObject:
+                case EDebugMode.SpawnObject:
                     controlActionName = ActionSpawnObjectName;
+                    break;
+                default:
                     break;
             }
 

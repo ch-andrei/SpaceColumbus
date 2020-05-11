@@ -1,30 +1,18 @@
-﻿using System.Text;
-using System.Collections;
-using System.Collections.Generic;
-
-using TMPro;
-
-using Entities;
-using Entities.Bodies;
+﻿using Entities.Bodies;
 using Entities.Bodies.Health;
-using Entities.Bodies.Damages;
-
-using Utilities.Events;
 
 using UI.Utils;
+using UI.Components;
 
 namespace UI.Fields
 {
     public class UiFieldVitalsLog : UiTwoTextField
     {
-        public override void Awake()
-        {
-            base.Awake();
-        }
-
         public string HpSystemToRichString(HpSystem hpSystem)
         {
-            return RichStrings.WithColor($"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
+            return RichStrings.WithColor(
+                $"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]",
+                DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
         }
 
         public void Initialize(BodyPart bodyPart)

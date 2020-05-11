@@ -1,4 +1,6 @@
-﻿namespace UI.Fields
+﻿using UI.Components;
+
+namespace UI.Fields
 {
     public class UiFieldNotification : UiTwoTextField
     {

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4990542882354319671}
   - component: {fileID: 8022159013507785325}
   - component: {fileID: 5844954163440524581}
+  - component: {fileID: 6921617352194496006}
   m_Layer: 0
   m_Name: Info
   m_TagString: Untagged
@@ -63,7 +64,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Text Field
+  m_text: Info
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 068fea32c46135947a33e2197618e831, type: 2}
   m_sharedMaterial: {fileID: -7176506418836603315, guid: 068fea32c46135947a33e2197618e831,
@@ -133,10 +134,10 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 5844954163440524581}
-    characterCount: 10
+    characterCount: 4
     spriteCount: 0
-    spaceCount: 1
-    wordCount: 2
+    spaceCount: 0
+    wordCount: 1
     linkCount: 0
     lineCount: 1
     pageCount: 1
@@ -156,6 +157,19 @@ MonoBehaviour:
   - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6921617352194496006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1166604582354619517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0426323ef91279e4dacb428cd50f9ad9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  label: Info
 --- !u!1 &2038883352627181198
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,6 +182,7 @@ GameObject:
   - component: {fileID: 1893615364630873188}
   - component: {fileID: 5337563376919406076}
   - component: {fileID: 7346005039259822202}
+  - component: {fileID: 4182556948883835176}
   m_Layer: 0
   m_Name: Time
   m_TagString: Untagged
@@ -221,7 +236,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Text Field
+  m_text: Time
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 068fea32c46135947a33e2197618e831, type: 2}
   m_sharedMaterial: {fileID: -7176506418836603315, guid: 068fea32c46135947a33e2197618e831,
@@ -267,7 +282,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 5
+  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -291,12 +306,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 5337563376919406076}
-    characterCount: 10
+    characterCount: 4
     spriteCount: 0
-    spaceCount: 1
-    wordCount: 2
+    spaceCount: 0
+    wordCount: 1
     linkCount: 0
-    lineCount: 2
+    lineCount: 1
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -334,6 +349,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &4182556948883835176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038883352627181198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0426323ef91279e4dacb428cd50f9ad9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  label: Time
 --- !u!1 &4550288942807334957
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,12 +487,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e5c2820502bd0345aa4b943bee477eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textLeft:
-    gameObject: {fileID: 2038883352627181198}
-    defaultText: Text Field
-  textRight:
-    gameObject: {fileID: 1166604582354619517}
-    defaultText: Text Field
+  label: 
+  textLeft: {fileID: 4182556948883835176}
+  textRight: {fileID: 6921617352194496006}
 --- !u!114 &4155817195447621007
 MonoBehaviour:
   m_ObjectHideFlags: 0

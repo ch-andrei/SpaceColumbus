@@ -18,6 +18,7 @@
 
         [PerRendererData][Toggle] _ApplyDither("Apply Dither", Float) = 1
         [PerRendererData] _DitherStrength("Dither Strength", Range(0, 1)) = 0.001
+        [PerRendererData] _DitherScale("Dither Scae", Range(0.1, 10)) = 1
 
         [PerRendererData] _SrcBlend("__src", Float) = 1.0
         [PerRendererData] _DstBlend("__dst", Float) = 0.0
@@ -115,8 +116,6 @@
                 sampler2D _MaskTex;
                 float _MaskWeight;
 
-                DITHER_CONSTANTS;
-
                 v2f vert(appdata_t v)
                 {
                     v2f OUT;
@@ -162,7 +161,7 @@
 
                         color = lerp(IN.color, colorL, smoothstep(0, 1, isLine));
 
-                        APPLY_DITHER(color);
+                        APPLY_DITHER(color, IN.uv.xy);
                     }
 
                     #ifdef UNITY_UI_CLIP_RECT

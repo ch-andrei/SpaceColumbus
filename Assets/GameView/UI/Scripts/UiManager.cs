@@ -1,84 +1,142 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 using Entities;
-using UnityEngine.Serialization;
-using Utilities.Events;
 
-namespace UI.Menus
+using UI.Menus;
+using UI.Fields;
+using UI.Components;
+
+namespace UI
 {
-    public class AgentUiActive : UiEvent
+    /*
+     * Class for managing all UI related actions.
+     */
+    public class UiManager : MonoBehaviour
     {
-        public bool ActiveState { get; private set; }
+        #region Contexts and Modules
 
-        public AgentUiActive(bool state)
-        {
-            this.ActiveState = state;
-        }
-    }
+        public UiContext DefaultContext;
+        public UiContext Menu1Context;
+        public UiContext Menu2Context;
+        public UiContext Menu3Context;
 
-    public class SelectedEntityEvent : UiEvent
-    {
-        public Entity Entity;
-
-        public SelectedEntityEvent(Entity entity) { this.Entity = entity; }
-    }
-
-    public abstract class UiEvent : GameEvent
-    {
-
-    }
-
-    [System.Serializable]
-    public struct UiComponent
-    {
-        public GameObject obj;
-        public bool active;
-    }
-
-    public class UiManager : MonoBehaviour, IEventListener<UiEvent>
-    {
         //public UiComponent EntityUi;
-        public UiComponent agentVitalsUi;
+        public UiModule MenuVitalsLog;
+        private UiModuleVitalsLog _agentVitalsModule;
 
-        public GameObject vitalsMonitoring;
-        UiVitalsLog _vitalsMenu;
+        #endregion Contexts and Modules
 
-        [FormerlySerializedAs("_contextManager")] public UiContextManager contextManager; 
-        
+        private UiContextManager _contextManager;
+
+        private void Awake()
+        {
+            _agentVitalsModule = MenuVitalsLog.GetComponentInChildren<UiModuleVitalsLog>();
+        }
+
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
-            // contextManager = new UiContextManager();
-            
-            _vitalsMenu = vitalsMonitoring.GetComponent<UiVitalsLog>();
+            _contextManager = new UiContextManager();
+            _contextManager.PushContext(DefaultContext);
 
-            OnEvent(new AgentUiActive(true)); // enable, to make sure that it can be disabled
-            OnEvent(new AgentUiActive(false)); // disable
+            OnSelectAgent(true); // enable, to make sure that it can be disabled
+            OnDeselect(); // disable
         }
 
-        public bool OnEvent(UiEvent gameEvent)
+        public void OpenMenu(int menu)
         {
-            if (gameEvent is AgentUiActive activeStateEvent)
+            switch (menu)
             {
-                if (this.agentVitalsUi.active != activeStateEvent.ActiveState)
-                {
-                    this.agentVitalsUi.active = activeStateEvent.ActiveState;
-                    this.agentVitalsUi.obj.SetActive(activeStateEvent.ActiveState);
-                }
+                case 1:
+                    _contextManager.PushContext(Menu1Context);
+                    break;
+                case 2:
+                    _contextManager.PushContext(Menu2Context);
+                    break;
+                case 3:
+                    _contextManager.PushContext(Menu3Context);
+                    break;
+                default:
+                    break;
             }
-            else if (gameEvent is SelectedEntityEvent entityEvent)
-            {
-                if (entityEvent.Entity is Agent agent)
-                    this._vitalsMenu.SetObservedAgent(agent);
-                else
-                    Debug.Log("Selected something that isn't an agent.");
-            }
-
-            return true;
         }
 
+        public int CloseNewestMenu()
+        {
+            _contextManager.PopContext();
+            return _contextManager.Depth;
+        }
+
+        public void Reset()
+        {
+            _contextManager.PopAll();
+        }
+
+        public void OnSelectEntity(Entity entity)
+        {
+            if (entity is Agent agent)
+            {
+                this._agentVitalsModule.SetObservedAgent(agent);
+
+                OnSelectAgent(true);
+            }
+            else
+                Debug.Log("Selected something that isn't an agent.");
+        }
+
+        public void OnSelectAgent(bool selectState) => this._agentVitalsModule.SetActive(selectState);
+        public void OnDeselect() => OnSelectAgent(false);
     }
 
+    /*
+     * Class for keeping track of Context switches.
+     */
+    [System.Serializable]
+    public class UiContextManager
+    {
+        public int Depth { get; private set; }
+        public UiContextType ContextType => _contextStack.Peek().contextType;
+
+        private Stack<UiContext> _contextStack;
+        public bool CanPop => _contextStack.Count > 1;
+        public UiContext CurrentContext => _contextStack.Peek();
+
+        public UiContextManager() { _contextStack = new Stack<UiContext>(); }
+
+        public void PushContext(UiContext context)
+        {
+            // don't add if it is the same context
+            if (0 < Depth && CurrentContext.name == context.name)
+                return;
+
+            context.SetActive(true);
+            context.SetOrder(Depth);
+            _contextStack.Push(context);
+            Depth++;
+        }
+
+        public UiContext PopContext()
+        {
+            if (!CanPop) return null;
+
+            var context = _contextStack.Pop();
+            context.SetOrder(0);
+            context.SetActive(false);
+            Depth--;
+
+            context = _contextStack.Peek();
+            if (context != null)
+                context.SetActive(true);
+
+            return context;
+        }
+
+        public void PopAll()
+        {
+            while (CanPop)
+                PopContext();
+        }
+    }
 }

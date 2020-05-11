@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9102906812758062449}
   - component: {fileID: 2669973211234303688}
+  - component: {fileID: 7068335626147710341}
   - component: {fileID: 1246277206602355489}
   m_Layer: 0
   m_Name: NewCount
@@ -45,6 +46,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 927611749328766530}
   m_CullTransparentMesh: 0
+--- !u!114 &7068335626147710341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 927611749328766530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0426323ef91279e4dacb428cd50f9ad9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  label: 0 NEW
+  submodules: []
 --- !u!114 &1246277206602355489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -475,14 +490,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be80f2354dd3fe949ab58ac80328c183, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  titleTextLeft:
-    gameObject: {fileID: 6347263569028444329}
-    defaultText: Text Field
-  titleTextRight:
-    gameObject: {fileID: 927611749328766530}
-    defaultText: Text Field
+  label: 
+  submodules: []
+  titleTextLeft: {fileID: 4411722466575155737}
+  titleTextRight: {fileID: 7068335626147710341}
   contentRoot: {fileID: 7136316529990823754}
-  nofificationPrefab: {fileID: 8377239322556107832, guid: ee51a1988a3814648876d7872661b3bb,
+  notificationPrefab: {fileID: 8377239322556107832, guid: ee51a1988a3814648876d7872661b3bb,
     type: 3}
 --- !u!222 &295970870919067729
 CanvasRenderer:
@@ -657,6 +670,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3173569014137904191}
   - component: {fileID: 6127969347054893847}
+  - component: {fileID: 4411722466575155737}
   - component: {fileID: 2846648785981928086}
   m_Layer: 0
   m_Name: Title
@@ -692,6 +706,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6347263569028444329}
   m_CullTransparentMesh: 0
+--- !u!114 &4411722466575155737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6347263569028444329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0426323ef91279e4dacb428cd50f9ad9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  label: Notifications Log
+  submodules: []
 --- !u!114 &2846648785981928086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -710,7 +738,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: NOTIFICATIONS LOG
+  m_text: Notifications Log
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dd9deca368611a748856c9c805a8e97d, type: 2}
   m_sharedMaterial: {fileID: -8222556509275451512, guid: dd9deca368611a748856c9c805a8e97d,

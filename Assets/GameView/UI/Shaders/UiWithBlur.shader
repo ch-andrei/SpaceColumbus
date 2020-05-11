@@ -1,17 +1,24 @@
-﻿// Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
-
-Shader "UI/Background Gaussian Blur"
+﻿Shader "UI/Background Gaussian Blur"
 {
     Properties
     {
-        [PerRendererData] _GausBlurSigma("Gaussian Blur Sigma", Range(0.1, 10.0)) = 3
-        [PerRendererData] _GausBlurSize("Gaussian Blur Size", Range(0, 5.0)) = 1
-        [PerRendererData] _GausBlurSamples("Gaussian Blur Samples", Range(1, 50.0)) = 5
-
+        [PerRendererData] _GaussBlurSigma("Gaussian Blur Sigma", Range(0.1, 20.0)) = 3
+        [PerRendererData] _GaussBlurSize("Gaussian Blur Size", Range(0, 10.0)) = 1
+        [PerRendererData] _GaussBlurSamples("Gaussian Blur Samples", Range(1, 100.0)) = 5
         [Toggle] _UseMainTexColor("Use Texture Color", Float) = 0
+
+        [PerRendererData] _SizeX("Size X", Float) = 200
+        [PerRendererData] _SizeY("Size Y", Float) = 200
 
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
+
+        [PerRendererData][Toggle] _ApplyDither("Apply Dither", Float) = 1
+        [PerRendererData] _DitherStrength("Dither Strength", Float) = 0.001
+        [PerRendererData] _DitherScale("Dither Scae", Float) = 1
+
+        [PerRendererData] _SrcBlend("__src", Float) = 1.0
+        [PerRendererData] _DstBlend("__dst", Float) = 0.0
 
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
@@ -48,7 +55,7 @@ Shader "UI/Background Gaussian Blur"
             Lighting Off
             ZWrite Off
             ZTest[unity_GUIZTestMode]
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend[_SrcBlend][_DstBlend]
             ColorMask[_ColorMask]
 
             GrabPass
@@ -76,7 +83,7 @@ Shader "UI/Background Gaussian Blur"
                 #include "Assets/GameView/Shaders/fast-gaussian-blur.cginc"
             ENDCG
             }
-
+ 
             GrabPass
             {
 //                "_GRAB_TEX_2"

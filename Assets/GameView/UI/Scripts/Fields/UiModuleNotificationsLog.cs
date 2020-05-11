@@ -12,14 +12,14 @@ using Utilities.Events;
 
 namespace UI.Fields
 {
-    public class UiNotificationsLog : UiWithScrollableItems, IPointerDownHandler
+    public class UiModuleNotificationsLog : UiModuleWithScrollableItems, IPointerDownHandler
     {
         private static int _maxNotifications = 10;
 
         private static string _menuTitle = "NOTIFICATIONS LOG";
         private static string _newField = "NEW";
 
-        public GameObject nofificationPrefab;
+        [FormerlySerializedAs("nofificationPrefab")] public GameObject notificationPrefab;
 
         private int _newNotificationsCount = 0;
         private string NewNotificationsCountString { get { return $"{_newNotificationsCount} {_newField}"; } }
@@ -27,7 +27,7 @@ namespace UI.Fields
         private GameObject[] _notifications;
         private int _notificationsCount = 0;
 
-        public override void Awake()
+        public new void Awake()
         {
             base.Awake();
 
@@ -39,6 +39,17 @@ namespace UI.Fields
             titleTextRight.Text = NewNotificationsCountString;
         }
 
+        void Start()
+        {
+            Test();
+        }
+
+        public void Update()
+        {
+            if (UnityEngine.Random.value < 0.01f)
+                AddNewNotification($"{Time.time}");
+        }
+
         // reset new notification count when mouse touches this window
         public void OnPointerDown(PointerEventData pointerEventData)
         {
@@ -46,9 +57,30 @@ namespace UI.Fields
             titleTextRight.Text = NewNotificationsCountString;
         }
 
-        void Start()
+        public void AddNewNotification(string notification = "")
         {
-            Test();
+            _newNotificationsCount++; // TODO: fix this on interaction
+            titleTextRight.Text = NewNotificationsCountString;
+
+            // add a new notification text
+            var notifObj = Instantiate(notificationPrefab);
+
+            // setup text fields
+            var uiFieldNotification = notifObj.GetComponent<UiFieldNotification>();
+            uiFieldNotification.Initialize(DateTime.Now.ToString("hh:mm:ss"), notification);
+
+            // parent it to scrollable view
+            notifObj.transform.SetParent(contentRoot.transform, false);
+
+            // add to notifications list
+            // check if need to overwrite existing notification
+            if (_notifications[_notificationsCount] != null)
+                Destroy(_notifications[_notificationsCount]);
+
+            _notifications[_notificationsCount] = notifObj;
+
+            // increment notification count
+            _notificationsCount = (_notificationsCount + 1) % _maxNotifications;
         }
 
         void Test()
@@ -72,40 +104,5 @@ namespace UI.Fields
             AddNewNotification();
             AddNewNotification(longNotification);
         }
-
-        public void AddNewNotification(string notification = "")
-        {
-            _newNotificationsCount++; // TODO: fix this on interaction
-            titleTextRight.Text = NewNotificationsCountString;
-
-            // add a new notification text
-            var notifObj = Instantiate(nofificationPrefab);
-
-            // setup text fields
-            var uiFieldNotification = notifObj.GetComponent<UiFieldNotification>();
-            uiFieldNotification.Initialize(DateTime.Now.ToString("hh:mm:ss"), notification);
-
-            // parent it to scrollable view
-            notifObj.transform.SetParent(contentRoot.transform, false);
-
-            // add to notifications list
-            // check if need to overwrite existing notification
-            if (_notifications[_notificationsCount] != null)
-                Destroy(_notifications[_notificationsCount]);
-
-            _notifications[_notificationsCount] = notifObj;
-
-            // increment notification count
-            _notificationsCount = (_notificationsCount + 1) % _maxNotifications;
-        }
-
-        public void Update()
-        {
-            if (UnityEngine.Random.value < 0.01f)
-                AddNewNotification();
-        }
-
-        // Update is called once per frame
     }
-
 }

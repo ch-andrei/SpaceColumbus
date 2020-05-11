@@ -10,12 +10,7 @@ using Utilities.Events;
 
 namespace UI.Fields
 {
-    public class DigitInfoChangedEvent : UiEvent
-    {
-    
-    }
-
-    public class DigitInfoField : MonoBehaviour, IEventListener<DigitInfoChangedEvent>
+    public class DigitInfoField : MonoBehaviour
     {
         private static string SizeRichText(float ratio) { return $"<size={(int) (ratio * 100 % 101)}%>"; }
 
@@ -49,11 +44,6 @@ namespace UI.Fields
         void OnValidate()
         {
             Start();
-        }
-
-        public bool OnEvent(DigitInfoChangedEvent gameEvent)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,6 +1,9 @@
-﻿#define DITHER_CONSTANTS float _ApplyDither; float _DitherStrength;
-#define APPLY_DITHER(color) if (_ApplyDither) color += DitherArray8x8(IN.uv.xy, _SizeX, _SizeY) * _DitherStrength;
-#define APPLY_DITHER_WEIGHTED(color, weight) if (_ApplyDither) color += DitherArray8x8(IN.uv.xy, _SizeX, _SizeY) * _DitherStrength;
+﻿#define APPLY_DITHER(color, uv) if (_ApplyDither) color += DitherArray8x8(uv, _SizeX, _SizeY) * _DitherStrength;
+#define APPLY_DITHER_WEIGHTED(color, uv, weight) if (_ApplyDither) color += DitherArray8x8(uv, _SizeX, _SizeY) * _DitherStrength;
+
+float _ApplyDither;
+float _DitherStrength;
+float _DitherScale;
 
 // array/table version from http://www.anisopteragames.com/how-to-fix-color-banding-with-dithering/
 static const uint ArrayDitherArray8x8[] =

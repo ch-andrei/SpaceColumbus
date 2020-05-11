@@ -10,7 +10,7 @@ using Entities;
 using Entities.Bodies;
 using Entities.Bodies.Health;
 using Entities.Bodies.Damages;
-
+using UI.Components;
 using Utilities.Events;
 
 using UI.Utils;
@@ -28,7 +28,7 @@ namespace UI.Menus
         public VitalLogInfo(UiFieldVitalsLog log, GameObject go) { this.Log = log; this.Go = go; }
     }
 
-    public class UiVitalsLog : UiWithScrollableItems, IEventListener<AgentChangedEvent>
+    public class UiModuleVitalsLog : UiModuleWithScrollableItems, IEventListener<AgentChangedEvent>
     {
         public int numLogsInPool = 20;
 
@@ -41,7 +41,7 @@ namespace UI.Menus
         private Agent _agent;
         private int _activeLogs = 0;
 
-        public override void Awake()
+        public new void Awake()
         {
             base.Awake();
 

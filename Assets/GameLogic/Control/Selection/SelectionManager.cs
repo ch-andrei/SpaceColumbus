@@ -80,7 +80,7 @@ namespace EntitySelection
             CurrentlySelectedGameObjects = selectedObjects;
         }
 
-        private static void CheckMissingSelected()
+        public static void CheckMissingSelected()
         {
             int removed = 0;
             for (int i = 0; i < CurrentlySelectedListeners.Count; i++)
