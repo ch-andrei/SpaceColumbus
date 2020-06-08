@@ -23,15 +23,15 @@ namespace EntitySelection
 
         bool _isAgent;
         bool _isBuilding;
-        bool _isControlable;
+        bool _isControllable;
         Func<bool, bool, bool> _op;
         OwnershipInfo _ownership;
 
-        public SelectionCriteria(bool isAgent, bool isBuilding, bool isControlable, ECondition condition, OwnershipInfo ownership)
+        public SelectionCriteria(bool isAgent, bool isBuilding, bool isControllable, ECondition condition, OwnershipInfo ownership)
         {
             this._isAgent = isAgent;
             this._isBuilding = isBuilding;
-            this._isControlable = isControlable;
+            this._isControllable = isControllable;
             if (condition == ECondition.And) this._op = (a, b) => a & b; else this._op = (a, b) => a | b;
             this._ownership = ownership;
         }
@@ -63,9 +63,9 @@ namespace EntitySelection
     {
         public Selectable selectable { get; }
 
-        public SelectionListener(GameObject gameObject)
+        public SelectionListener(Selectable selectable)
         {
-            this.selectable = gameObject.GetComponent<Selectable>();
+            this.selectable = selectable;
         }
 
         public bool OnEvent(SelectionEvent selectionEvent)
@@ -75,8 +75,8 @@ namespace EntitySelection
             else
                 selectable.Deselect();
 
+            // selection listener always listens
             return true;
         }
     }
-
 }

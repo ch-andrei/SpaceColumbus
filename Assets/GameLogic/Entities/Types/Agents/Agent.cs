@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using UnityEngine;
@@ -8,112 +10,50 @@ using UnityEngine.AI;
 using Brains;
 using Brains.Movement;
 using Brains.Attack;
+using Common;
 using EntitySelection;
 
 using Entities.Bodies;
-using Entities.Bodies.Damages;
-using Entities.Bodies.Health;
+using Entities.Health;
 
 using Utilities.Events;
 
 namespace Entities
 {
-    public class AgentChangedEvent : EntityChangeEvent
+    [System.Serializable]
+    [RequireComponent(typeof(NavMeshAgent))]
+    public class Agent : EntityInitializer
     {
-        public AgentChangedEvent(Agent agent) : base(agent) { }
-    }
+        public override string Name => "Agent";
 
-    public class AgentEventGenerator : EventGenerator<AgentChangedEvent>, IEventListener<BodyPartChangedEvent>
-    {
-        private Agent _agent;
-        public AgentEventGenerator(Agent agent) : base() { this._agent = agent; }
+        private BrainComponent _brainComponent;
 
-        public bool OnEvent(BodyPartChangedEvent bodyChangedEvent)
+        public override void Initialize()
         {
-            // TODO: any processing on event
+            this.Entity.Name = Name;
+            this.Entity.entityType = EntityType.Agent;
 
-            this.Notify(new AgentChangedEvent(this._agent));
-
-            return true;
-        }
-    }
-
-    [RequireComponent(
-        typeof(Selectable),
-        typeof(NavMeshAgent)
-     )]
-    public class Agent : Entity, IEventGenerator<AgentChangedEvent>
-    {
-        public Body Body { get; private set; }
-
-        public override string Name { get { return "Agent"; } }
-
-        public override bool IsDamageable { get { return this.Body.IsDamageable; } }
-        public override bool IsDamaged { get { return this.Body.IsDamaged; } }
-
-        AgentBrain _brain;
-
-        AgentEventGenerator _agentEventSystem;
-
-        public void Awake()
-        {
-            this.entityType = EntityType.Agent;
-        }
-
-        public override void Start()
-        {
-            base.Start();
-
-            this.Body = Body.HumanoidBody;
-
-            Debug.Log($"Agent with body:\n{Body.ToString()}");
-
-            var moveBrain = new MoveBrain(this.GetComponent<NavMeshAgent>());
-            var attackBrain = new AttackBrain();
-            _brain = new AgentBrainModerate(this.gameObject, moveBrain, attackBrain);
-
-            _agentEventSystem = new AgentEventGenerator(this);
-            this.Body.AddListener(_agentEventSystem);
+            _brainComponent = EntityManager.GetComponent<ModerateBrainComponent>(this.Entity);
         }
 
         public void MoveTo(Vector3 destination)
         {
-            this._brain.MoveTo(destination);
+            this._brainComponent.MoveTo(destination);
         }
 
         public void Stop() {
-            this._brain.StopMoving();
+            this._brainComponent.StopMoving();
         }
 
+        // TODO: remove
         void FixedUpdate()
         {
-            if (UnityEngine.Random.value < 0.005f)
-            {
-                this.TakeDamage(new Damage(DamageType.Blunt, 5, 0.1f));
-            }
-
-            _brain.ProcessTick();
-        }
-
-        public override void TakeDamage(Damage damage)
-        {
-            Body.TakeDamage(damage);
-        }
-
-        public override EDamageState GetDamageState()
-        {
-            return Body.GetDamageState();
-        }
-
-        public void AddListener(IEventListener<AgentChangedEvent> eventListener)
-        {
-            this._agentEventSystem.AddListener(eventListener);
-        }
-
-        public void Notify(AgentChangedEvent gameEvent)
-        {
-            // not intended to be called
-            throw new System.NotImplementedException();
+            // if (UnityEngine.Random.value < 0.005f)
+            // {
+            //     this.TakeDamage(new Damage(DamageType.Blunt, 5, 0.1f));
+            // }
+            // AI
+            _brainComponent.ProcessTick(); // TODO: convert to brain system
         }
     }
 }

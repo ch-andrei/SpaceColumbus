@@ -1,5 +1,5 @@
 ﻿using Entities.Bodies;
-using Entities.Bodies.Health;
+using Entities.Health;
 
 using UI.Utils;
 using UI.Components;
@@ -12,7 +12,7 @@ namespace UI.Fields
         {
             return RichStrings.WithColor(
                 $"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]",
-                DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
+                HpSystemDamageStates.DamageStateToColor(hpSystem.GetDamageState()));
         }
 
         public void Initialize(BodyPart bodyPart)

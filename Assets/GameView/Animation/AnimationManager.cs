@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Animation.Entities.Extractor;
 using UnityEngine;
 
 using Entities;
 using Animation.Systems;
-using Animation.Systems.Extractor;
-
+using Animation.Entities;
 using Common;
 
 namespace Animation
@@ -15,9 +14,20 @@ namespace Animation
     {
         private static Dictionary<Type, AnimationSystem> _animationSystems = new Dictionary<Type, AnimationSystem>();
 
+        public static AnimationSystem GetAnimationSystemForAnimationBase(IAnimationParams ab)
+            => GetAnimationSystemForAnimationBase(ab.GetType());
+
+        private static AnimationSystem GetAnimationSystemForAnimationBase(Type animationBaseType)
+        {
+            if (animationBaseType == typeof(ExtractorAnimationParams))
+                return GetOrCreateAnimationSystem<ExtractorAnimationSystemThreaded>();
+            else
+                throw new NotImplementedException("Unsupported AnimationBase type.");
+        }
+
         public static T GetOrCreateAnimationSystem<T>() where T : AnimationSystem, new()
         {
-            Type type = typeof(T);
+            var type = typeof(T);
 
             AnimationSystemTypeCheck(type);
 
@@ -29,15 +39,15 @@ namespace Animation
 
         public static void AnimationSystemTypeCheck(Type type)
         {
+            // check for supported Animation Systems here
+
             if (type == typeof(ExtractorAnimationSystem)) { }
             else if (type == typeof(ExtractorAnimationSystemThreaded)) { }
-
             /*
              * else if (type == typeof(ExtractorAnimationSystem)) { }
-             * 
+             *
              * add other systems type checking here
              */
-
             else
             {
                 throw new NotImplementedException("Unsupported Animation System.");
@@ -52,17 +62,22 @@ namespace Animation
             }
         }
 
-        public static void RegisterAnimation<T>(AnimationBase ab) where T : AnimationSystem, new()
+        public static void RegisterAnimatedComponent(EntityAnimationComponent eac)
         {
-            AnimationSystem animator = GetOrCreateAnimationSystem<T>();
+
+        }
+
+        public static void RegisterAnimation(IAnimationParams ab)
+        {
+            AnimationSystem animator = GetAnimationSystemForAnimationBase(ab);
 
             if (animator != null)
                 animator.AddAnimated(ab);
         }
 
-        public static void UnregisterAnimation<T>(AnimationBase ab) where T : AnimationSystem, new()
+        public static void UnregisterAnimation(IAnimationParams ab)
         {
-            AnimationSystem animator = GetOrCreateAnimationSystem<T>();
+            AnimationSystem animator = GetAnimationSystemForAnimationBase(ab);
 
             if (animator != null)
                 animator.RemoveAnimated(ab);

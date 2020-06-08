@@ -3,11 +3,11 @@ using UnityEditor;
 
 using System.Collections.Generic;
 
-using Utilities.Misc;
-using Entities.Bodies.Health;
 using Entities.Materials;
 
-namespace Entities.Bodies.Damages
+using Utilities.Misc;
+
+namespace Entities.Health
 {
     public enum DamageType : byte
     {
@@ -22,8 +22,66 @@ namespace Entities.Bodies.Damages
         Emp,
     }
 
-    public class Damage
+    public struct Damage
     {
+        public DamageType DamageType;
+        public float Amount;
+
+        // proportion of damage carried over to the next level of pdeth
+        public float Penetration;
+
+        /*
+         * Dispersion = sharing ratio of damage across the damaged components.
+         * Example:
+         *     Attempting to damage N objects with dispersion=0 damage will only apply damage to 1 of the
+         *         components picked at random.
+         *     Attempting to damage N objects with dispersion=1 damage will damage all of the components.
+         *     Sharing across damaged components should be
+        */
+        public float Dispersion;
+
+        public Damage(DamageType damageType, float amount, float penetration=1f, float dispersion=1f)
+        {
+            this.DamageType = damageType;
+            this.Amount = amount;
+            this.Penetration = Mathf.Clamp(penetration, 0, 1);
+            this.Dispersion = Mathf.Clamp(dispersion, 0, 1);
+        }
+
+        public Damage(float amount, float penetration = 1f, float dispersion = 1f) :
+            this(DamageType.None, amount, penetration, dispersion) { }
+
+        public Damage(Damage damage) : this(damage.DamageType, damage.Amount, damage.Dispersion) { }
+    }
+
+    public static class Damages
+    {
+
+        public static Damage SlashingDamage(float amount)
+        {
+            return new Damage(DamageType.Slashing, amount, 0.25f, 0.75f); // low penetration, high dispersion
+        }
+
+        public static Damage PiercingDamage(float amount)
+        {
+            return new Damage(DamageType.Piercing, amount, 0.75f, 0.1f); // high penetration, low dispersion
+        }
+
+        public static Damage BluntDamage(float amount)
+        {
+            return new Damage(DamageType.Blunt, amount, 0.1f, 0.5f); // very low penetration, medium dispersion
+        }
+
+        public static Damage ChemicalDamage(float amount)
+        {
+            return new Damage(DamageType.Chemical, amount, 0.05f, 1f); // very low penetration, high dispersion
+        }
+
+        public static Damage ElectricDamage(float amount)
+        {
+            return new Damage(DamageType.Electric, amount, 1f, 1f); // very high penetration, very high dispersion
+        }
+
         #region XmlDefs
         public const string DamageNoneName = "None";
         public const string DamageBluntName = "Blunt";
@@ -36,7 +94,6 @@ namespace Entities.Bodies.Damages
         public const string DamageEmpName = "EMP";
         #endregion XmlDefs
 
-        #region StaticDefs
         private static List<DamageType> _damageTypes = null;
         public static List<DamageType> DamageTypes
         {
@@ -114,61 +171,32 @@ namespace Entities.Bodies.Damages
                 totalDamage += damage.Amount;
             return totalDamage;
         }
-
-        #endregion StaticDefs
-
-        public DamageType DamageType;
-        public float Amount;
-        public float Dispersion;
-
-        public Damage(DamageType damageType, float amount, float dispersion=1f)
-        {
-            this.DamageType = damageType;
-            this.Amount = amount;
-            this.Dispersion = Mathf.Clamp(dispersion, 0, 1);
-        }
-
-        public Damage(Damage damage) : this(damage.DamageType, damage.Amount, damage.Dispersion) { }
-
-        public float GetDamageAmountAfterMultiplier(DamageMultiplier damageMultiplier)
-        {
-            return GetDamageAmountAfterMultiplier(new List<DamageMultiplier>() { damageMultiplier });
-        }
-
-        public float GetDamageAmountAfterMultiplier(List<DamageMultiplier> multipliers)
-        {
-            float damageAmount = this.Amount;
-            foreach (var multiplier in multipliers)
-                if (this.DamageType == multiplier.DamageType)
-                    damageAmount *= multiplier.Amount;
-            return damageAmount;
-        }
-
-        public Damage SlashingDamage(float amount) { return new Damage(DamageType.Slashing, amount, 0.5f); }
-        public Damage PiercingDamage(float amount) { return new Damage(DamageType.Piercing, amount, 0.1f); }
-        public Damage BluntDamage(float amount) { return new Damage(DamageType.Blunt, amount, 0.25f); }
-        public Damage ChemicalDamage(float amount) { return new Damage(DamageType.Chemical, amount, 0.75f); }
-        public Damage ElectricDamage(float amount) { return new Damage(DamageType.Electric, amount, 1f); }
     }
 
-    public class DamageMultiplier : Damage
+    public static class DamageMultipliers
     {
-        // acts as a multiplier to damage
-        // less than 1 implies resistance
-        // higher than 1 implies weakness
-        public DamageMultiplier(DamageType damageType, float amount) : base(damageType, amount) { }
-        public DamageMultiplier(DamageMultiplier mult) : base(mult.DamageType, mult.Amount) { }
+        public static Damage Multiplier(DamageType damageType, float amount)
+        {
+            return new Damage(damageType, amount);
+        }
 
-        #region StaticFunctions
+        public static Damage Multiplier(float amount)
+        {
+            return Multiplier(DamageType.None, amount);
+        }
+
+        // use Damage as a multiplier to other damages
+        // amount less than 1 implies resistance
+        // amount higher than 1 implies weakness
 
         // if no weights are given, Multipliers get multiplied out
         // if weights are given, Multipliers are averaged given individual weights
-        public static List<DamageMultiplier> Simplify(List<DamageMultiplier> multsIn, List<float> weightsIn = null)
+        public static List<Damage> Simplify(List<Damage> multsIn, List<float> weightsIn = null)
         {
             // copy mults
-            List<DamageMultiplier> mults = new List<DamageMultiplier>();
+            List<Damage> mults = new List<Damage>();
             foreach (var mult in multsIn)
-                mults.Add(new DamageMultiplier(mult));
+                mults.Add(new Damage(mult));
 
             // copy weights
             List<float> weights = new List<float>();
@@ -207,36 +235,51 @@ namespace Entities.Bodies.Damages
             return mults;
         }
 
-        public static Damage GetDamageAfterMultiplier(Damage damage, DamageMultiplier multiplier)
+        public static Damage GetDamageAfterMultiplier(Damage damage, Damage multiplier)
         {
             return GetDamageAfterMultiplier(new List<Damage>() { damage }, multiplier)[0];
         }
 
-        public static Damage GetDamageAfterMultiplier(Damage damage, List<DamageMultiplier> multipliers)
+        public static Damage GetDamageAfterMultiplier(Damage damage, List<Damage> multipliers)
         {
             return GetDamageAfterMultiplier(new List<Damage>() { damage }, multipliers)[0];
         }
 
-        public static List<Damage> GetDamageAfterMultiplier(List<Damage> damages, DamageMultiplier multiplier)
+        public static List<Damage> GetDamageAfterMultiplier(List<Damage> damages, Damage multiplier)
         {
-            return GetDamageAfterMultiplier(damages, new List<DamageMultiplier>() { multiplier });
+            return GetDamageAfterMultiplier(damages, new List<Damage>() { multiplier });
         }
 
-        public static List<Damage> GetDamageAfterMultiplier(List<Damage> damages, List<DamageMultiplier> multipliers)
+        public static List<Damage> GetDamageAfterMultiplier(List<Damage> damages, List<Damage> multipliers)
         {
-            List<Damage> damagesAfterMultiplier = new List<Damage>();
+            var damagesAfterMultiplier = new List<Damage>();
             foreach (var damage in damages)
             {
-                Damage damageAfterMultiplier = new Damage(damage);
-                damage.GetDamageAmountAfterMultiplier(multipliers);
+                // struct for holding multiplied damage to not overwrite original damage struct
+                var damageAfterMultiplier = new Damage(damage);
 
+                // apply each damage multiplier
                 foreach (var multiplier in multipliers)
-                    damageAfterMultiplier.Amount = damageAfterMultiplier.GetDamageAmountAfterMultiplier(multiplier);
+                    damageAfterMultiplier.Amount =
+                        GetDamageAmountAfterMultiplier(damageAfterMultiplier, multiplier);
 
                 damagesAfterMultiplier.Add(damageAfterMultiplier);
             }
             return damagesAfterMultiplier;
         }
-        #endregion StaticFunctions
+
+        public static float GetDamageAmountAfterMultiplier(Damage damage, Damage multiplier)
+        {
+            return GetDamageAmountAfterMultiplier(damage, new List<Damage>() { multiplier });
+        }
+
+        public static float GetDamageAmountAfterMultiplier(Damage damage, List<Damage> multipliers)
+        {
+            float damageAmount = damage.Amount;
+            foreach (var multiplier in multipliers)
+                if (damage.DamageType == multiplier.DamageType || multiplier.DamageType == DamageType.None)
+                    damageAmount *= multiplier.Amount;
+            return damageAmount;
+        }
     }
 }

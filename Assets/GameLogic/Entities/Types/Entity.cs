@@ -1,22 +1,24 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEditor;
 
 using Common;
 
 using EntitySelection;
 using Brains;
-
-using Entities.Bodies.Damages;
-using Entities.Bodies.Health;
-
 using Players;
-
+using Entities.Health;
+using UnityEngine.Serialization;
 using Utilities.Events;
+using Utilities.Misc;
+using Tools = Utilities.Misc.Tools;
 
 namespace Entities
 {
+
     public enum EntityType : byte
     {
         Structure,
@@ -25,60 +27,94 @@ namespace Entities
 
     public class EntityChangeEvent : GameEvent
     {
-        public Entity entity { get; private set; }
+        public Entity Entity { get; private set; }
 
-        public EntityChangeEvent(Entity entity) { this.entity = entity; }
-    }
-    
-    public class EntityComponentChangedEvent : GameEvent
-    {
-        public EntityComponentChangedEvent() { }
+        public EntityChangeEvent(Entity entity) { this.Entity = entity; }
     }
 
-    public abstract class Entity : MonoBehaviour, INamed, IDamageable, IIdentifiable
+    public class EntityEventGenerator : EventGenerator<EntityChangeEvent>, IEventListener<DamageableEvent>
     {
-        public OwnershipInfo ownershipInfo;
+        private Entity _entity;
+        public EntityEventGenerator(Entity entity) : base() { this._entity = entity; }
 
-        public abstract string Name { get; }
-        public abstract bool IsDamageable { get ; }
-        public abstract bool IsDamaged { get ; }
-
-        public bool CanMove { get; protected set; }
-
-        public EntityType entityType { get; protected set; }
-
-        public virtual void Start()
+        public bool OnEvent(DamageableEvent bodyEvent)
         {
-            EntityManager.RegisterEntity(this);
+            this.Notify(new EntityChangeEvent(this._entity));
 
-            CanMove = !(this.GetComponent<NavMeshAgent>() is null);
+            return true;
+        }
+    }
+
+    public class Entity : MonoBehaviour, IWithPosition, IWithPosition2d, INamed, IIdentifiable,
+        IWithListeners<EntityChangeEvent>, IEquatable<Entity>
+    {
+        public EntityType entityType { get; set; }
+
+        public Vector3 Position => this.transform.position;
+        public Vector2 Position2d => new Vector2(Position.x, Position.z);
+        public int Guid => this.gameObject.GetInstanceID();
+        public bool Equals(Entity other) => this.Guid == other?.Guid;
+
+        private string _name;
+        public string Name {
+            get => _name;
+            set => _name = value;
         }
 
-        public abstract void TakeDamage(Damage damage);
+        public OwnershipInfo OwnershipInfo { get; private set; }
 
-        public abstract EDamageState GetDamageState();
+        public List<EntityComponent> Components { get; private set; }
 
-        public int GetId()
+        public void AddComponent(EntityComponent component)
         {
-            return this.gameObject.GetInstanceID();
+            this.Components.Add(component);
+        }
+
+        public EntityEventGenerator entityEventSystem;
+        public List<IEventListener<EntityChangeEvent>> EventListeners => entityEventSystem.EventListeners;
+
+        public void Awake()
+        {
+            entityEventSystem = new EntityEventGenerator(this);
+            Components = new List<EntityComponent>();
+        }
+
+        public void LateStart()
+        {
+            foreach (var component in EntityManager.GetComponents(this))
+                this.AddComponent(component);
+
+            EntityManager.RegisterEntity(this);
         }
 
         private void OnDestroy()
         {
+            // Debug.Log("Entity on destroy!");
             EntityManager.UnregisterEntity(this);
+        }
+
+        public void AddListener(IEventListener<EntityChangeEvent> eventListener)
+        {
+            entityEventSystem.AddListener(eventListener);
         }
     }
 
-    //public abstract class EntityComponent
-    //{
-    //    Entity entity;
+    [System.Serializable]
+    [RequireComponent(typeof(Entity))]
+    public abstract class EntityInitializer : MonoBehaviour, INamed
+    {
+        protected Entity Entity;
 
-    //    public EntityComponent(Entity entity)
-    //    {
-    //        this.entity = entity;
-    //    }
+        public abstract string Name { get; }
 
-    //    public abstract void Start();
-    //    public abstract void ProcessTick();
-    //}
+        public void Start()
+        {
+            this.Entity = this.GetComponent<Entity>();
+            this.Entity.LateStart();
+
+            Initialize();
+        }
+
+        public abstract void Initialize();
+    }
 }

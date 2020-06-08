@@ -5,24 +5,28 @@ using UnityEngine;
 using Utilities.Events;
 
 using Common;
+using Entities;
 
 namespace EntitySelection
 {
-    public class Selectable : MonoBehaviour, ISelectable, IIdentifiable
+    public class Selectable : EntityComponent, ISelectable, IIdentifiable
     {
+        public override EntityComponentType ComponentType => EntityComponentType.Selectable;
+
+        public int Guid => this.entity.GetInstanceID();
+
+        public override string Name => "Selectable";
+
         public SelectionListener selectionListener { get; private set; }
-
-        public GameObject selectionIndicator;
-
         public bool isSelected { get; private set; }
 
-        private List<ISelectable> _uiElements;
+        public Vector3 position => this.entity.Position;
+        public GameObject gameObject => this.entity.gameObject;
+        public GameObject selectionIndicator;
 
-        private void Start()
+        public void Start()
         {
-            _uiElements = new List<ISelectable>();
-
-            selectionListener = new SelectionListener(this.gameObject);
+            selectionListener = new SelectionListener(this);
 
             isSelected = true;
             Deselect();
@@ -35,8 +39,6 @@ namespace EntitySelection
             if (!isSelected)
             {
                 selectionIndicator.SetActive(true);
-                foreach (var uiElement in _uiElements)
-                    uiElement.Select();
             }
             isSelected = true;
         }
@@ -46,29 +48,11 @@ namespace EntitySelection
             if (isSelected)
             {
                 selectionIndicator.SetActive(false);
-                foreach (var uiElement in _uiElements)
-                    uiElement.Deselect();
             }
             isSelected = false;
         }
 
-        public void AddUiElement(ISelectable uiElement)
-        {
-            AddUiElements(new List<ISelectable>() { uiElement });
-        }
-        
-        public void AddUiElements(List<ISelectable> uiElements)
-        {
-            foreach (var uiElement in uiElements)
-                this._uiElements.Add(uiElement);
-        }
-
-        public int GetId()
-        {
-            return this.selectionIndicator.GetInstanceID();
-        }
-
-        public void OnDestroy()
+        public override void OnDestroy()
         {
             SelectionManager.RemoveSelectable(this);
         }

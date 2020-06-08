@@ -19,10 +19,10 @@ namespace UI.Fields
         private static string _menuTitle = "NOTIFICATIONS LOG";
         private static string _newField = "NEW";
 
-        [FormerlySerializedAs("nofificationPrefab")] public GameObject notificationPrefab;
+        public GameObject notificationPrefab;
 
         private int _newNotificationsCount = 0;
-        private string NewNotificationsCountString { get { return $"{_newNotificationsCount} {_newField}"; } }
+        private string NewNotificationsCountString => $"{_newNotificationsCount} {_newField}";
 
         private GameObject[] _notifications;
         private int _notificationsCount = 0;
@@ -47,7 +47,7 @@ namespace UI.Fields
         public void Update()
         {
             if (UnityEngine.Random.value < 0.01f)
-                AddNewNotification($"{Time.time}");
+                AddNewNotification($"Time since game start is {Time.time} seconds");
         }
 
         // reset new notification count when mouse touches this window

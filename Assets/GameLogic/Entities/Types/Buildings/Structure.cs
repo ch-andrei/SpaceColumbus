@@ -1,49 +1,34 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.AI;
 
-using Entities.Bodies.Health;
-using Entities.Bodies.Damages;
+using Common;
+
+using Entities.Bodies;
+using Entities.Health;
+using EntitySelection;
+
+using Utilities.Events;
 
 namespace Entities
 {
+    [System.Serializable]
     [RequireComponent(typeof(NavMeshObstacle), typeof(BoxCollider))]
-    public class Structure : Entity
+    public class Structure : EntityInitializer
     {
-        public override string Name { get { return "Structure"; } }
-        
-        // TODO
-        public override bool IsDamageable { get { return false; } }
-        // TODO
-        public override bool IsDamaged { get { return false; } }
+        public override string Name => "Structure";
 
-        private void Awake()
+        public override void Initialize()
         {
-            this.entityType = EntityType.Structure;
+            this.Entity.Name = Name;
+            this.Entity.entityType = EntityType.Structure;
         }
 
-        public override void Start()
+        public void AddListener(IEventListener<EntityChangeEvent> eventListener)
         {
-            base.Start();
-
-            //gameObject.GetComponent<NavMeshObstacle>().size = gameObject.GetComponent<BoxCollider>().size;
-        }
-
-        void Update()
-        {
-
-        }
-
-        public override EDamageState GetDamageState()
-        {
-            return EDamageState.None;
-        }
-
-        public override void TakeDamage(Damage damage)
-        {
-            return;
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Entities;
 using Brains.Attack;
 using Brains.Movement;
+using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace Brains
 {
     [System.Serializable]
-    public abstract class AgentBrain
+    [RequireComponent(typeof(NavMeshAgent))]
+    public abstract class BrainComponent : EntityComponent
     {
-        public GameObject entityObject { get; private set; }
+        public Entity Entity { get; private set; }
 
         public enum IntelligenceLevel
         {
@@ -24,7 +28,7 @@ namespace Brains
         {
             Idle,
             IdleRoaming,
-            IdleAgressive,
+            IdleAggressive,
             Moving,
             AttackMoving,
             AttackTargeting,
@@ -37,12 +41,14 @@ namespace Brains
         protected IntelligenceLevel Intelligence;
         protected BehaviourState Behaviour;
 
-        public AgentBrain(GameObject entityObject, MoveBrain moveBrain, AttackBrain attackBrain)
+        public virtual void Start()
         {
-            this.entityObject = entityObject;
-            this.MoveBrain = moveBrain;
-            this.AttackBrain = attackBrain;
+            this.Entity = entity;
+
+            MoveBrain = new MoveBrain(this.GetComponent<NavMeshAgent>());
+            AttackBrain = new AttackBrain();
         }
+
         public void ProcessTick()
         {
             MakeDecision();

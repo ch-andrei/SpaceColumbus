@@ -76,9 +76,9 @@ namespace UI
 
         public void OnSelectEntity(Entity entity)
         {
-            if (entity is Agent agent)
+            if (entity.entityType == EntityType.Agent)
             {
-                this._agentVitalsModule.SetObservedAgent(agent);
+                this._agentVitalsModule.SetObservedAgent(entity);
 
                 OnSelectAgent(true);
             }

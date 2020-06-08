@@ -17,7 +17,7 @@ public class CameraControl : MonoBehaviour
 {
     public float globalSensitivity = 10f; // global camera speed sensitivity
     public float cameraSpeedModifierMultiplier = 2.5f; // global camera speed sensitivity multipler when a special modifer key is held down
-    
+
     #region MouseControlConfiguration
 
     // camera scrolling sensitivity
@@ -39,7 +39,7 @@ public class CameraControl : MonoBehaviour
     public bool allowMouseRotation = true;
     public float mouseRotationSensitivityModifier = 50f; // mouse rotation movement speed modifier
 
-    // zoom with FOV 
+    // zoom with FOV
     [Header("Camera zoom")]
     public bool allowCameraZoom = true;
     public float cameraZoomSensitivityModifier = 2f; // mouse zoom speed modifier
@@ -63,7 +63,7 @@ public class CameraControl : MonoBehaviour
 
     public float viewCenterOffset = 200f; // camera view center point offset; calculated as this far in front of camera
     public float viewCenterOnPlayerOffset = 75f; // how far from player position the camera will be set when focusing on player
-    public float viewCenterOnPlayerLimiterInertia = 0.5f; // how 
+    public float viewCenterOnPlayerLimiterInertia = 0.5f; // how
 
     // speed limiter must be adjusted given maxCameraToGroundDistance; shorter max dist requires higher limiter
     public float limiterInertia = 0.1f;
@@ -96,8 +96,9 @@ public class CameraControl : MonoBehaviour
     private Vector3 _restrictionCenterPoint, _viewCenterPoint;
 
     private GameControl _gameControl;
-    private GameSession _gameSession;
-    private Region _region;
+    private GameManager _gameManager;
+
+    private Region Terrain => _gameManager.gameSession.region;
 
     #endregion
 
@@ -108,8 +109,7 @@ public class CameraControl : MonoBehaviour
         transform.position = GetCameraViewPointPosition();
 
         _gameControl = GameObject.FindGameObjectWithTag(StaticGameDefs.GameControlTag).GetComponent<GameControl>();
-        _gameSession = GameObject.FindGameObjectWithTag(StaticGameDefs.GameSessionTag).GetComponent<GameSession>();
-        _region = _gameSession.GetRegion();
+        _gameManager = GameObject.FindGameObjectWithTag(StaticGameDefs.GameManagerTag).GetComponent<GameManager>();
 
         _restrictionCenterPoint = new Vector3(0, 0, 0); // GameControl.gameSession.humanPlayer.getPos();
         _viewCenterPoint = new Vector3(0, 0, 0);
@@ -124,8 +124,6 @@ public class CameraControl : MonoBehaviour
 
     void Update()
     {
-        _region = _gameSession.GetRegion(); // can do this via events instead
-
         _cameraMoving = false;
         _cameraRotating = false;
         _cameraZooming = false;
@@ -307,7 +305,7 @@ public class CameraControl : MonoBehaviour
 
     private void RestrictCamera()
     {
-        // check if camera is out of bounds 
+        // check if camera is out of bounds
         Vector3 posRelative = transform.position - _restrictionCenterPoint;
         if (posRelative.x > cameraLimitDistance)
         {
@@ -326,27 +324,28 @@ public class CameraControl : MonoBehaviour
             transform.position -= new Vector3(0, 0, posRelative.z + cameraLimitDistance);
         }
 
+        // TODO: modify for new map parameters
         // adjust camera height based on terrain
         float waterLevel = 0; // GameControl.gameSession.mapGenerator.getRegion().getWaterLevelElevation();
         float offsetAboveWater = transform.position.y - (waterLevel) - minCameraToGroundDistance;
         if (offsetAboveWater < 0)
         { // camera too low based on water elevation
-            transform.position -= new Vector3(0, offsetAboveWater, 0) * limiterInertia * cameraTooLowSpeedLimiter;
+            transform.position -= new Vector3(0, offsetAboveWater, 0) * (limiterInertia * cameraTooLowSpeedLimiter);
         }
         try
         {
-            Vector3 tileBelow = _region.GetTileAt(transform.position).Pos;
+            Vector3 terrainHeightBelow = Terrain.GetTileAt(transform.position).Pos;
 
-            float offsetAboveFloor = transform.position.y - (tileBelow.y) - minCameraToGroundDistance;
-            float offsetBelowCeiling = tileBelow.y + maxCameraToGroundDistance - (transform.position.y);
+            float offsetAboveFloor = transform.position.y - (terrainHeightBelow.y) - minCameraToGroundDistance;
+            float offsetBelowCeiling = terrainHeightBelow.y + maxCameraToGroundDistance - (transform.position.y);
 
             if (offsetAboveFloor < 0)
             { // camera too low based on tile height
-                transform.position -= new Vector3(0, offsetAboveFloor, 0) * limiterInertia * cameraTooLowSpeedLimiter;
+                transform.position -= new Vector3(0, offsetAboveFloor, 0) * (limiterInertia * cameraTooLowSpeedLimiter);
             }
             else if (offsetBelowCeiling < 0)
-            { // camera too high 
-                transform.position += new Vector3(0, offsetBelowCeiling, 0) * limiterInertia * cameraTooHighSpeedLimiter;
+            { // camera too high
+                transform.position += new Vector3(0, offsetBelowCeiling, 0) * (limiterInertia * cameraTooHighSpeedLimiter);
             }
         }
         catch (NullReferenceException e)

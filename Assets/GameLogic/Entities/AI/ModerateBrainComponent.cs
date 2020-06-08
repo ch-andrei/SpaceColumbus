@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+using Entities;
 using Brains.Movement;
 using Brains.Attack;
 using UnityEngine.Serialization;
@@ -10,7 +11,7 @@ using UnityEngine.Serialization;
 namespace Brains
 {
     [System.Serializable]
-    public class AgentBrainModerate : AgentBrain
+    public class ModerateBrainComponent : BrainComponent
     {
         [Range(0, 1f)] public float nonIdleProbability = 0.005f;
         [Range(0, 1f)] public float idleRoamingProbability = 0.5f;
@@ -20,11 +21,16 @@ namespace Brains
 
         private static int _maxPathFindAttempts = 10;
 
+        public override EntityComponentType ComponentType => EntityComponentType.Brain;
+        public override string Name => "Brain";
+
         // Start is called before the first frame update
-        public AgentBrainModerate(GameObject entityObject, MoveBrain moveBrain, AttackBrain attackBrain) : base(entityObject, moveBrain, attackBrain)
+        public override void Start()
         {
-            this.Intelligence = AgentBrain.IntelligenceLevel.Moderate;
-            this.Behaviour = AgentBrain.BehaviourState.Idle;
+            base.Start();
+
+            this.Intelligence = BrainComponent.IntelligenceLevel.Moderate;
+            this.Behaviour = BrainComponent.BehaviourState.Idle;
         }
 
         protected override void MakeDecision()
@@ -34,13 +40,13 @@ namespace Brains
             float r3 = UnityEngine.Random.value;
 
             // Agent AI Final State Machine
-            if (this.Behaviour == AgentBrain.BehaviourState.Idle)
+            if (this.Behaviour == BrainComponent.BehaviourState.Idle)
             {
                 // transition to non-idle
                 if (r1 < nonIdleProbability)
                 {
                     // decide where to go
-                    Vector3 crtPos = this.entityObject.transform.position;
+                    Vector3 crtPos = this.Entity.Position;
                     bool success = false;
                     int numAttempt = 0;
                     while (!success && numAttempt++ < _maxPathFindAttempts)
@@ -51,38 +57,38 @@ namespace Brains
                         success = this.MoveBrain.SetDestination(destination);
                     }
 
-                    this.Behaviour = AgentBrain.BehaviourState.IdleRoaming;
+                    this.Behaviour = BrainComponent.BehaviourState.IdleRoaming;
                 }
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.Moving)
+            else if (this.Behaviour == BrainComponent.BehaviourState.Moving)
             {
                 if (this.MoveBrain.AtDestination())
-                    this.Behaviour = AgentBrain.BehaviourState.Idle;
+                    this.Behaviour = BrainComponent.BehaviourState.Idle;
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.IdleRoaming)
+            else if (this.Behaviour == BrainComponent.BehaviourState.IdleRoaming)
             {
                 if (this.MoveBrain.AtDestination())
-                    this.Behaviour = AgentBrain.BehaviourState.Idle;
+                    this.Behaviour = BrainComponent.BehaviourState.Idle;
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.IdleAgressive)
+            else if (this.Behaviour == BrainComponent.BehaviourState.IdleAggressive)
             {
-                this.Behaviour = AgentBrain.BehaviourState.IdleRoaming; // placeholder
+                this.Behaviour = BrainComponent.BehaviourState.IdleRoaming; // placeholder
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.AttackMoving)
+            else if (this.Behaviour == BrainComponent.BehaviourState.AttackMoving)
             {
 
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.AttackTargeting)
+            else if (this.Behaviour == BrainComponent.BehaviourState.AttackTargeting)
             {
 
             }
-            else if (this.Behaviour == AgentBrain.BehaviourState.AttackEngaging)
+            else if (this.Behaviour == BrainComponent.BehaviourState.AttackEngaging)
             {
 
             }
             else
             {
-                this.Behaviour = AgentBrain.BehaviourState.Idle;
+                this.Behaviour = BrainComponent.BehaviourState.Idle;
             }
         }
 
@@ -90,19 +96,24 @@ namespace Brains
         {
             bool success = this.MoveBrain.SetDestination(destination);
             if (success)
-                this.Behaviour = AgentBrain.BehaviourState.Moving;
+                this.Behaviour = BrainComponent.BehaviourState.Moving;
             return success;
         }
 
         public override void StopMoving()
         {
             this.MoveBrain.StopMoving();
-            this.Behaviour = AgentBrain.BehaviourState.Idle;
+            this.Behaviour = BrainComponent.BehaviourState.Idle;
         }
 
         protected override void Act()
         {
 
+        }
+
+        public override void OnDestroy()
+        {
+            // do nothing
         }
     }
 }

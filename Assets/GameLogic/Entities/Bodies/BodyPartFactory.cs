@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using Utilities.Misc;
 using Utilities.XmlReader;
 
-using Entities.Bodies.Health;
-using Entities.Bodies.Damages;
+using Entities.Health;
 using Entities.Materials;
 
 namespace Entities.Bodies
@@ -37,50 +36,49 @@ namespace Entities.Bodies
         public const string TorsoName = "Torso";
         public const string HeadName = "Head";
 
-        // bodies
-        public static Body HumanoidBody { get { return GetBody(HumanoidBodyName); } }
+        // ACCESSORS:
+        public static Body HumanoidBody => GetBody(HumanoidBodyName);
+        public static BodyPart HumanoidTorso => GetBodyPart(HumanoidBodyName, TorsoName);
+        public static BodyPart HumanoidHead => GetBodyPart(HumanoidBodyName, HeadName);
 
-        // body parts
-        public static BodyPart HumanoidTorso { get { return GetBodyPart(HumanoidBodyName, TorsoName); } }
-        public static BodyPart HumanoidHead { get { return GetBodyPart(HumanoidBodyName, HeadName); } }
         #endregion BodiesGeneration
 
         public static Dictionary<string, Body> AvailableBodies = new Dictionary<string, Body>();
         public static Dictionary<string, Dictionary<string, BodyPart>> AvailableBodyParts = new Dictionary<string, Dictionary<string, BodyPart>>();
         public static bool IsInitialized = false;
 
-        public static Body GetBody(string variant)
+        public static void Initialize()
         {
-            if (!IsInitialized)
-                ReadBodyPartsFromXml();
+            ReadBodyPartsFromXml();
+        }
 
+        public static Body GetBody(EBodyType bodyType) => GetBody(BodyTypes.BodyType(bodyType));
+        public static Body GetBody(string bodyType)
+        {
             try
             {
-                var body = AvailableBodies[variant];
-                return body.Clone() as Body;
+                var body = AvailableBodies[bodyType];
+                return new Body(body);
             }
             catch (KeyNotFoundException e)
             {
-                LoggerDebug.LogE($"Could not find body: {variant}");
+                LoggerDebug.LogE($"Could not find body: {bodyType}");
                 return null;
             }
         }
 
-
-        public static BodyPart GetBodyPart(string variant, string name)
+        public static BodyPart GetBodyPart(EBodyType bodyType, string name) => GetBodyPart(BodyTypes.BodyType(bodyType), name);
+        public static BodyPart GetBodyPart(string bodyType, string name)
         {
-            if (!IsInitialized)
-                ReadBodyPartsFromXml();
-
             try
             {
-                var bodyPart = AvailableBodyParts[variant][name];
+                var bodyPart = AvailableBodyParts[bodyType][name];
                 return bodyPart.Clone();
             }
             catch (KeyNotFoundException e)
             {
-                LoggerDebug.LogE($"Could not find body part: {variant}/{name}");
-                return null;
+                LoggerDebug.LogE($"Could not find body part: {bodyType}/{name}");
+                throw e;
             }
         }
 
@@ -93,7 +91,7 @@ namespace Entities.Bodies
             // STEP 1:
             // read names only
             List<string> bodyVariantsNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, BaseStatsField });
-            List<List<string>> bodyPartNamesPerVariant = new List<List<string>>();
+            var bodyPartNamesPerVariant = new List<List<string>>();
             int countVariants = 0;
             foreach (var variantName in bodyVariantsNames)
             {
@@ -132,8 +130,8 @@ namespace Entities.Bodies
                     List<string> materialWeights = _bodyPartXmlReader.GetStrings(
                         new List<string>() { RootField, BaseStatsField, variantName, bodyPartName, MaterialsField, ItemField, MaterialsSizeField });
 
-                    List<DamageMultiplier> multipliers = new List<DamageMultiplier>();
-                    List<float> weights = new List<float>();
+                    var multipliers = new List<Damage>();
+                    var weights = new List<float>();
                     for (int j = 0; j < materialNames.Count; j++)
                     {
                         var materialName = materialNames[j];
@@ -149,79 +147,53 @@ namespace Entities.Bodies
                         catch (Exception e) { /* do nothing */ }
                     }
 
-                    multipliers = DamageMultiplier.Simplify(multipliers, weights);
+                    multipliers = DamageMultipliers.Simplify(multipliers, weights);
 
-                    HpSystem hpSystem = new HpSystem((int)hp, multipliers);
+                    // build bodypart
+                    var hpSystem = new HpSystem((int)hp, multipliers);
+                    var bodyPart = new BodyPart(hpSystem, bodyPartName, size);
 
-                    BodyPart bodyPart;
-                    if (isContainer)
-                    {
-                        bodyPart = new BodyPartContainer(bodyPartName, size, hpSystem);
-                    }
-                    else
-                    {
-                        bodyPart = new BodyPart(bodyPartName, size, hpSystem);
-                    }
-
-                    // store bodypart
                     AvailableBodyParts[variantName][bodyPartName] = bodyPart;
                 }
             }
-            
+
             // STEP 3:
             // build bodies and add parts for containers
-            List<string> variantNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField });
-            foreach (var variantName in variantNames)
+            List<string> bodyTypeNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField });
+            foreach (var bodyType in bodyTypeNames)
             {
-                Body body = new Body(variantName);
+                var body = new Body(BodyTypes.BodyType(bodyType));
 
-                List<string> containerNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField, variantName });
+                List<string> containerNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField, bodyType });
 
                 foreach (var bodyPartName in containerNames)
                 {
-                    //Debug.Log("INCLUSION FOR " + variantName + " " + bodyPartName);
-
-                    var bodyPart = AvailableBodyParts[variantName][bodyPartName];
-
-                    BodyPartContainer container;
-                    if (bodyPart.GetType() == typeof(BodyPartContainer))
-                    {
-                        container = (BodyPartContainer)bodyPart;
-                    }
-                    else
-                    {
-                        container = new BodyPartContainer(bodyPart);
-                    }
+                    BodyPart bodyPart = AvailableBodyParts[bodyType][bodyPartName];
+                    BodyNode bodyNode = body.AddBodyPart(bodyPart);
 
                     List<string> partsList = _bodyPartXmlReader.GetChildren(
-                        new List<string>() { RootField, InclusionField, variantName, bodyPartName });
+                        new List<string>() { RootField, InclusionField, bodyType, bodyPartName });
 
                     foreach (var partName in partsList)
                     {
-                        //Debug.Log(variantName + " " + bodyPartName + " getting a new " + partName);
-
                         List<string> customNames = _bodyPartXmlReader.GetStrings(
-                            new List<string>() { RootField, InclusionField, variantName, bodyPartName, partName, ItemField });
+                            new List<string>() { RootField, InclusionField, bodyType, bodyPartName, partName, ItemField });
 
                         if (customNames.Count == 0)
-                            container.AddBodyPart(AvailableBodyParts[variantName][partName].Clone());
-
-                        foreach (var customName in customNames)
                         {
-                            BodyPart bp = AvailableBodyParts[variantName][partName].Clone();
-                            bp.NameCustom = customName;
-                            container.AddBodyPart(bp);
+                            BodyPart bp = AvailableBodyParts[bodyType][partName].Clone();
+                            body.AddBodyPart(bp, bodyNode);
+                        }
+                        else foreach (var customName in customNames)
+                        {
+                            BodyPart bp = AvailableBodyParts[bodyType][partName].Clone();
+                            bp.NameCustom = customName; // add custom name
+                            body.AddBodyPart(bp, bodyNode);
                         }
                     }
-
-                    // write back
-                    // TODO: check if this is necessary
-                    AvailableBodyParts[variantName][bodyPartName] = container;
-
-                    body.AddBodyPart(container);
                 }
 
-                AvailableBodies[variantName] = body;
+                AvailableBodies[bodyType] = body;
             }
         }
     }

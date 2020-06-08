@@ -8,8 +8,7 @@ using Utilities.Misc;
 using Common;
 
 using Entities;
-using Entities.Bodies.Damages;
-
+using Entities.Health;
 
 namespace Entities.Materials
 {
@@ -31,8 +30,9 @@ namespace Entities.Materials
 
         public float Hardness { get; private set; }
         public float Restoration { get; private set; }
-        public float Flamability { get; private set; }
-        public List<DamageMultiplier> DamageMultipliers;
+        public float Flammability { get; private set; }
+
+        public List<Damage> DamageMultipliers;
 
         public string Name { get; private set; }
 
@@ -46,37 +46,38 @@ namespace Entities.Materials
         {
             this.Hardness = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, HardnessField });
             this.Restoration = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, RestorationField });
-            this.Flamability = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, FlamabilityField });
+            this.Flammability = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, FlamabilityField });
             InitializeDamageMultipliersFromXml();
         }
 
         private void InitializeDamageMultipliersFromXml()
         {
-            this.DamageMultipliers = new List<DamageMultiplier>();
+            this.DamageMultipliers = new List<Damage>();
 
-            foreach (var damageType in Damage.DamageTypes)
+            foreach (var damageType in Damages.DamageTypes)
             {
                 try
                 {
                     // try read damage type multipliers from xml file
                     float multiplier = _materialXmlReader.GetFloat(
-                        new List<string>() { RootField, this.Name, DamageMultipliersField, Damage.DamageType2Str(damageType) }
+                        new List<string>() { RootField, this.Name, DamageMultipliersField, Damages.DamageType2Str(damageType) }
                         );
-                    this.DamageMultipliers.Add(new DamageMultiplier(damageType, multiplier));
+                    this.DamageMultipliers.Add(new Damage(damageType, multiplier));
                 }
                 catch (Exception e)
                 {
-                    this.DamageMultipliers.Add(new DamageMultiplier(damageType, 1f));
+                    this.DamageMultipliers.Add(new Damage(damageType, 1f));
                 }
             }
         }
 
         public static EntityMaterial GetMaterial(string name) { return new EntityMaterial(name); }
-        public static EntityMaterial Flesh { get { return new EntityMaterial("Flesh"); } }
-        public static EntityMaterial Bone { get { return new EntityMaterial("Bone"); } }
-        public static EntityMaterial Steel { get { return new EntityMaterial("Steel"); } }
-        public static EntityMaterial Plastic { get { return new EntityMaterial("Plastic"); } }
-        public static EntityMaterial Wood { get { return new EntityMaterial("Wood"); } }
-        public static EntityMaterial Stone { get { return new EntityMaterial("Stone"); } }
+
+        public static EntityMaterial Flesh => new EntityMaterial("Flesh");
+        public static EntityMaterial Bone => new EntityMaterial("Bone");
+        public static EntityMaterial Steel => new EntityMaterial("Steel");
+        public static EntityMaterial Plastic => new EntityMaterial("Plastic");
+        public static EntityMaterial Wood => new EntityMaterial("Wood");
+        public static EntityMaterial Stone => new EntityMaterial("Stone");
     }
 }

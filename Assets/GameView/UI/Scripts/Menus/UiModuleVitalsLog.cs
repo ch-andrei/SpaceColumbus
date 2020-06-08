@@ -4,19 +4,18 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using TMPro;
 
 using Entities;
 using Entities.Bodies;
-using Entities.Bodies.Health;
-using Entities.Bodies.Damages;
+using Entities.Health;
+
 using UI.Components;
-using Utilities.Events;
-
 using UI.Utils;
-using UnityEngine.Serialization;
-
 using UI.Fields;
+
+using Utilities.Events;
 
 namespace UI.Menus
 {
@@ -28,7 +27,7 @@ namespace UI.Menus
         public VitalLogInfo(UiFieldVitalsLog log, GameObject go) { this.Log = log; this.Go = go; }
     }
 
-    public class UiModuleVitalsLog : UiModuleWithScrollableItems, IEventListener<AgentChangedEvent>
+    public class UiModuleVitalsLog : UiModuleWithScrollableItems, IEventListener<DamageableEvent>
     {
         public int numLogsInPool = 20;
 
@@ -38,7 +37,8 @@ namespace UI.Menus
         public GameObject vitalsLogEntryPrefab;
 
         private List<VitalLogInfo> _vitalLogs;
-        private Agent _agent;
+        private Entity _entity;
+        private Damageable _damageable;
         private int _activeLogs = 0;
 
         public new void Awake()
@@ -68,14 +68,15 @@ namespace UI.Menus
              _vitalLogs.Add(new VitalLogInfo(uiFieldVitalsLog, vitalsLogObj));
         }
 
-        public void SetObservedAgent(Agent agent)
+        public void SetObservedAgent(Entity entity)
         {
             // only update if currently observed agent is not the same as the agent we want to observe
-            if (this._agent != agent)
+            if (!(this._entity is null) && !this._entity.Equals(entity))
             {
-                this._agent = agent;
+                this._entity = entity;
+                this._damageable = EntityManager.GetComponent<Damageable>(this._entity);
 
-                agent.AddListener(this);
+                this._damageable.AddListener(this);
 
                 UpdateVitalsLog();
             }
@@ -93,26 +94,29 @@ namespace UI.Menus
 
         void UpdateVitalsLog()
         {
-            titleTextRight.Text = GetStatusString(this._agent.GetDamageState());
+            titleTextRight.Text = GetStatusString(this._damageable.GetDamageState());
 
             DeactivateVitalsLog();
-            ProcessVitalsLog(_agent.Body);
+            ProcessVitalsLog(_damageable.Body);
         }
 
         public string GetStatusString(EDamageState damageState)
         {
-            return _statusField + DamageStates.DamageStateToStrWithColor(damageState);
+            return _statusField + HpSystemDamageStates.DamageStateToStrWithColor(damageState);
         }
 
         public string HpSystemToRichString(HpSystem hpSystem)
         {
-            return RichStrings.WithColor($"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]", DamageStates.DamageStateToColor(hpSystem.GetDamageState()));
+            return RichStrings.WithColor($"[{hpSystem.HpCurrent}/{hpSystem.HpBase}]", HpSystemDamageStates.DamageStateToColor(hpSystem.GetDamageState()));
         }
 
-        public void ProcessVitalsLog(BodyPart bodyPart, int depth=0)
+        public void ProcessVitalsLog(Body body)
         {
-            if (bodyPart.HasHpSystem && bodyPart.IsDamaged)
+            foreach (var bodyPart in body.BodyParts)
             {
+                if (!bodyPart.IsDamaged)
+                    continue;
+
                 if (_activeLogs == this._vitalLogs.Count)
                     AddNewVitalLogToPool();
 
@@ -123,15 +127,11 @@ namespace UI.Menus
 
                 _activeLogs++;
             }
-
-            if (bodyPart is BodyPartContainer bpc)
-                foreach (var bp in bpc.BodyParts)
-                    ProcessVitalsLog(bp, depth + 1);
         }
 
-        public bool OnEvent(AgentChangedEvent gameEvent)
+        public bool OnEvent(DamageableEvent gameEvent)
         {
-            bool active = gameEvent.entity == this._agent;
+            bool active = this._entity.Equals(gameEvent.Entity);
 
             if (active)
                 UpdateVitalsLog();

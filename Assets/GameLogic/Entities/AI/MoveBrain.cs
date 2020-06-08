@@ -22,7 +22,7 @@ namespace Brains.Movement
         public float remainingDistance = 0;
         #endregion StuckConfig
 
-        public Vector3 position { get { return this._navMeshAgent.nextPosition; } }
+        public Vector3 NavMeshPosition => this._navMeshAgent.nextPosition;
 
         // Start is called before the first frame update
         public MoveBrain(NavMeshAgent navMeshAgent)
@@ -51,7 +51,7 @@ namespace Brains.Movement
 
             float v = this._navMeshAgent.velocity.magnitude;
             float distToStop = v * v / this._navMeshAgent.acceleration / 2f;
-            this._navMeshAgent.SetDestination(position + distToStop * this._navMeshAgent.velocity.normalized);
+            this._navMeshAgent.SetDestination(NavMeshPosition + distToStop * this._navMeshAgent.velocity.normalized);
         }
 
         // TODO: make sure this works properly
@@ -64,7 +64,7 @@ namespace Brains.Movement
             }
 
             bool stuck = false;
-            Vector3 curPos = position;
+            Vector3 curPos = NavMeshPosition;
             stuck |= (posAtStuck - curPos).magnitude < stuckDistanceThreshold;
             stuck |= (Mathf.Abs(remainingDistance - this._navMeshAgent.remainingDistance)) <= this._navMeshAgent.stoppingDistance;
             if (stuck && !this.stuck) // newly stuck; update position at stuck

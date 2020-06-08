@@ -14,7 +14,7 @@ namespace Controls
         private const string Menu1ToggleName = "Open Menu 1";
         private const string Menu2ToggleName = "Open Menu 2";
         private const string Menu3ToggleName = "Open Menu 3";
-        
+
         public bool allowDebug = true;
 
         [Header("Debug GUI")]
@@ -52,7 +52,7 @@ namespace Controls
             switch (_mode)
             {
                 case EDebugMode.SpawnAgent:
-                    _gameControl.gameSession.SpawnSimpleAgent(_gameControl.mouseOverWorldPosition);
+                    _gameControl.gameManager.SpawnSimpleAgent(_gameControl.mouseOverWorldPosition);
                     break;
                 case EDebugMode.SpawnExplosion:
                     break;
@@ -84,17 +84,17 @@ namespace Controls
                     _mode = EDebugMode.SpawnExplosion;
                     _gameControl.SetDebugMenu();
                 }
-                
+
                 if (GUI.Button(new Rect(0, 2 * buttonHeight, guiMenuWidth, buttonHeight), Menu1ToggleName))
                 {
                     _gameControl.SetMenu(1);
                 }
-                
+
                 if (GUI.Button(new Rect(0, 3 * buttonHeight, guiMenuWidth, buttonHeight), Menu2ToggleName))
                 {
                     _gameControl.SetMenu(2);
                 }
-                
+
                 if (GUI.Button(new Rect(0, 4 * buttonHeight, guiMenuWidth, buttonHeight), Menu3ToggleName))
                 {
                     _gameControl.SetMenu(3);
@@ -112,7 +112,7 @@ namespace Controls
 
             GUI.Label(new Rect(toggleIconSize + 5, 5, guiMenuWidth, guiMenuHeight), GUI.tooltip);
         }
-        
+
         private void OnGUI()
         {
             if (!allowDebug) return;

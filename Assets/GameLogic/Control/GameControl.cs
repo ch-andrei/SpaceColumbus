@@ -1,12 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 using InputControls;
 using Entities;
 using EntitySelection;
 
+using Animation;
+using Players;
 using UI.Utils;
 using UI;
+using UnityEngine.Serialization;
 
 namespace Controls
 {
@@ -33,14 +37,14 @@ namespace Controls
 
         public Vector3 mouseOverWorldPosition;
 
-        public GameSession gameSession { get; private set; }
+        public GameManager gameManager { get; private set; }
 
         #region PrivateVariables
 
         private EControlType _controlType;
 
+        private UiManager _uiManager;
         private EventSystem _eventSystem;
-        public UiManager _uiManager;
 
         private DebugMenu _debugMenu;
 
@@ -52,6 +56,18 @@ namespace Controls
 
         #endregion
 
+        private void Awake()
+        {
+            gameManager = (GameManager) GameObject.FindGameObjectWithTag(StaticGameDefs.GameManagerTag)
+                .GetComponent(typeof(GameManager));
+
+            _uiManager = (UiManager) GameObject.FindGameObjectWithTag(StaticGameDefs.UiManagerTag)
+                .GetComponent(typeof(UiManager));
+
+            _eventSystem = (EventSystem) GameObject.FindGameObjectWithTag(StaticGameDefs.EventSystemTag)
+                .GetComponent(typeof(EventSystem));
+        }
+
         void Start()
         {
             _debugMenu = this.GetComponent<DebugMenu>();
@@ -59,14 +75,6 @@ namespace Controls
             _isBoxSelecting = false;
 
             mouseOverWorldPosition = new Vector3();
-
-            gameSession = (GameSession) GameObject.FindGameObjectWithTag(StaticGameDefs.GameSessionTag)
-                .GetComponent(typeof(GameSession));
-
-            _eventSystem = (EventSystem) GameObject.FindGameObjectWithTag(StaticGameDefs.EventSystemTag)
-                .GetComponent(typeof(EventSystem));
-            _uiManager = (UiManager) GameObject.FindGameObjectWithTag(StaticGameDefs.UiManagerTag)
-                .GetComponent(typeof(UiManager));
 
             // setup key manager
             KeyActiveManager.NewDoubleDetector(GameControlsManager.LeftClickDown.keyPress);
@@ -155,12 +163,12 @@ namespace Controls
 
         private void OrderMoveSelectedAgents()
         {
-            gameSession.MoveSelectedAgents(mouseOverWorldPosition);
+            gameManager.MoveSelectedAgents(mouseOverWorldPosition);
         }
 
         private void OrderStopSelectedAgents()
         {
-            gameSession.StopSelectedAgents();
+            gameManager.StopSelectedAgents();
         }
 
         public bool IsMouseOverUi()
@@ -185,7 +193,7 @@ namespace Controls
             SelectionCriteria selectionCriteria = new SelectionCriteria(
                 true, false, true,
                 SelectionCriteria.ECondition.Or,
-                gameSession.CurrentPlayer.ownership.info
+                gameManager.gameSession.CurrentPlayer.ownership.info
             );
 
             // TODO ADD CRITERIA/SORTING of selected objects
@@ -193,7 +201,7 @@ namespace Controls
             // If selecting with mouse pointer only (no box selection)
             if (!_isBoxSelecting)
             {
-                var selectedObjects = SelectionManager.CurrentlySelectedGameObjects;
+                var selectedObjects = SelectionManager.GetSelectedObjects();
 
                 try
                 {
@@ -238,12 +246,17 @@ namespace Controls
 
         void Update()
         {
+            float time = Time.time;
+            float deltaTime = Time.deltaTime;
+
             RayToCursorPosition();
 
             ProcessControls();
 
             if (!IsMouseOverUi())
                 ProcessSelectionArea();
+
+            AnimationManager.Update(time, deltaTime);
         }
 
         private void RayToCursorPosition()
@@ -254,7 +267,7 @@ namespace Controls
             {
                 mouseOverWorldPosition = hitInfo.point;
                 GameObject hitObject = hitInfo.collider.transform.gameObject;
-                if (hitObject == null)
+                if (hitObject is null)
                 {
                     // nothing to do
                 }

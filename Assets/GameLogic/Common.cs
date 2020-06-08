@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Common
@@ -19,29 +20,23 @@ namespace Common
         string Name { get; }
     }
 
-    public interface IIdentifiable
+    public interface ICloneable<T>
     {
-        int GetId();
+        T Clone();
     }
 
-    public static class Slicable
+    public interface IWithPosition
     {
-        public static T[] Slice<T>(this T[] source, int start, int end)
-        {
-            // Handles negative ends.
-            if (end < 0)
-            {
-                end = source.Length + end;
-            }
-            int len = end - start;
+        Vector3 Position { get; }
+    }
 
-            // Return new array.
-            T[] res = new T[len];
-            for (int i = 0; i < len; i++)
-            {
-                res[i] = source[i + start];
-            }
-            return res;
-        }
+    public interface IWithPosition2d
+    {
+        Vector2 Position2d { get; }
+    }
+
+    public interface IIdentifiable
+    {
+        int Guid { get; }
     }
 }

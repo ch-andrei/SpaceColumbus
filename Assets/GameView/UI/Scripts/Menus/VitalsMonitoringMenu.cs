@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using Entities;
-using Entities.Bodies;
-using Entities.Bodies.Health;
-using Entities.Bodies.Damages;
-
-using Utilities.Events;
-
 using TMPro;
 using UnityEngine.Serialization;
 
+using Entities;
+using Entities.Bodies;
+using Entities.Health;
+
+using Utilities.Events;
+
 namespace UI.Menus
 {
-    public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<AgentChangedEvent>
+    public class VitalsMonitoringMenu : MonoBehaviour, IEventListener<EntityChangeEvent>
     {
         public static string StatusField = "INJURY: ";
 
@@ -22,16 +21,17 @@ namespace UI.Menus
         public GameObject leftInfoField;
         public GameObject rightInfoField;
 
-        private Agent _agent = null;
-        private bool hasAgent;
+        private Entity _entity = null;
+        private Damageable _damageable = null;
+        private bool _hasDamageable;
 
         private TextMeshProUGUI _statusTextMesh;
         private TextMeshProUGUI _leftInfoFieldTextMesh;
         private TextMeshProUGUI _rightInfoFieldTextMesh;
-        
+
         void Start()
         {
-            hasAgent = false;
+            _hasDamageable = false;
             Initialize();
         }
 
@@ -44,29 +44,34 @@ namespace UI.Menus
 
         void UpdateView()
         {
-            if (hasAgent)
-                _statusTextMesh.text = GetStatusString(this._agent.GetDamageState());
+            if (_hasDamageable)
+                _statusTextMesh.text = GetStatusString(this._damageable.GetDamageState());
         }
 
         public string GetStatusString(EDamageState damageState)
         {
-            return StatusField + DamageStates.DamageStateToStrWithColor(damageState);
+            return StatusField + HpSystemDamageStates.DamageStateToStrWithColor(damageState);
         }
 
-        public void SetObservedAgent(Agent agent)
+        public void SetObservedAgent(Entity entity)
         {
-            if (this._agent != agent)
+            if (!this._entity.Equals(entity))
             {
-                this._agent = agent;
-                hasAgent = true;
-                agent.AddListener(this);
-                UpdateView();
+                this._entity = entity;
+                this._damageable = EntityManager.GetComponent<Damageable>(_entity);
+
+                _hasDamageable = _damageable != null;
+                if (_hasDamageable)
+                {
+                    entity.AddListener(this);
+                    UpdateView();
+                }
             }
         }
 
-        public bool OnEvent(AgentChangedEvent gameEvent)
+        public bool OnEvent(EntityChangeEvent gameEvent)
         {
-            bool active = gameEvent.entity == this._agent;
+            bool active = gameEvent.Entity == this._entity;
 
             if (active)
                 UpdateView();

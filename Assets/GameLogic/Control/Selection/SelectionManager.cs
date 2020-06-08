@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
+using Entities;
 using UnityEngine;
 
 using Utilities.Events;
@@ -10,14 +10,12 @@ namespace EntitySelection
 {
     public static class SelectionManager
     {
-        // TODO: convert this to static class
-
         #region Config
         public static float TimeBetweenSelectionUpdates = 0.05f; // in seconds, minimum allowed Period for updating selection
         #endregion Config
 
-        public static List<SelectionListener> CurrentlySelectedListeners { get; private set; }
-        public static List<GameObject> CurrentlySelectedGameObjects { get; private set; }
+        private static List<SelectionListener> _currentlySelectedListeners;
+        private static List<GameObject> _currentlySelectedGameObjects;
 
         private static Dictionary<int, SelectionListener> _selectionListeners;
 
@@ -38,7 +36,7 @@ namespace EntitySelection
 
         public static void AddSelectable(Selectable selectable)
         {
-            int id = selectable.GetId();
+            int id = selectable.Guid;
 
             if (!_selectionListeners.ContainsKey(id))
                 _selectionListeners.Add(id, selectable.selectionListener);
@@ -46,7 +44,7 @@ namespace EntitySelection
 
         public static void RemoveSelectable(Selectable selectable)
         {
-            int id = selectable.GetId();
+            int id = selectable.Guid;
 
             if (_selectionListeners.ContainsKey(id))
                 _selectionListeners.Remove(id);
@@ -54,7 +52,7 @@ namespace EntitySelection
 
         //public List<SelectionListener> GetSelectedListeners() { return this.currentlySelectedListeners; }
 
-        public static List<GameObject> GetSelectedObjects() { return CurrentlySelectedGameObjects; }
+        public static List<GameObject> GetSelectedObjects() { return _currentlySelectedGameObjects; }
 
         //public List<GameObject> GetSelectedObjects(SelectionCriteria criteria)
         //{
@@ -76,24 +74,24 @@ namespace EntitySelection
                 }
             }
 
-            CurrentlySelectedListeners = selectedListeners;
-            CurrentlySelectedGameObjects = selectedObjects;
+            _currentlySelectedListeners = selectedListeners;
+            _currentlySelectedGameObjects = selectedObjects;
         }
 
         public static void CheckMissingSelected()
         {
             int removed = 0;
-            for (int i = 0; i < CurrentlySelectedListeners.Count; i++)
+            for (int i = 0; i < _currentlySelectedListeners.Count; i++)
             {
                 int index = i - removed;
-                
-                var listener = CurrentlySelectedListeners[index];
-                var go = CurrentlySelectedGameObjects[index];
+
+                var listener = _currentlySelectedListeners[index];
+                var go = _currentlySelectedGameObjects[index];
 
                 if (listener is null || go is null)
                 {
-                    CurrentlySelectedListeners.RemoveAt(index);
-                    CurrentlySelectedGameObjects.RemoveAt(index);
+                    _currentlySelectedListeners.RemoveAt(index);
+                    _currentlySelectedGameObjects.RemoveAt(index);
                 }
             }
         }
@@ -115,11 +113,12 @@ namespace EntitySelection
             ProcessSelected();
         }
 
-        public static Selectable[] GetSelectables(GameObject gameObject)
+        public static List<Selectable> GetSelectables(GameObject gameObject)
         {
-            if (gameObject == null)
-                return new Selectable[] { };
-            return gameObject?.GetComponentsInParent<Selectable>();
+            if (gameObject is null)
+                return new List<Selectable>();
+
+            return EntityManager.GetComponents<Selectable>(gameObject);
         }
 
         public static void Deselect(GameObject gameObject)
@@ -188,7 +187,7 @@ namespace EntitySelection
 
                 if (selectionCriteria != null && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
                 {
-                    Vector3 p = Camera.main.WorldToScreenPoint(selectable.transform.position);
+                    Vector3 p = Camera.main.WorldToScreenPoint(selectable.position);
                     Vector2 s1P = Vector2.Min(s1, s2);
                     Vector2 s2P = Vector2.Max(s1, s2);
                     bool selected = s1P.x <= p.x && p.x <= s2P.x && s1P.y <= p.y && p.y <= s2P.y;

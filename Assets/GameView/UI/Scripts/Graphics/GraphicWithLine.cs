@@ -47,7 +47,7 @@ public class GraphicWithLineModifier : ShaderControlModifier
         // equation: a*x + b*y + c = 0, where b = -1
         float a = (Math.Abs(lineDir.x) < 0.001f) ? 100000f: lineDir.y / lineDir.x;
         float c = 0.5f - 0.5f * a;
-        float d = Mathf.Sqrt(a * a + c * c);
+        float d = Mathf.Sqrt(a * a + c * c); // TODO: remove the sqrt?
         Vector3 lineDir2 = new Vector3(a, c, d);
 
         shaderControl.SetVector(_lineDirectionField, lineDir2);

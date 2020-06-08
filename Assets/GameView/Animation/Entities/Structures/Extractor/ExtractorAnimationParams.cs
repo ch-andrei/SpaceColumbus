@@ -1,30 +1,35 @@
-﻿using UnityEngine;
-
-using System;
+﻿using System;
+using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Jobs;
 using UnityEngine.Serialization;
 
-namespace Animation.Systems.Extractor
+using Animation.Systems;
+
+namespace Animation.Entities.Extractor
 {
     [System.Serializable]
-    public class ExtractorAnimationBase : AnimationBase
+    public struct ExtractorAnimationParams : IAnimationParams
     {
-        public float speed = 8f;
-        public float moveAmount = 0.7f;
+        public Transform transform => obj.transform;
+        public int Guid => obj.GetInstanceID();
+
+        public float speed;
+        public float moveAmount;
+        public GameObject obj;
 
         public Transform Pivot { get; private set; }
         public float TimeAtSpawn { get; private set; }
 
-        public ExtractorAnimationBase(GameObject go, float time) : base(go)
+        public static void Initialize(ref ExtractorAnimationParams eab, float time)
         {
-            this.TimeAtSpawn = time;
-            this.Pivot = this.go.transform.parent.transform;
+            eab.TimeAtSpawn = time;
+            eab.Pivot = eab.obj.transform.parent.transform;
         }
     }
 
-    public class ExtractorAnimationSystem : AnimationSystem<ExtractorAnimationBase>
+    public class ExtractorAnimationSystem : AnimationSystem<ExtractorAnimationParams>
     {
         public override void OnDestroy()
         {
@@ -33,19 +38,19 @@ namespace Animation.Systems.Extractor
 
         public override void Update(float time, float deltaTime)
         {
-            foreach (ExtractorAnimationBase animated in this.Animated.Values)
+            foreach (ExtractorAnimationParams animated in this.Animated.Values)
             {
                 float t = time - animated.TimeAtSpawn;
                 float moveAmount = animated.moveAmount * Mathf.Sin(t * animated.speed - animated.TimeAtSpawn);
                 var pivot = animated.Pivot.position;
-                animated.go.transform.position = pivot + new Vector3(0, moveAmount);
+                animated.transform.position = pivot + new Vector3(0, moveAmount);
             }
         }
     }
 
-    public class ExtractorAnimationSystemThreaded : AnimationSystemThreaded<ExtractorAnimationBase>
+    public class ExtractorAnimationSystemThreaded : AnimationSystemThreaded<ExtractorAnimationParams>
     {
-        struct ExtractorAnimationJob : IJobParallelForTransform
+        private struct ExtractorAnimationJob : IJobParallelForTransform
         {
             [ReadOnly] public NativeArray<Vector3> Pivots;
             [ReadOnly] public NativeArray<float> MoveAmounts;
@@ -59,12 +64,12 @@ namespace Animation.Systems.Extractor
             }
         }
 
-        int _count = 0;
-        NativeArray<Vector3> _pivots;
-        NativeArray<float> _moveAmounts;
-        NativeArray<float> _speeds;
-        NativeArray<float> _times;
-        TransformAccessArray _transforms;
+        private int _count = 0;
+        private NativeArray<Vector3> _pivots;
+        private NativeArray<float> _moveAmounts;
+        private NativeArray<float> _speeds;
+        private NativeArray<float> _times;
+        private TransformAccessArray _transforms;
 
         public override JobHandle ScheduleAnimationJob(float time, float deltaTime)
         {
@@ -106,13 +111,13 @@ namespace Animation.Systems.Extractor
             this._count = count;
 
             int i = 0;
-            foreach (ExtractorAnimationBase animated in this.Animated.Values)
+            foreach (ExtractorAnimationParams animated in this.Animated.Values)
             {
                 _pivots[i] = animated.Pivot.position;
                 _moveAmounts[i] = animated.moveAmount;
                 _speeds[i] = animated.speed;
                 _times[i] = time;
-                _transforms.Add(animated.go.transform);
+                _transforms.Add(animated.transform);
                 i++;
             }
         }

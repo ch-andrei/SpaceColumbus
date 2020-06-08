@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Utilities.Events
@@ -17,6 +18,7 @@ namespace Utilities.Events
     public interface IWithListeners<T> where T : GameEvent
     {
         // this interface is for classes that have EventGenerators but aren't a generator
+        List<IEventListener<T>> EventListeners { get; }
         void AddListener(IEventListener<T> eventListener);
     }
 
@@ -29,7 +31,7 @@ namespace Utilities.Events
 
     public class EventGenerator<T> : IEventGenerator<T> where T : GameEvent
     {
-        protected List<IEventListener<T>> EventListeners { get; }
+        public List<IEventListener<T>> EventListeners { get; private set; }
 
         public EventGenerator()
         {
@@ -75,12 +77,29 @@ namespace Utilities.Events
         }
     }
 
-    //public class EventGenerator : EventGenerator<GameEvent> { }
-
-    public abstract class UpdatableEventGenerator : EventGenerator<GameEvent>
+    public abstract class QueuedEventGenerator<T> : EventGenerator<T> where T : GameEvent
     {
-        public UpdatableEventGenerator() : base() { }
+        private Queue<T> _eventQueue;
 
-        public abstract void Update();
+        public QueuedEventGenerator() : base()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            _eventQueue = new Queue<T>();
+        }
+
+        public override void Notify(T gameEvent)
+        {
+            _eventQueue.Enqueue(gameEvent);
+        }
+
+        public virtual void Notify()
+        {
+            while (0 < _eventQueue.Count)
+                base.Notify(_eventQueue.Dequeue());
+        }
     }
 }

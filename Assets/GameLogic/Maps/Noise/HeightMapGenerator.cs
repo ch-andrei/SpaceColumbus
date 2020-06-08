@@ -34,7 +34,8 @@ namespace HeightMapGenerators
         [Range(ConfigEpsilon, 10f)]
         public float logClampIntensity = 2f;
 
-        // amplifiction parameter for rescaling height values; high amplifiaction pulls small values smaller, and make high values appear higher; exponential stretching
+        // amplification parameter for rescaling height values; high amplification makes small values smaller,
+        // and makes large values larger; i.e. exponential stretching x = x ^ amplification
         [Range(1, 10)]
         public float amplification = 5;
 
@@ -103,7 +104,7 @@ namespace HeightMapGenerators
         public float waterVelocityElevationDiffRegularizer = 0.2f;
 
         // if elevation is in range [0-1], water will contribute to elevation in waterAmount / waterToElevationProportion
-        // ex: elevation = 0.9, waterAmount = 0.2, combined elevation = 0.9 + 0.2 = 1.1 
+        // ex: elevation = 0.9, waterAmount = 0.2, combined elevation = 0.9 + 0.2 = 1.1
         [Range(0, 1)]
         public float waterToElevationProportion = 0.05f;
 

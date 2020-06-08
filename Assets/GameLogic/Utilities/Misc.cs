@@ -24,8 +24,8 @@ namespace Utilities.Misc
             }
         }
 
-        // Given three colinear points p, q, r, the function checks if 
-        // point q lies on line segment 'pr' 
+        // Given three colinear points p, q, r, the function checks if
+        // point q lies on line segment 'pr'
         public static bool OnSegment(Vector2 p, Vector2 q, Vector2 r)
         {
             if (q.x <= Mathf.Max(p.x, r.x) && q.x >= Mathf.Min(p.x, r.x) &&
@@ -35,54 +35,54 @@ namespace Utilities.Misc
             return false;
         }
 
-        // To find orientation of ordered triplet (p, q, r). 
-        // The function returns following values 
-        // 0 --> p, q and r are colinear 
-        // 1 --> Clockwise 
-        // 2 --> Counterclockwise 
+        // To find orientation of ordered triplet (p, q, r).
+        // The function returns following values
+        // 0 --> p, q and r are colinear
+        // 1 --> Clockwise
+        // 2 --> Counterclockwise
         public static int Orientation(Vector2 p, Vector2 q, Vector2 r)
         {
-            // See https://www.geeksforgeeks.org/orientation-3-ordered-points/ 
-            // for details of below formula. 
+            // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
+            // for details of below formula.
             float val = (q.y - p.y) * (r.x - q.x) -
                       (q.x - p.x) * (r.y - q.y);
 
-            if (val == 0) return 0;  // colinear 
+            if (val == 0) return 0;  // colinear
 
-            return (val > 0) ? 1 : 2; // clock or counterclock wise 
+            return (val > 0) ? 1 : 2; // clock or counterclock wise
         }
 
         public static bool DoIntersect(LineSegment s1, LineSegment s2) { return DoIntersect(s1.P, s1.Q, s2.P, s2.Q); }
 
-        // The main function that returns true if line segment 'p1q1' 
-        // and 'p2q2' intersect. 
+        // The main function that returns true if line segment 'p1q1'
+        // and 'p2q2' intersect.
         public static bool DoIntersect(Vector2 p1, Vector2 q1, Vector2 p2, Vector2 q2)
         {
-            // Find the four orientations needed for general and 
-            // special cases 
+            // Find the four orientations needed for general and
+            // special cases
             int o1 = Orientation(p1, q1, p2);
             int o2 = Orientation(p1, q1, q2);
             int o3 = Orientation(p2, q2, p1);
             int o4 = Orientation(p2, q2, q1);
 
-            // General case 
+            // General case
             if (o1 != o2 && o3 != o4)
                 return true;
 
-            // Special Cases 
-            // p1, q1 and p2 are colinear and p2 lies on segment p1q1 
+            // Special Cases
+            // p1, q1 and p2 are colinear and p2 lies on segment p1q1
             if (o1 == 0 && OnSegment(p1, p2, q1)) return true;
 
-            // p1, q1 and q2 are colinear and q2 lies on segment p1q1 
+            // p1, q1 and q2 are colinear and q2 lies on segment p1q1
             if (o2 == 0 && OnSegment(p1, q2, q1)) return true;
 
-            // p2, q2 and p1 are colinear and p1 lies on segment p2q2 
+            // p2, q2 and p1 are colinear and p1 lies on segment p2q2
             if (o3 == 0 && OnSegment(p2, p1, q2)) return true;
 
-            // p2, q2 and q1 are colinear and q1 lies on segment p2q2 
+            // p2, q2 and q1 are colinear and q1 lies on segment p2q2
             if (o4 == 0 && OnSegment(p2, q1, q2)) return true;
 
-            return false; // Doesn't fall in any of the above cases 
+            return false; // Doesn't fall in any of the above cases
         }
     }
 
@@ -200,6 +200,8 @@ namespace Utilities.Misc
 
     public static class Tools
     {
+        public static bool IsVowel(char c) => "aeiouAEIOU".IndexOf(c) >= 0;
+
         public static Texture2D LoadTexture(string path)
         {
             Texture2D tex = null;
@@ -218,7 +220,7 @@ namespace Utilities.Misc
         {
             StringBuilder sb = new StringBuilder();
 
-            for(int i = 0; i < list.Length; i++) 
+            for(int i = 0; i < list.Length; i++)
             {
                 sb.Append(Convert.ToString(list[i]));
                 if (i < list.Length - 1) // append after all except last element
@@ -344,6 +346,93 @@ namespace Utilities.Misc
             }
 
             return dst;
+        }
+    }
+
+    public static class Sliceable
+    {
+        public static T[] Slice<T>(this T[] source, int start, int end)
+        {
+            if (start == end)
+                return new T[] {source[start]};
+
+            int len = end - start;
+
+            // Return new array.
+            T[] res = new T[len];
+            for (int i = 0; i < len; i++)
+            {
+                res[i] = source[i + start];
+            }
+            return res;
+        }
+    }
+
+    public class IndexedEnumerator<T> : IEnumerator<T>, IEnumerable<T>
+    {
+        private T[] _source;
+        private int[] _indices;
+
+        private int _crt; // current index
+
+        public IndexedEnumerator(T[] source, int[] indices)
+        {
+            _source = source;
+            _indices = indices;
+            _crt = 0;
+        }
+
+        public IndexedEnumerator(T[] source, List<int> indices) : this(source, indices.ToArray()) { }
+        public IndexedEnumerator(List<T> source, int[] indices) : this(source.ToArray(), indices) { }
+        public IndexedEnumerator(List<T> source, List<int> indices) : this(source, indices.ToArray()) { }
+
+        public bool MoveNext() => ++_crt <= _indices.Length;
+        public void Reset() => _crt = 0;
+
+        public T Current => _source[_indices[_crt]];
+        object IEnumerator.Current => Current;
+
+        public IEnumerator<T> GetEnumerator() => this;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose()
+        {
+            // do nothing
+        }
+    }
+
+    // iterate through a slice of an array without copying its contents to new array
+    public class SliceEnumerator<T> : IEnumerator<T>, IEnumerable<T>
+    {
+        private T[] _source;
+        private int _start, _end;
+
+        private int _crt; // current index
+
+        public SliceEnumerator(T[] source, int start, int end)
+        {
+            _source = source;
+            _start = Math.Max(0, start);
+            _end = Math.Min(
+                source.Length - 1,
+                Math.Max(_start, end)); // make sure that "start <= end" and "end < array length"
+            _crt = _start;
+        }
+
+        public SliceEnumerator(List<T> source, int start, int end) : this(source.ToArray(), start, end) { }
+
+        public bool MoveNext() => ++_crt <= _end;
+        public void Reset() => _crt = _start;
+
+        public T Current => _source[_crt];
+        object IEnumerator.Current => Current;
+
+        public IEnumerator<T> GetEnumerator() => this;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose()
+        {
+            // do nothing
         }
     }
 }
