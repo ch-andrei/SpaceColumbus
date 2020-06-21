@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HeightMapGenerators;
-using Noises;
+using NoiseGenerators;
 using Regions;
 using UnityEngine;
 

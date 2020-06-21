@@ -24,6 +24,9 @@ namespace Brains
         public override EntityComponentType ComponentType => EntityComponentType.Brain;
         public override string Name => "Brain";
 
+        private Animator _animator;
+        private bool _hasAnimator;
+
         // Start is called before the first frame update
         public override void Start()
         {
@@ -31,6 +34,13 @@ namespace Brains
 
             this.Intelligence = BrainComponent.IntelligenceLevel.Moderate;
             this.Behaviour = BrainComponent.BehaviourState.Idle;
+
+            this._animator = GetComponentInChildren<Animator>();
+            _hasAnimator = !(this._animator is null);
+
+            if (_hasAnimator)
+                this._animator.StartPlayback();
+
         }
 
         protected override void MakeDecision()
@@ -42,37 +52,21 @@ namespace Brains
             // Agent AI Final State Machine
             if (this.Behaviour == BrainComponent.BehaviourState.Idle)
             {
-                // transition to non-idle
-                if (r1 < nonIdleProbability)
-                {
-                    // decide where to go
-                    Vector3 crtPos = this.Entity.Position;
-                    bool success = false;
-                    int numAttempt = 0;
-                    while (!success && numAttempt++ < _maxPathFindAttempts)
-                    {
-                        var movement = UnityEngine.Random.insideUnitCircle * maxIdleMoveDistance;
-                        Vector3 destination = crtPos + new Vector3(movement.x, 0, movement.y);
-
-                        success = this.MoveBrain.SetDestination(destination);
-                    }
-
-                    this.Behaviour = BrainComponent.BehaviourState.IdleRoaming;
-                }
+                IdleState(r1);
             }
             else if (this.Behaviour == BrainComponent.BehaviourState.Moving)
             {
-                if (this.MoveBrain.AtDestination())
-                    this.Behaviour = BrainComponent.BehaviourState.Idle;
+                if (this.MoveComponent.AtDestination())
+                    TransitionIdleState();
             }
             else if (this.Behaviour == BrainComponent.BehaviourState.IdleRoaming)
             {
-                if (this.MoveBrain.AtDestination())
-                    this.Behaviour = BrainComponent.BehaviourState.Idle;
+                if (this.MoveComponent.AtDestination())
+                    TransitionIdleState();
             }
             else if (this.Behaviour == BrainComponent.BehaviourState.IdleAggressive)
             {
-                this.Behaviour = BrainComponent.BehaviourState.IdleRoaming; // placeholder
+                TransitionRoamingState(); // placeholder
             }
             else if (this.Behaviour == BrainComponent.BehaviourState.AttackMoving)
             {
@@ -92,18 +86,66 @@ namespace Brains
             }
         }
 
+        private void IdleState(float r)
+        {
+            // should transition to non-idle?
+            if (r < nonIdleProbability)
+            {
+                // decide where to go
+                Vector3 crtPos = this.Entity.Position;
+                bool success = false;
+                int numAttempt = 0;
+                while (!success && numAttempt++ < _maxPathFindAttempts)
+                {
+                    // find random nearby destination for idling roam
+                    var movement = UnityEngine.Random.insideUnitCircle * maxIdleMoveDistance;
+                    var destination = crtPos + new Vector3(movement.x, 0, movement.y);
+
+                    success = this.MoveComponent.SetDestination(destination);
+                }
+
+                if (success)
+                    TransitionRoamingState();
+            }
+        }
+
+        private void TransitionIdleState()
+        {
+            this.Behaviour = BrainComponent.BehaviourState.Idle;
+
+            if (_hasAnimator)
+            {
+                this._animator.StartPlayback();
+            }
+        }
+
+        private void TransitionMovingState()
+        {
+            this.Behaviour = BrainComponent.BehaviourState.Moving;
+
+            if (_hasAnimator)
+                this._animator.StopPlayback();
+        }
+
+        private void TransitionRoamingState()
+        {
+            this.Behaviour = BrainComponent.BehaviourState.IdleRoaming;
+            if (_hasAnimator)
+                this._animator.StopPlayback();
+        }
+
         public override bool MoveTo(Vector3 destination)
         {
-            bool success = this.MoveBrain.SetDestination(destination);
+            bool success = this.MoveComponent.SetDestination(destination);
             if (success)
-                this.Behaviour = BrainComponent.BehaviourState.Moving;
+                TransitionMovingState();
             return success;
         }
 
         public override void StopMoving()
         {
-            this.MoveBrain.StopMoving();
-            this.Behaviour = BrainComponent.BehaviourState.Idle;
+            this.MoveComponent.StopMoving();
+            TransitionIdleState();
         }
 
         protected override void Act()

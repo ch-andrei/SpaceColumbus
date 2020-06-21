@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - GameSession
   - GameRoot
   - NavMeshRoot
   - Viewables
@@ -17,6 +16,7 @@ TagManager:
   - UiManager
   - EventSystem
   - springs
+  - GameManager
   layers:
   - Default
   - TransparentFX

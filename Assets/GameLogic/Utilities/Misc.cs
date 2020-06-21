@@ -143,6 +143,15 @@ namespace Utilities.Misc
 
     public static class Samplers
     {
+        // returns min and max array indices of the picked samples, given individual pdfs and a tolerance parameter
+        public static Vector2Int SampleFromPdf(float sample, List<float> pdfs, float tolerance)
+        {
+            int min = SampleFromPdf(sample - tolerance, pdfs);
+            int max = SampleFromPdf(sample + tolerance, pdfs);
+            Debug.Log($"Sampled pdf size {pdfs.Count}: {min} - {max}");
+            return new Vector2Int(min, max);
+        }
+
         // returns the array index of a randomly picked sample given the individual pdfs of each sample
         public static int SampleFromPdf(float sample, List<float> pdfs)
         {
@@ -161,19 +170,8 @@ namespace Utilities.Misc
             return pdfs.Count - 1;
         }
 
-        // returns min and max array indices of the picked samples, given individual pdfs and a tolerance parameter
-        public static Vector2Int SampleFromPdf(float sample, List<float> pdfs, float tolerance)
-        {
-            int min = SampleFromPdf(sample - tolerance, pdfs);
-            int max = SampleFromPdf(sample + tolerance, pdfs);
-            return new Vector2Int(min, max);
-        }
-
-
         public static Vector3 SampleRandomCosineHemisphere(float u, float v)
-        {
-            return SampleRandomCosineHemisphere(new Vector2(u, v));
-        }
+            => SampleRandomCosineHemisphere(new Vector2(u, v));
 
         public static Vector3 SampleRandomCosineHemisphere(Vector2 uv)
         {
@@ -200,7 +198,8 @@ namespace Utilities.Misc
 
     public static class Tools
     {
-        public static bool IsVowel(char c) => "aeiouAEIOU".IndexOf(c) >= 0;
+        public const string Vowels = "aeiouAzEIOU";
+        public static bool IsVowel(char c) => Vowels.IndexOf(c) >= 0;
 
         public static Texture2D LoadTexture(string path)
         {
@@ -218,7 +217,7 @@ namespace Utilities.Misc
 
         public static string BuildString(params object[] list)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             for(int i = 0; i < list.Length; i++)
             {
@@ -232,7 +231,7 @@ namespace Utilities.Misc
 
         public static Color HexToColor(string hex)
         {
-            Color c = new Color();
+            var c = new Color();
             ColorUtility.TryParseHtmlString(hex, out c);
             return c;
         }
@@ -359,7 +358,7 @@ namespace Utilities.Misc
             int len = end - start;
 
             // Return new array.
-            T[] res = new T[len];
+            var res = new T[len];
             for (int i = 0; i < len; i++)
             {
                 res[i] = source[i + start];
@@ -379,15 +378,15 @@ namespace Utilities.Misc
         {
             _source = source;
             _indices = indices;
-            _crt = 0;
+            Reset();
         }
 
         public IndexedEnumerator(T[] source, List<int> indices) : this(source, indices.ToArray()) { }
         public IndexedEnumerator(List<T> source, int[] indices) : this(source.ToArray(), indices) { }
         public IndexedEnumerator(List<T> source, List<int> indices) : this(source, indices.ToArray()) { }
 
-        public bool MoveNext() => ++_crt <= _indices.Length;
-        public void Reset() => _crt = 0;
+        public bool MoveNext() => ++_crt < _indices.Length;
+        public void Reset() => _crt = -1;
 
         public T Current => _source[_indices[_crt]];
         object IEnumerator.Current => Current;
@@ -414,15 +413,15 @@ namespace Utilities.Misc
             _source = source;
             _start = Math.Max(0, start);
             _end = Math.Min(
-                source.Length - 1,
+                source.Length,
                 Math.Max(_start, end)); // make sure that "start <= end" and "end < array length"
-            _crt = _start;
+            Reset();
         }
 
         public SliceEnumerator(List<T> source, int start, int end) : this(source.ToArray(), start, end) { }
 
-        public bool MoveNext() => ++_crt <= _end;
-        public void Reset() => _crt = _start;
+        public bool MoveNext() => ++_crt < _end;
+        public void Reset() => _crt = _start - 1;
 
         public T Current => _source[_crt];
         object IEnumerator.Current => Current;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace Utilities.Events
 
     public interface IEventGenerator<T> : IWithListeners<T> where T : GameEvent
     {
-        void Notify(T gameEvent);
+        void NotifyListeners(T gameEvent);
     }
 
     public interface IEventGenerator : IEventGenerator<GameEvent> { }
@@ -48,7 +49,7 @@ namespace Utilities.Events
             EventListeners.Add(eventListener);
         }
 
-        public virtual void Notify(T gameEvent)
+        public virtual void NotifyListeners(T gameEvent)
         {
             int nonActiveCount = 0;
 
@@ -77,29 +78,25 @@ namespace Utilities.Events
         }
     }
 
-    public abstract class QueuedEventGenerator<T> : EventGenerator<T> where T : GameEvent
+    public class QueuedEventListener<T> : IEventListener<T> where T : GameEvent
     {
-        private Queue<T> _eventQueue;
+        public Queue<T> eventQueue { get; private set; }
 
-        public QueuedEventGenerator() : base()
+        public QueuedEventListener() : base()
         {
-            Reset();
+            ResetEvents();
         }
 
-        public void Reset()
+        public void ResetEvents()
         {
-            _eventQueue = new Queue<T>();
+            eventQueue = new Queue<T>();
         }
 
-        public override void Notify(T gameEvent)
+        public virtual bool OnEvent(T gameEvent)
         {
-            _eventQueue.Enqueue(gameEvent);
-        }
+            eventQueue.Enqueue(gameEvent);
 
-        public virtual void Notify()
-        {
-            while (0 < _eventQueue.Count)
-                base.Notify(_eventQueue.Dequeue());
+            return true;
         }
     }
 }

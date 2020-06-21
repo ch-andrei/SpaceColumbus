@@ -9,7 +9,7 @@ using Entities;
 
 namespace EntitySelection
 {
-    public class Selectable : EntityComponent, ISelectable, IIdentifiable
+    public class SelectableComponent : EntityComponent, ISelectable, IIdentifiable
     {
         public override EntityComponentType ComponentType => EntityComponentType.Selectable;
 

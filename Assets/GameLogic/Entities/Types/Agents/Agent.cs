@@ -31,7 +31,7 @@ namespace Entities
         public override void Initialize()
         {
             this.Entity.Name = Name;
-            this.Entity.entityType = EntityType.Agent;
+            this.Entity.EntityType = EntityType.Agent;
 
             _brainComponent = EntityManager.GetComponent<ModerateBrainComponent>(this.Entity);
         }
@@ -43,17 +43,6 @@ namespace Entities
 
         public void Stop() {
             this._brainComponent.StopMoving();
-        }
-
-        // TODO: remove
-        void FixedUpdate()
-        {
-            // if (UnityEngine.Random.value < 0.005f)
-            // {
-            //     this.TakeDamage(new Damage(DamageType.Blunt, 5, 0.1f));
-            // }
-            // AI
-            _brainComponent.ProcessTick(); // TODO: convert to brain system
         }
     }
 }

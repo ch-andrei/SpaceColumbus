@@ -5,132 +5,29 @@ using UnityEngine;
 
 using Common;
 using Entities.Health;
-
+using Entities.Materials;
 using Utilities.Events;
 using Utilities.Misc;
 
 namespace Entities.Bodies
 {
-    public class BodyEventSystem : EventGenerator<DamageableEvent>, IEventListener<HpSystemEvent>
+    public class BodyDamageEvent : DamageEvent
     {
-        public bool OnEvent(HpSystemEvent gameEvent)
-        {
-            Notify(gameEvent);
+        public Body Body { get; private set; }
+        public List<BodyPartHpEvent> BodyPartHpEvents { get; private set; }
 
-            return true;
+        public BodyDamageEvent(Body body)
+        {
+            this.Body = body;
+            BodyPartHpEvents = new List<BodyPartHpEvent>();
         }
+
+        public void AddEvent(BodyPartHpEvent bodyPartHpEvent) => BodyPartHpEvents.Add(bodyPartHpEvent);
     }
 
-    public struct BodyNode
+    public class Body : IDamageable, INamed, ICloneable<Body>
     {
-        public const int MaxChildrenCount = 16;
-
-        public const int NullIndex = -1;
-        public static BodyNode NullNode => new BodyNode(NullIndex);
-
-        public int Index; // this nodes index
-        public int Parent;
-
-        public bool HasParent => Parent != NullIndex;
-        public bool HasChildren => 0 < childrenCount;
-
-        public IEnumerable<int> Children => new SliceEnumerator<int>(_children, 0, this.childrenCount);
-        public List<int> ChildrenList => Children.ToList();
-
-        public int childrenCount { get; private set; }
-
-        private int[] _children;
-
-        public BodyNode(int index, int parent=NullIndex)
-        {
-            this._children = new int[MaxChildrenCount];
-            this.childrenCount = 0;
-            this.Index = index;
-            this.Parent = parent;
-        }
-
-        // deep copy constructor
-        public BodyNode(BodyNode node) : this(node.Index, node.Parent)
-        {
-            this.childrenCount = node.childrenCount;
-            for (int i = 0; i < this.childrenCount; i++)
-                this._children[i] = node.ChildrenList[i];
-        }
-
-        public bool AddChild(int child)
-        {
-            if (childrenCount >= MaxChildrenCount)
-                return false;
-
-            _children[childrenCount++] = child;
-
-            return true;
-        }
-
-    }
-
-    public struct BodyPart : INamed, IDamageable, IWithListeners<HpSystemEvent>, ICloneable<BodyPart>
-    {
-        public HpSystem HpSystem { get; private set; }
-
-        public string Name { get; set; }
-        public string NameCustom { get; set; }
-
-        public float Size { get; set; }
-
-        // IDamageable functions
-        public bool IsDamageable => true;
-        public bool IsDamaged => this.HpSystem.IsDamaged;
-
-        public BodyPart(HpSystem hpSystem, string name, float size=0)
-        {
-            this.HpSystem = hpSystem;
-            this.Name = name;
-            this.NameCustom = name;
-            this.Size = size;
-        }
-
-        public BodyPart(BodyPart bodyPart) : this (
-            new HpSystem(bodyPart.HpSystem),
-            string.Copy(bodyPart.Name),
-            bodyPart.Size
-        )
-        {
-            this.NameCustom = string.Copy(bodyPart.NameCustom);
-        }
-
-        public EDamageState GetDamageState() => this.HpSystem.GetDamageState();
-
-        public void TakeDamage(Damage damage) => HpSystem.TakeDamage(damage);
-
-        public BodyPart Clone() => new BodyPart(this);
-
-        public List<IEventListener<HpSystemEvent>> EventListeners => HpSystem.EventListeners;
-
-        public void AddListener(IEventListener<HpSystemEvent> eventListener)
-        {
-            this.HpSystem.AddListener(eventListener);
-        }
-
-        public string GetHealthInfo()
-        {
-            if (this.IsDamaged)
-                return this.HpSystem.AsText;
-            else
-                return "";
-        }
-
-        public string ToString()
-        {
-            return $"BODYPART {this.NameCustom}";
-        }
-    }
-
-    public class Body : IDamageable, INamed, ICloneable<Body>,
-        IWithListeners<DamageableEvent>, IEventListener<HpSystemEvent>
-    {
-        // NOTE: this value should be less than 255, see _count
-        public static readonly int MaxBodyPartCount = 64;
+        public static readonly int MaxBodyPartCount = 32;
 
         public EBodyType BodyType { get; private set; }
 
@@ -154,15 +51,12 @@ namespace Entities.Bodies
         private BodyPart[] _bodyParts;
         private BodyNode[] _bodyNodes;
 
-        private BodyEventSystem _eventSystem;
-        public List<IEventListener<DamageableEvent>> EventListeners => _eventSystem.EventListeners;
-
-        public bool IsDamageable
+        public bool CanBeDamaged
         {
             get
             {
                 foreach (var bodyPart in BodyParts)
-                    if (bodyPart.IsDamageable)
+                    if (bodyPart.CanBeDamaged)
                         return true;
                 return false;
             }
@@ -181,7 +75,7 @@ namespace Entities.Bodies
 
         public List<float> GetBodyPartSizes(IEnumerable<BodyPart> bodyParts)
         {
-            List<float> sizes = new List<float>();
+            var sizes = new List<float>();
             foreach (var bodyPart in bodyParts)
                 sizes.Add(bodyPart.Size);
             return sizes;
@@ -191,11 +85,10 @@ namespace Entities.Bodies
         {
             this.BodyPartCount = 0;
             this.BodyType = bodyType;
-            this.Name = BodyTypes.BodyType(BodyType);
+            this.Name = BodyTypes.BodyType2String(BodyType);
             this._bodyParts = new BodyPart[MaxBodyPartCount];
             this._bodyNodes = new BodyNode[MaxBodyPartCount];
-            this._rootNode = new BodyNode(0);
-            this._eventSystem = new BodyEventSystem();
+            this._rootNode = new BodyNode(-1);
         }
 
         public Body(Body body) : this(body.BodyType)
@@ -211,9 +104,8 @@ namespace Entities.Bodies
             }
         }
 
-        public BodyNode AddBodyPart(BodyPart bodyPart) => AddBodyPart(bodyPart, _rootNode);
-
-        public BodyNode AddBodyPart(BodyPart bodyPart, BodyNode parent)
+        public BodyNode AddBodyPart(BodyPart bodyPart) => AddBodyPart(bodyPart, ref _rootNode);
+        public BodyNode AddBodyPart(BodyPart bodyPart, ref BodyNode parent)
         {
             if (BodyPartCount >= MaxBodyPartCount)
                 return BodyNode.NullNode;
@@ -223,89 +115,109 @@ namespace Entities.Bodies
             this._bodyParts[BodyPartCount] = bodyPart;
             parent.AddChild(BodyPartCount);
 
-            // listen on body parts HpSystem
-            bodyPart.AddListener(this);
-
             BodyPartCount++;
             return node;
         }
 
-        public void AddBodyParts(List<BodyPart> bodyParts, BodyNode parent)
+        public void AddBodyParts(List<BodyPart> bodyParts, ref BodyNode parent)
         {
             foreach (var bodyPart in bodyParts)
-                AddBodyPart(bodyPart, parent);
+                AddBodyPart(bodyPart, ref parent);
         }
 
-        public void TakeDamage(Damage damage) => TakeDamage(_rootNode, damage);
+        public void SetNode(BodyNode node) => this._bodyNodes[node.Index] = node;
 
-        private void TakeDamage(BodyNode node, Damage damage)
+        /*
+         * Distribute damage across body parts.
+         * Damage Penetration and Dispersion affect how damage is applied.
+         * Penetration = proportion of damage carried on the next depth of body parts (applicable for containers)
+         * Dispersion = degree of sharing of the damage across the damaged components.
+         * Example:
+         *     Attempting to damage N objects with dispersion=0 will only apply damage to 1 of the
+         *         components picked at random.
+         *     Attempting to damage N objects with dispersion=1 will damage all of the components.
+        */
+        public DamageEvent TakeDamage(Damage damage)
         {
-            // apply damage to current node
-            var bodyPart = _bodyParts[node.Index];
-            bodyPart.TakeDamage(damage);
+            // setup new body event
+            var bodyEvent = new BodyDamageEvent(this);
+
+            TakeDamage(_rootNode, damage, bodyEvent);
+
+            return bodyEvent;
+        }
+
+        // will recursively add events to BodyDamageEvent event list (per body part)
+        private void TakeDamage(BodyNode node, Damage damage, BodyDamageEvent bodyEvent)
+        {
+            Debug.Log("TAKE DAMAGE: index " + node.Index);
+
+            float r1 = UnityEngine.Random.value; // unused
+            float r2 = UnityEngine.Random.value;
+
+            if (0 <= node.Index)
+            {
+                var bodyPart = _bodyParts[node.Index];
+
+                // get damage event from body part hp system
+                var dmgEvent = bodyPart.TakeDamage(damage) as HpSystemEvent;
+                var bodyPartHpEvent = new BodyPartHpEvent(bodyPart, dmgEvent);
+
+                // add event to the body event list
+                bodyEvent.AddEvent(bodyPartHpEvent);
+            }
+
+            // Debug.Log($"bodyPart [{node.Index}] {bodyPart.NameCustom}, children: " + node.ChildrenCount);
 
             // apply damage to node's children
             if (node.HasChildren)
             {
-                var children = node.ChildrenList;
+                var children = node.Children.ToArray();
+
+                var sb = new StringBuilder();
+                foreach (var i in children)
+                    sb.Append(i + ", ");
+                // Debug.Log("children: " + sb.ToString());
 
                 // sample indices of children to pick which children will be applied damage to
                 Vector2Int indices = Samplers.SampleFromPdf(
-                    UnityEngine.Random.value,
+                    r2,
                     GetBodyPartSizes(new IndexedEnumerator<BodyPart>(this._bodyParts, children)),
                     damage.Dispersion);
 
                 // get the children
-                var damagedNodes = new IndexedEnumerator<BodyNode>(this._bodyNodes,
-                    new SliceEnumerator<int>(children.ToArray(), indices[0], indices[1]).ToList()
+                var damagedNodes = new IndexedEnumerator<BodyNode>(
+                    this._bodyNodes,
+                    new SliceEnumerator<int>(children, indices[0], indices[1] + 1).ToArray()
                 );
 
-                // compute the damage amount passed on to children of current body part
+                // Debug.Log("damaged nodes count " + damagedNodes.Count()); damagedNodes.Reset(); // need to reset since its an iterator
 
-                // get a multiplier that applies to all damage types
-                var damageMultiplier = DamageMultipliers.Multiplier(damage.Penetration);
-                // apply multiplier to incoming damage
-                Damage damageAfterMultiplier =
-                    DamageMultipliers.GetDamageAfterMultiplier(damage, damageMultiplier);
+                // compute the damage amount passed on to children of current body part
+                var damageAfterMultiplier = damage * damage.Penetration;
 
                 foreach (var damagedNode in damagedNodes)
-                    TakeDamage(damagedNode, damageAfterMultiplier);
+                    TakeDamage(damagedNode, damageAfterMultiplier, bodyEvent);
             }
         }
 
         public EDamageState GetDamageState()
         {
-            EDamageState worstDamageState = EDamageState.None;
+            var dmgState = EDamageState.None;
             foreach (var bodyPart in BodyParts)
-                worstDamageState = HpSystemDamageStates.GetWorstDamageState(worstDamageState, bodyPart.GetDamageState());
-            return worstDamageState;
+                dmgState = HpSystemDamageStates.GetWorstDamageState(dmgState, bodyPart.GetDamageState());
+            return dmgState;
         }
 
-        public void AddListener(IEventListener<DamageableEvent> eventListener)
+        public override string ToString()
         {
-            this._eventSystem.AddListener(eventListener);
+            var sb = new StringBuilder();
+
+            sb.Append(this.Name + "\n");
+            foreach (var bp in this.BodyParts)
+                sb.Append(bp.Name + ": " + bp.NameCustom + " " + bp.HpSystem.AsText + "\n");
+
+            return sb.ToString();
         }
-
-        public bool OnEvent(HpSystemEvent gameEvent)
-        {
-            _eventSystem.OnEvent(gameEvent);
-
-            return true;
-        }
-
     }
-
-    // public class Body
-    // {
-    //     public static Body HumanoidBody => BodyPartFactory.HumanoidBody;
-    //
-    //     public Body(string name) : base(name) { }
-    //
-    //     public Body(Body body) : base(body as BodyPartContainer) { }
-    //
-    //     public override BodyPart Clone()
-    //     {
-    //         return new Body(this);
-    //     }
-    // }
 }

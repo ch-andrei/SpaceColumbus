@@ -7,6 +7,14 @@ namespace Controls
 {
     public class DebugMenu : MonoBehaviour
     {
+        public enum EDebugMode : byte
+        {
+            SpawnAgent,
+            SpawnExplosion,
+            SpawnObject,
+            Other
+        }
+
         private const string ToggleDebugButtonName = "Toggle Debug GUI";
         private const string ActionSpawnAgentName = "Spawn Agent";
         private const string ActionSpawnExplosionName = "Spawn Explosion";
@@ -14,6 +22,8 @@ namespace Controls
         private const string Menu1ToggleName = "Open Menu 1";
         private const string Menu2ToggleName = "Open Menu 2";
         private const string Menu3ToggleName = "Open Menu 3";
+
+        private const string DebugIconPath = "Assets/GameView/UI/OnGui/Icons/debug.png";
 
         public bool allowDebug = true;
 
@@ -23,25 +33,16 @@ namespace Controls
         public int buttonHeight = 25;
         public int toggleIconSize = 25;
 
-        public enum EDebugMode : byte
-        {
-            SpawnAgent,
-            SpawnExplosion,
-            SpawnObject,
-            Other
-        }
-
         private EDebugMode _mode;
 
         private bool _showDebugGui;
-
         private Texture2D _debugUiIcon;
 
         private GameControl _gameControl;
 
         public void Start()
         {
-            _debugUiIcon = Tools.LoadTexture("Assets/GameView/UI/OnGui/Icons/debug.png");
+            _debugUiIcon = Tools.LoadTexture(DebugIconPath);
 
             _mode = EDebugMode.Other;
             _gameControl = this.GetComponent<GameControl>();
@@ -52,7 +53,7 @@ namespace Controls
             switch (_mode)
             {
                 case EDebugMode.SpawnAgent:
-                    _gameControl.gameManager.SpawnSimpleAgent(_gameControl.mouseOverWorldPosition);
+                    _gameControl.gameManager.gameSession.SpawnSimpleAgent(_gameControl.mouseOverWorldPosition);
                     break;
                 case EDebugMode.SpawnExplosion:
                     break;

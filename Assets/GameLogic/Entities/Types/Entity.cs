@@ -32,34 +32,42 @@ namespace Entities
         public EntityChangeEvent(Entity entity) { this.Entity = entity; }
     }
 
-    public class EntityEventGenerator : EventGenerator<EntityChangeEvent>, IEventListener<DamageableEvent>
+    public class EntityEventGenerator : EventGenerator<EntityChangeEvent>, IEventListener<DamageableComponentEvent>
     {
         private Entity _entity;
         public EntityEventGenerator(Entity entity) : base() { this._entity = entity; }
 
-        public bool OnEvent(DamageableEvent bodyEvent)
+        public bool OnEvent(DamageableComponentEvent bodyComponentEvent)
         {
-            this.Notify(new EntityChangeEvent(this._entity));
+            this.NotifyListeners(new EntityChangeEvent(this._entity));
 
             return true;
         }
     }
 
     public class Entity : MonoBehaviour, IWithPosition, IWithPosition2d, INamed, IIdentifiable,
-        IWithListeners<EntityChangeEvent>, IEquatable<Entity>
+        IWithListeners<EntityChangeEvent>, IEquatable<Entity>, IEquatable<EntityComponent>
     {
-        public EntityType entityType { get; set; }
+        public EntityType EntityType { get; set; }
 
         public Vector3 Position => this.transform.position;
         public Vector2 Position2d => new Vector2(Position.x, Position.z);
-        public int Guid => this.gameObject.GetInstanceID();
-        public bool Equals(Entity other) => this.Guid == other?.Guid;
+
+        public bool Equals(Entity other) => !(other is null) && this.Guid == other.Guid;
+        public bool Equals(EntityComponent other) => !(other is null) && this.Guid == other.entity.Guid;
 
         private string _name;
         public string Name {
             get => _name;
             set => _name = value;
         }
+
+        // id will be set by EntityManager when the entity is registered
+        private int _id;
+        public void SetId(int id) { this._id = id; }
+        public int Guid => _id;
+
+        public override int GetHashCode() => this.Guid;
 
         public OwnershipInfo OwnershipInfo { get; private set; }
 
@@ -79,9 +87,9 @@ namespace Entities
             Components = new List<EntityComponent>();
         }
 
-        public void LateStart()
+        public void Initialize()
         {
-            foreach (var component in EntityManager.GetComponents(this))
+            foreach (var component in EntityManager.GetComponentsUnity(this))
                 this.AddComponent(component);
 
             EntityManager.RegisterEntity(this);
@@ -110,7 +118,7 @@ namespace Entities
         public void Start()
         {
             this.Entity = this.GetComponent<Entity>();
-            this.Entity.LateStart();
+            this.Entity.Initialize();
 
             Initialize();
         }

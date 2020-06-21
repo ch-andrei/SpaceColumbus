@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Noises;
+using NoiseGenerators;
 using SquareRegions;
 using UnityEngine;
 using Utilities.Misc;

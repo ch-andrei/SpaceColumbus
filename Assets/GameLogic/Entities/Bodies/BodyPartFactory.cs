@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using Utilities.Misc;
@@ -8,6 +6,7 @@ using Utilities.XmlReader;
 
 using Entities.Health;
 using Entities.Materials;
+using UnityEngine;
 
 namespace Entities.Bodies
 {
@@ -52,13 +51,13 @@ namespace Entities.Bodies
             ReadBodyPartsFromXml();
         }
 
-        public static Body GetBody(EBodyType bodyType) => GetBody(BodyTypes.BodyType(bodyType));
+        public static Body GetBody(EBodyType bodyType) => GetBody(BodyTypes.BodyType2String(bodyType));
         public static Body GetBody(string bodyType)
         {
             try
             {
                 var body = AvailableBodies[bodyType];
-                return new Body(body);
+                return body.Clone();
             }
             catch (KeyNotFoundException e)
             {
@@ -67,7 +66,7 @@ namespace Entities.Bodies
             }
         }
 
-        public static BodyPart GetBodyPart(EBodyType bodyType, string name) => GetBodyPart(BodyTypes.BodyType(bodyType), name);
+        public static BodyPart GetBodyPart(EBodyType bodyType, string name) => GetBodyPart(BodyTypes.BodyType2String(bodyType), name);
         public static BodyPart GetBodyPart(string bodyType, string name)
         {
             try
@@ -136,9 +135,10 @@ namespace Entities.Bodies
                     {
                         var materialName = materialNames[j];
                         float materialWeight = float.Parse(materialWeights[j]);
+                        var material = EntityMaterialFactory.GetMaterial(materialName);
                         try
                         {
-                            foreach (var mult in EntityMaterial.GetMaterial(materialName).DamageMultipliers)
+                            foreach (var mult in EntityMaterialFactory.GetMaterial(materialName).DamageMultipliers)
                             {
                                 multipliers.Add(mult);
                                 weights.Add(materialWeight);
@@ -147,53 +147,69 @@ namespace Entities.Bodies
                         catch (Exception e) { /* do nothing */ }
                     }
 
+                    Debug.Log("Creating bodypart: " + bodyPartName);
+
+                    Debug.Log("before simplifying:");
+                    foreach (var mult in multipliers)
+                        Debug.Log($"Multiplier [{mult.DamageType.ToString()}] " + mult.Amount);
+
                     multipliers = DamageMultipliers.Simplify(multipliers, weights);
+
+                    Debug.Log("after simplifying:");
+                    foreach (var mult in multipliers)
+                        Debug.Log($"Multiplier [{mult.DamageType.ToString()}] " + mult.Amount);
 
                     // build bodypart
                     var hpSystem = new HpSystem((int)hp, multipliers);
                     var bodyPart = new BodyPart(hpSystem, bodyPartName, size);
 
+                    Debug.Log("Created bodypart: " + bodyPart.NameCustom);
+
                     AvailableBodyParts[variantName][bodyPartName] = bodyPart;
                 }
             }
 
+            // TODO: convert this to recursive function to be able to support deeper body structures
             // STEP 3:
             // build bodies and add parts for containers
             List<string> bodyTypeNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField });
-            foreach (var bodyType in bodyTypeNames)
+            foreach (var bodyTypeName in bodyTypeNames)
             {
-                var body = new Body(BodyTypes.BodyType(bodyType));
+                var eBodyType = BodyTypes.String2BodyType(bodyTypeName);
+                var body = new Body(eBodyType);
 
-                List<string> containerNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField, bodyType });
+                List<string> containerNames = _bodyPartXmlReader.GetChildren(new List<string>() { RootField, InclusionField, bodyTypeName });
 
                 foreach (var bodyPartName in containerNames)
                 {
-                    BodyPart bodyPart = AvailableBodyParts[bodyType][bodyPartName];
+                    BodyPart bodyPart = AvailableBodyParts[bodyTypeName][bodyPartName];
                     BodyNode bodyNode = body.AddBodyPart(bodyPart);
 
                     List<string> partsList = _bodyPartXmlReader.GetChildren(
-                        new List<string>() { RootField, InclusionField, bodyType, bodyPartName });
+                        new List<string>() { RootField, InclusionField, bodyTypeName, bodyPartName });
 
                     foreach (var partName in partsList)
                     {
                         List<string> customNames = _bodyPartXmlReader.GetStrings(
-                            new List<string>() { RootField, InclusionField, bodyType, bodyPartName, partName, ItemField });
+                            new List<string>() { RootField, InclusionField, bodyTypeName, bodyPartName, partName, ItemField });
+
+                        BodyPart bp = AvailableBodyParts[bodyTypeName][partName].Clone();
 
                         if (customNames.Count == 0)
+                            customNames.Add(bp.Name);
+
+                        foreach (var customName in customNames)
                         {
-                            BodyPart bp = AvailableBodyParts[bodyType][partName].Clone();
-                            body.AddBodyPart(bp, bodyNode);
-                        }
-                        else foreach (var customName in customNames)
-                        {
-                            BodyPart bp = AvailableBodyParts[bodyType][partName].Clone();
-                            bp.NameCustom = customName; // add custom name
-                            body.AddBodyPart(bp, bodyNode);
+                            bp.NameCustom = customName; // copy custom name
+                            body.AddBodyPart(bp, ref bodyNode);
                         }
                     }
+
+                    // write back to body
+                    body.SetNode(bodyNode);
                 }
 
-                AvailableBodies[bodyType] = body;
+                AvailableBodies[bodyTypeName] = body;
             }
         }
     }

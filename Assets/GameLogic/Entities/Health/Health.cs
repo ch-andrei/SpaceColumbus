@@ -12,26 +12,27 @@ using UI.Utils;
 
 namespace Entities.Health
 {
-    public class HpSystemEvent : DamageableEvent
+    public class HpSystemEvent : DamageEvent
     {
-        public readonly HpSystem HpSystem;
         public readonly float HealthDelta;
+        public readonly int HpPrev;
+        public readonly int HpCurrent;
 
-        public HpSystemEvent(List<Damage> damages, HpSystem hpSystem, float healthDelta) : base(damages, null)
+        public HpSystemEvent(int hpPrev, int hpCurrent, float healthDelta)
         {
-            this.HpSystem = hpSystem;
+            this.HpPrev = hpPrev;
+            this.HpCurrent = hpCurrent;
             this.HealthDelta = healthDelta;
         }
     }
 
-    public class HpSystem : EventGenerator<HpSystemEvent>, IDamageable
+    public class HpSystem : IDamageable
     {
-        public bool IsDamageable => true;
+        public bool CanBeDamaged => true;
         public bool IsDamaged => this.Health < 1f;
 
         public int HpBase { get; private set; } // maximum HP
-
-        public float Health { get; private set; } // always between 0 and 1
+        public float Health { get; private set; } // current health, unit normalized (0-1)
 
         public int HpCurrent => Mathf.RoundToInt(Health * HpBase);
         public int HpPrev { get; private set; }
@@ -39,6 +40,9 @@ namespace Entities.Health
         public string AsText => $"HP: [{HpCurrent}/{HpBase}]";
 
         private List<Damage> _damageMultipliers;
+
+        // public string MaterialName;
+        // public EntityMaterial Material => MaterialFactory
 
         public HpSystem(int hpBase)
         {
@@ -51,58 +55,45 @@ namespace Entities.Health
         public HpSystem(int hpBase, List<Damage> damageMultipliers) : this(hpBase)
         {
             foreach (var mult in damageMultipliers)
-                this._damageMultipliers.Add(new Damage(mult)); // make a new local copy
+                this._damageMultipliers.Add(mult.Clone()); // make a new local copy
         }
-
-        public HpSystem(int hpBase, Damage damageMultiplier) :
-            this(hpBase, new List<Damage>(){ damageMultiplier }) { }
 
         public HpSystem(HpSystem hpSystem) : this(hpSystem.HpBase, hpSystem._damageMultipliers)
         {
             this.HpPrev = hpSystem.HpPrev;
             this.Health = hpSystem.Health;
-
-            // copy listeners
-            foreach (var listener in hpSystem.EventListeners)
-                EventListeners.Add(listener);
         }
 
-        private void OnHealthChangeEvent(float healthDelta, List<Damage> damages)
+        private DamageEvent OnHealthChangeEvent(float healthDelta, List<Damage> damages)
         {
             this.HpPrev = HpCurrent;
-
             this.Health -= healthDelta;
             this.Health = Mathf.Clamp(this.Health, 0, 1);
 
-            Notify(new HpSystemEvent(damages, this, healthDelta));
+            return new HpSystemEvent(this.HpPrev, HpCurrent, healthDelta);
         }
 
-        public void TakeDamage(Damage damage)
+        public DamageEvent TakeDamage(Damage damage) => TakeDamage(new List<Damage>() { damage });
+        public DamageEvent TakeDamage(List<Damage> damages)
         {
-            TakeDamage(new List<Damage>() { damage });
-        }
-
-        public void TakeDamage(List<Damage> damages)
-        {
-            List<Damage> damagesAfterModifier = DamageMultipliers.GetDamageAfterMultiplier(damages, _damageMultipliers);
+            var damagesAfterModifier = DamageMultipliers.GetDamageAfterMultiplier(damages, _damageMultipliers);
             float totalDamage = Damages.GetTotalDamage(damagesAfterModifier);
-            float healthDelta = totalDamage / HpBase;
+            float healthDelta = totalDamage / HpBase; // normalized 0-HpBase -> 0-1 range (could exceed if high dmg)
 
-            OnHealthChangeEvent(healthDelta, damagesAfterModifier);
+            return OnHealthChangeEvent(healthDelta, damagesAfterModifier);
         }
 
-        public void Heal(float healthDelta)
+        public DamageEvent Heal(float healthDelta)
         {
-            OnHealthChangeEvent(healthDelta, new List<Damage>());
+            return OnHealthChangeEvent(healthDelta, new List<Damage>());
         }
 
-        public void HealHp(int hp)
+        public DamageEvent HealHp(int hp)
         {
             // add a small constant to make sure at least this many HP is healed
-            // meanwhile, this also ensures float division
-            float healthDelta = (hp + 1e-6f) / HpBase;
+            float healthDelta = (hp + 1e-6f) / (float)HpBase;
 
-            OnHealthChangeEvent(healthDelta, new List<Damage>());
+            return OnHealthChangeEvent(healthDelta, new List<Damage>());
         }
 
         public EDamageState GetDamageState()

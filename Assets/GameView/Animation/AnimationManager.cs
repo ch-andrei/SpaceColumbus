@@ -72,7 +72,7 @@ namespace Animation
             AnimationSystem animator = GetAnimationSystemForAnimationBase(ab);
 
             if (animator != null)
-                animator.AddAnimated(ab);
+                animator.RegisterAnimationParams(ab);
         }
 
         public static void UnregisterAnimation(IAnimationParams ab)
@@ -80,7 +80,7 @@ namespace Animation
             AnimationSystem animator = GetAnimationSystemForAnimationBase(ab);
 
             if (animator != null)
-                animator.RemoveAnimated(ab);
+                animator.UnregisterAnimationParams(ab);
         }
 
         public static void OnDestroy()

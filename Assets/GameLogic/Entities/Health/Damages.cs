@@ -2,14 +2,15 @@
 using UnityEditor;
 
 using System.Collections.Generic;
-
+using System.Runtime.InteropServices.ComTypes;
+using Common;
 using Entities.Materials;
 
 using Utilities.Misc;
 
 namespace Entities.Health
 {
-    public enum DamageType : byte
+    public enum EDamageType : byte
     {
         None,
         Blunt,
@@ -22,25 +23,14 @@ namespace Entities.Health
         Emp,
     }
 
-    public struct Damage
+    public struct Damage : ICloneable<Damage>
     {
-        public DamageType DamageType;
+        public EDamageType DamageType;
         public float Amount;
-
-        // proportion of damage carried over to the next level of pdeth
         public float Penetration;
-
-        /*
-         * Dispersion = sharing ratio of damage across the damaged components.
-         * Example:
-         *     Attempting to damage N objects with dispersion=0 damage will only apply damage to 1 of the
-         *         components picked at random.
-         *     Attempting to damage N objects with dispersion=1 damage will damage all of the components.
-         *     Sharing across damaged components should be
-        */
         public float Dispersion;
 
-        public Damage(DamageType damageType, float amount, float penetration=1f, float dispersion=1f)
+        public Damage(EDamageType damageType, float amount, float penetration=1f, float dispersion=1f)
         {
             this.DamageType = damageType;
             this.Amount = amount;
@@ -49,39 +39,47 @@ namespace Entities.Health
         }
 
         public Damage(float amount, float penetration = 1f, float dispersion = 1f) :
-            this(DamageType.None, amount, penetration, dispersion) { }
+            this(EDamageType.None, amount, penetration, dispersion) { }
 
-        public Damage(Damage damage) : this(damage.DamageType, damage.Amount, damage.Dispersion) { }
-    }
+        public Damage(Damage damage) : this(damage.DamageType, damage.Amount, damage.Penetration, damage.Dispersion) { }
 
-    public static class Damages
-    {
+        public static Damage operator *(Damage lhs, float mult)
+        {
+            var dmg = new Damage(lhs);
+            dmg.Amount *= mult;
+            return lhs;
+        }
 
         public static Damage SlashingDamage(float amount)
         {
-            return new Damage(DamageType.Slashing, amount, 0.25f, 0.75f); // low penetration, high dispersion
+            return new Damage(EDamageType.Slashing, amount, 0.2f, 0.3f); // medium penetration, medium dispersion
         }
 
         public static Damage PiercingDamage(float amount)
         {
-            return new Damage(DamageType.Piercing, amount, 0.75f, 0.1f); // high penetration, low dispersion
+            return new Damage(EDamageType.Piercing, amount, 0.5f, 0.05f); // high penetration, low dispersion
         }
 
         public static Damage BluntDamage(float amount)
         {
-            return new Damage(DamageType.Blunt, amount, 0.1f, 0.5f); // very low penetration, medium dispersion
+            return new Damage(EDamageType.Blunt, amount, 0.05f, 0.25f); // very low penetration, medium dispersion
         }
 
         public static Damage ChemicalDamage(float amount)
         {
-            return new Damage(DamageType.Chemical, amount, 0.05f, 1f); // very low penetration, high dispersion
+            return new Damage(EDamageType.Chemical, amount, 0.05f, 1f); // very low penetration, very high dispersion
         }
 
         public static Damage ElectricDamage(float amount)
         {
-            return new Damage(DamageType.Electric, amount, 1f, 1f); // very high penetration, very high dispersion
+            return new Damage(EDamageType.Electric, amount, 1f, 1f); // very high penetration, very high dispersion
         }
 
+        public Damage Clone() => new Damage(this);
+    }
+
+    public static class Damages
+    {
         #region XmlDefs
         public const string DamageNoneName = "None";
         public const string DamageBluntName = "Blunt";
@@ -94,18 +92,18 @@ namespace Entities.Health
         public const string DamageEmpName = "EMP";
         #endregion XmlDefs
 
-        private static List<DamageType> _damageTypes = null;
-        public static List<DamageType> DamageTypes
+        private static List<EDamageType> _damageTypes = null;
+        public static List<EDamageType> DamageTypes
         {
             get
             {
                 // this will be built on first call
                 if (_damageTypes is null)
                 {
-                    _damageTypes = new List<DamageType>();
-                    foreach (DamageType damageType in DamageType.GetValues(typeof(DamageType)))
+                    _damageTypes = new List<EDamageType>();
+                    foreach (EDamageType damageType in EDamageType.GetValues(typeof(EDamageType)))
                     {
-                        if (damageType != DamageType.None)
+                        if (damageType != EDamageType.None)
                             _damageTypes.Add(damageType);
                     }
                 }
@@ -114,53 +112,55 @@ namespace Entities.Health
             }
         }
 
-        public static string DamageType2Str(DamageType damageType)
+        public static string ToString(this EDamageType type) => DamageType2Str(type);
+
+        public static string DamageType2Str(EDamageType eDamageType)
         {
-            switch (damageType)
+            switch (eDamageType)
             {
-                case DamageType.Blunt:
+                case EDamageType.Blunt:
                     return DamageBluntName;
-                case DamageType.Slashing:
+                case EDamageType.Slashing:
                     return DamageSlashingName;
-                case DamageType.Piercing:
+                case EDamageType.Piercing:
                     return DamagePiercingName;
-                case DamageType.Heat:
+                case EDamageType.Heat:
                     return DamageHeatName;
-                case DamageType.Electric:
+                case EDamageType.Electric:
                     return DamageElectricName;
-                case DamageType.Chemical:
+                case EDamageType.Chemical:
                     return DamageChemicalName;
-                case DamageType.Psychological:
+                case EDamageType.Psychological:
                     return DamagePsychologicalName;
-                case DamageType.Emp:
+                case EDamageType.Emp:
                     return DamageEmpName;
                 default:
                     return DamageNoneName;
             }
         }
 
-        public static DamageType DamageStr2Type(string damageType)
+        public static EDamageType DamageStr2Type(string damageType)
         {
             switch (damageType)
             {
                 case DamageBluntName:
-                    return DamageType.Blunt;
+                    return EDamageType.Blunt;
                 case DamageSlashingName:
-                    return DamageType.Slashing;
+                    return EDamageType.Slashing;
                 case DamagePiercingName:
-                    return DamageType.Piercing;
+                    return EDamageType.Piercing;
                 case DamageHeatName:
-                    return DamageType.Heat;
+                    return EDamageType.Heat;
                 case DamageElectricName:
-                    return DamageType.Electric;
+                    return EDamageType.Electric;
                 case DamageChemicalName:
-                    return DamageType.Chemical;
+                    return EDamageType.Chemical;
                 case DamagePsychologicalName:
-                    return DamageType.Psychological;
+                    return EDamageType.Psychological;
                 case DamageEmpName:
-                    return DamageType.Emp;
+                    return EDamageType.Emp;
                 default:
-                    return DamageType.None;
+                    return EDamageType.None;
             }
         }
 
@@ -175,14 +175,14 @@ namespace Entities.Health
 
     public static class DamageMultipliers
     {
-        public static Damage Multiplier(DamageType damageType, float amount)
+        public static Damage Multiplier(EDamageType eDamageType, float amount)
         {
-            return new Damage(damageType, amount);
+            return new Damage(eDamageType, amount);
         }
 
         public static Damage Multiplier(float amount)
         {
-            return Multiplier(DamageType.None, amount);
+            return Multiplier(EDamageType.None, amount);
         }
 
         // use Damage as a multiplier to other damages
@@ -208,15 +208,13 @@ namespace Entities.Health
             for (int i = 0; i < count - simplified; i++)
             {
                 var m1 = mults[i];
-                for (int j = 0; j < count - simplified; j++)
+                for (int j = i + 1; j < count - simplified; j++)
                 {
-                    if (i == j)
-                        continue;
-
                     var m2 = mults[j];
 
                     if (m1.DamageType == m2.DamageType)
                     {
+                        // simplify same type multipliers
                         if (weightsIn == null)
                             m1.Amount *= m2.Amount;
                         else
@@ -277,7 +275,7 @@ namespace Entities.Health
         {
             float damageAmount = damage.Amount;
             foreach (var multiplier in multipliers)
-                if (damage.DamageType == multiplier.DamageType || multiplier.DamageType == DamageType.None)
+                if (damage.DamageType == multiplier.DamageType || multiplier.DamageType == EDamageType.None)
                     damageAmount *= multiplier.Amount;
             return damageAmount;
         }

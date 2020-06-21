@@ -27,7 +27,7 @@ namespace UI.Menus
         public VitalLogInfo(UiFieldVitalsLog log, GameObject go) { this.Log = log; this.Go = go; }
     }
 
-    public class UiModuleVitalsLog : UiModuleWithScrollableItems, IEventListener<DamageableEvent>
+    public class UiModuleVitalsLog : UiModuleWithScrollableItems, IEventListener<DamageableComponentEvent>
     {
         public int numLogsInPool = 20;
 
@@ -38,7 +38,7 @@ namespace UI.Menus
 
         private List<VitalLogInfo> _vitalLogs;
         private Entity _entity;
-        private Damageable _damageable;
+        private DamageableComponent _damageableComponent;
         private int _activeLogs = 0;
 
         public new void Awake()
@@ -71,15 +71,18 @@ namespace UI.Menus
         public void SetObservedAgent(Entity entity)
         {
             // only update if currently observed agent is not the same as the agent we want to observe
-            if (!(this._entity is null) && !this._entity.Equals(entity))
-            {
-                this._entity = entity;
-                this._damageable = EntityManager.GetComponent<Damageable>(this._entity);
+            if (entity is null || entity.Equals(this._entity))
+                return;
 
-                this._damageable.AddListener(this);
+            this._damageableComponent = EntityManager.GetComponent<DamageableComponent>(entity);
 
-                UpdateVitalsLog();
-            }
+            if (this._damageableComponent is null)
+                return;
+
+            this._entity = entity;
+            this._damageableComponent.AddListener(this);
+
+            UpdateVitalsLog();
         }
 
         void DeactivateVitalsLog()
@@ -94,10 +97,12 @@ namespace UI.Menus
 
         void UpdateVitalsLog()
         {
-            titleTextRight.Text = GetStatusString(this._damageable.GetDamageState());
+            Debug.Log("UpdateVitalsLog");
+
+            titleTextRight.Text = GetStatusString(this._damageableComponent.GetDamageState());
 
             DeactivateVitalsLog();
-            ProcessVitalsLog(_damageable.Body);
+            ProcessVitalsLog(_damageableComponent.Body);
         }
 
         public string GetStatusString(EDamageState damageState)
@@ -129,9 +134,9 @@ namespace UI.Menus
             }
         }
 
-        public bool OnEvent(DamageableEvent gameEvent)
+        public bool OnEvent(DamageableComponentEvent gameComponentEvent)
         {
-            bool active = this._entity.Equals(gameEvent.Entity);
+            bool active = !(this._entity is null) && this._entity.Equals(gameComponentEvent.DamageableComponent);
 
             if (active)
                 UpdateVitalsLog();

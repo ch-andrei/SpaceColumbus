@@ -12,7 +12,7 @@ public class Springy : MonoBehaviour
     [Space(12)]
     public float drag = 4f;//drag
     public float springForce = 100.0f;//Spring
-    
+
     [Space(12)]
     public Transform geoParent;
 
@@ -21,12 +21,12 @@ public class Springy : MonoBehaviour
     void Start()
     {
         _springRb = springObj.GetComponent<Rigidbody>();//Find the RigidBody component
-        springObj.transform.parent = null;//Take the spring out of the hierarchy
+        springObj.transform.parent = GameObject.FindGameObjectWithTag("springs").transform; //Take the spring out of the hierarchy
     }
 
     void FixedUpdate()
     {
-        //Sync the rotation 
+        //Sync the rotation
         _springRb.transform.rotation = this.transform.rotation;
 
         //Calculate the distance between the two points

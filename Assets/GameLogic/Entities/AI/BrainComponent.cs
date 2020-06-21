@@ -35,8 +35,11 @@ namespace Brains
             AttackEngaging,
         }
 
-        protected MoveBrain MoveBrain = null;
-        protected AttackBrain AttackBrain = null;
+        protected IMoveComponent MoveComponent = null;
+        protected IAttackComponent AttackComponent = null;
+
+        public bool CanMove => MoveComponent.CanMove;
+        public bool CanAttack => AttackComponent.CanAttack;
 
         protected IntelligenceLevel Intelligence;
         protected BehaviourState Behaviour;
@@ -45,11 +48,11 @@ namespace Brains
         {
             this.Entity = entity;
 
-            MoveBrain = new MoveBrain(this.GetComponent<NavMeshAgent>());
-            AttackBrain = new AttackBrain();
+            MoveComponent = new MoveComponent(this.GetComponent<NavMeshAgent>());
+            AttackComponent = new AttackComponent();
         }
 
-        public void ProcessTick()
+        public void FixedUpdate()
         {
             MakeDecision();
             Act();

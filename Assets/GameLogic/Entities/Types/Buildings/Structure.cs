@@ -23,12 +23,12 @@ namespace Entities
         public override void Initialize()
         {
             this.Entity.Name = Name;
-            this.Entity.entityType = EntityType.Structure;
-        }
+            this.Entity.EntityType = EntityType.Structure;
 
-        public void AddListener(IEventListener<EntityChangeEvent> eventListener)
-        {
-            throw new System.NotImplementedException();
+            // match collider and navmesh obstacle sizes
+            var obstacle = this.GetComponent<NavMeshObstacle>();
+            var collider = this.GetComponent<BoxCollider>();
+            obstacle.size = collider.size;
         }
     }
 }

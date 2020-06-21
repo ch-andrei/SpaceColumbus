@@ -1,17 +1,62 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
 
 namespace Brains.Movement
 {
+    public interface IMoveComponent
+    {
+        bool CanMove { get; }
+        float MoveSpeed { get; }
+        void SetMoveSpeed(float moveSpeed);
+        bool SetDestination(Vector3 destination);
+        void StopMoving();
+        bool AtDestination();
+    }
+
+    public class StationaryMoveComponent : IMoveComponent
+    {
+        public bool CanMove => false;
+        public float MoveSpeed => _moveSpeed;
+
+        private float _moveSpeed = 0; // always zero for Stationary
+
+        public void SetMoveSpeed(float moveSpeed)
+        {
+            // do nothing
+        }
+
+        public bool SetDestination(Vector3 destination)
+        {
+            // do nothing
+            return true;
+        }
+
+        public void StopMoving()
+        {
+            // do nothing
+        }
+
+        public bool AtDestination()
+        {
+            return true;
+        }
+    }
+
     [System.Serializable]
-    public class MoveBrain
+    public class MoveComponent : IMoveComponent
     {
         private NavMeshAgent _navMeshAgent;
 
         public float stuckDistanceThreshold = 0.025f; // minimal distance to destination to consider that destination is reached
+
+        public bool CanMove => true;
+
+        public float MoveSpeed => this._navMeshAgent.speed;
+        public void SetMoveSpeed(float moveSpeed) => this._navMeshAgent.speed = moveSpeed;
 
         #region StuckConfig
         public float stuckTimeout = 2f; // in seconds
@@ -25,7 +70,7 @@ namespace Brains.Movement
         public Vector3 NavMeshPosition => this._navMeshAgent.nextPosition;
 
         // Start is called before the first frame update
-        public MoveBrain(NavMeshAgent navMeshAgent)
+        public MoveComponent(NavMeshAgent navMeshAgent)
         {
             this.posAtStuck = Vector3.positiveInfinity;
             this._navMeshAgent = navMeshAgent;

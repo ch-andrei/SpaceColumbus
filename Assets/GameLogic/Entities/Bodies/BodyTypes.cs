@@ -13,7 +13,7 @@
         public const string BodyTankName = "Tank";
         public const string BodyNoneName = "None";
 
-        public static string BodyType(EBodyType type)
+        public static string BodyType2String(EBodyType type)
         {
             switch (type)
             {
@@ -26,7 +26,7 @@
             }
         }
 
-        public static EBodyType BodyType(string bodyType)
+        public static EBodyType String2BodyType(string bodyType)
         {
             switch (bodyType)
             {

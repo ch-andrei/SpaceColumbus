@@ -1,19 +1,19 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-
-using Utilities.XmlReader;
+using System.Xml;
 using Utilities.Misc;
 
 using Common;
 
 using Entities;
 using Entities.Health;
+using UnityEngine.AI;
+using XmlReader = Utilities.XmlReader.XmlReader;
 
 namespace Entities.Materials
 {
-    // TODO: could/should this be a ScriptableObject?
-    public class EntityMaterial : INamed
+    public static class EntityMaterialFactory
     {
         #region XmlDefs
         private const string MaterialsXmlPath = "Assets/Defs/materials.xml";
@@ -22,62 +22,127 @@ namespace Entities.Materials
 
         private const string HardnessField = "Hardness";
         private const string RestorationField = "Restoration";
-        private const string FlamabilityField = "Flammability";
+        private const string FlammabilityField = "Flammability";
         private const string DamageMultipliersField = "DamageMultipliers";
+
+        private const string FleshMaterialName = "Flesh";
+        private const string BoneMaterialName = "Bone";
+        private const string SteelMaterialName = "Steel";
+        private const string PlasticMaterialName = "Plastic";
+        private const string WoodMaterialName = "Wood";
+        private const string StoneMaterialName = "Stone";
 
         private static XmlReader _materialXmlReader = new XmlReader(MaterialsXmlPath);
         #endregion XmlDefs
 
-        public float Hardness { get; private set; }
-        public float Restoration { get; private set; }
-        public float Flammability { get; private set; }
+        public static Dictionary<string, EntityMaterial> Materials;
 
-        public List<Damage> DamageMultipliers;
-
-        public string Name { get; private set; }
-
-        private EntityMaterial(string name)
+        public static void Initialize()
         {
-            this.Name = name;
-            InitializeFromXml();
+            Materials = new Dictionary<string, EntityMaterial>();
+
+            // create and cache materials
+            CreateMaterial(FleshMaterialName);
+            CreateMaterial(BoneMaterialName);
+            CreateMaterial(SteelMaterialName);
+            CreateMaterial(PlasticMaterialName);
+            CreateMaterial(WoodMaterialName);
+            CreateMaterial(StoneMaterialName);
         }
 
-        private void InitializeFromXml()
-        {
-            this.Hardness = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, HardnessField });
-            this.Restoration = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, RestorationField });
-            this.Flammability = _materialXmlReader.GetFloat(new List<string>() { RootField, this.Name, FlamabilityField });
-            InitializeDamageMultipliersFromXml();
-        }
+        public static EntityMaterial Flesh => GetMaterial(FleshMaterialName);
+        public static EntityMaterial Bone => GetMaterial(BoneMaterialName);
+        public static EntityMaterial Steel => GetMaterial(SteelMaterialName);
+        public static EntityMaterial Plastic => GetMaterial(PlasticMaterialName);
+        public static EntityMaterial Wood => GetMaterial(WoodMaterialName);
+        public static EntityMaterial Stone => GetMaterial(StoneMaterialName);
 
-        private void InitializeDamageMultipliersFromXml()
+        public static void CreateMaterial(string name)
         {
-            this.DamageMultipliers = new List<Damage>();
+            var material = new EntityMaterial();
+            material.Name = name;
 
-            foreach (var damageType in Damages.DamageTypes)
+            try
             {
-                try
-                {
-                    // try read damage type multipliers from xml file
-                    float multiplier = _materialXmlReader.GetFloat(
-                        new List<string>() { RootField, this.Name, DamageMultipliersField, Damages.DamageType2Str(damageType) }
-                        );
-                    this.DamageMultipliers.Add(new Damage(damageType, multiplier));
-                }
-                catch (Exception e)
-                {
-                    this.DamageMultipliers.Add(new Damage(damageType, 1f));
-                }
+                InitializeFromXml(ref material, name); // create
+                Materials[name] = material; // store
+            }
+            catch (XmlException e)
+            {
+                Debug.Log($"Warning: MaterialFactory could not create material [{name}].");
             }
         }
 
-        public static EntityMaterial GetMaterial(string name) { return new EntityMaterial(name); }
+        public static EntityMaterial GetMaterial(string name)
+        {
+            if (Materials.ContainsKey(name))
+                return Materials[name].Clone();
+            else
+            {
+                // need to create material first
+                CreateMaterial(name);
+                return GetMaterial(name);
+            }
+        }
 
-        public static EntityMaterial Flesh => new EntityMaterial("Flesh");
-        public static EntityMaterial Bone => new EntityMaterial("Bone");
-        public static EntityMaterial Steel => new EntityMaterial("Steel");
-        public static EntityMaterial Plastic => new EntityMaterial("Plastic");
-        public static EntityMaterial Wood => new EntityMaterial("Wood");
-        public static EntityMaterial Stone => new EntityMaterial("Stone");
+        private static void InitializeFromXml(ref EntityMaterial material, string name)
+        {
+            material.Hardness = _materialXmlReader.GetFloat(new List<string>() { RootField, name, HardnessField });
+            material.Restoration = _materialXmlReader.GetFloat(new List<string>() { RootField, name, RestorationField });
+            material.Flammability = _materialXmlReader.GetFloat(new List<string>() { RootField, name, FlammabilityField });
+
+            var damageTypes = Damages.DamageTypes;
+            material.DamageMultipliers = new Damage[damageTypes.Count];
+            for (int i = 0; i < damageTypes.Count; i++)
+            {
+                var damageType = damageTypes[i];
+
+                // not all types of damage may be present in the xml defs; default fallback is unit (1.0) multiplier
+                float multiplier = 1f;
+                try
+                {
+                    // try read damage type multipliers from xml file
+                    multiplier = _materialXmlReader.GetFloat(
+                        new List<string>() {RootField, name, DamageMultipliersField, Damages.DamageType2Str(damageType)}
+                    );
+                }
+                catch (Exception e) { }
+
+                material.DamageMultipliers[i] = new Damage(damageType, multiplier);
+            }
+        }
+    }
+
+    public struct EntityMaterial : INamed, ICloneable<EntityMaterial>
+    {
+        public float Hardness;
+        public float Restoration;
+        public float Flammability;
+
+        public Damage[] DamageMultipliers;
+
+        public string Name { get; set; }
+
+        public EntityMaterial(float hardness, float restoration, float flammability, string name = "")
+        {
+            this.Hardness = hardness;
+            this.Restoration = restoration;
+            this.Flammability = flammability;
+            this.DamageMultipliers = new Damage[Damages.DamageTypes.Count];
+            this.Name = name;
+        }
+
+        public EntityMaterial(EntityMaterial material) : this(
+            material.Hardness,
+            material.Restoration,
+            material.Flammability,
+            string.Copy(material.Name)
+            )
+        {
+            for (int i = 0; i < material.DamageMultipliers.Length; i++)
+                this.DamageMultipliers[i] = material.DamageMultipliers[i].Clone();
+        }
+
+        public EntityMaterial Clone() => new EntityMaterial(this);
     }
 }

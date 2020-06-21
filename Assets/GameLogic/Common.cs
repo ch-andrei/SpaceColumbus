@@ -1,10 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Common
 {
+    // public abstract class Singleton<T> where T : class
+    // {
+    //     public static T Instance => sInstance.Value;
+    //     private static readonly Lazy<T> sInstance = new Lazy<T>(() => CreateInstanceOfT());
+    //     private static T CreateInstanceOfT() => Activator.CreateInstance(typeof(T), true) as T;
+    // }
+
     public interface IUpdateable
     {
         void Update();

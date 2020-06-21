@@ -2,7 +2,7 @@
 using UnityEngine;
 using Utilities.Misc;
 
-namespace Noises
+namespace NoiseGenerators
 {
     public abstract class Noise
     {

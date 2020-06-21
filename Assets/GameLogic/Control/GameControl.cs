@@ -1,16 +1,22 @@
 ﻿using System;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
-using InputControls;
 using Entities;
 using EntitySelection;
 
-using Animation;
+using GameLogic;
 using Players;
+
+using Animation;
+
 using UI.Utils;
 using UI;
-using UnityEngine.Serialization;
+
+using InputControls;
+
 
 namespace Controls
 {
@@ -38,6 +44,7 @@ namespace Controls
         public Vector3 mouseOverWorldPosition;
 
         public GameManager gameManager { get; private set; }
+        public GameSession gameSession { get; private set; }
 
         #region PrivateVariables
 
@@ -60,6 +67,7 @@ namespace Controls
         {
             gameManager = (GameManager) GameObject.FindGameObjectWithTag(StaticGameDefs.GameManagerTag)
                 .GetComponent(typeof(GameManager));
+            gameSession = gameManager.gameSession;
 
             _uiManager = (UiManager) GameObject.FindGameObjectWithTag(StaticGameDefs.UiManagerTag)
                 .GetComponent(typeof(UiManager));
@@ -96,7 +104,7 @@ namespace Controls
             _uiManager.OpenMenu(menu);
         }
 
-        void OnMouse0Down()
+        private void OnMouse0Down()
         {
             switch (_controlType)
             {
@@ -112,7 +120,7 @@ namespace Controls
             }
         }
 
-        void SelectionStart()
+        private void SelectionStart()
         {
             if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
             {
@@ -123,20 +131,20 @@ namespace Controls
             }
         }
 
-        void OnMouse0Hold()
+        private void OnMouse0Hold()
         {
             if (_controlType == EControlType.Default)
                 _mousePositionAtSelectionEnd = Input.mousePosition;
         }
 
-        void OnMouse0Up()
+        private void OnMouse0Up()
         {
             if (_controlType == EControlType.Default)
                 _isBoxSelecting = false;
         }
 
         // by default, Control1 is the right mouse click
-        void OnMouse1Down()
+        private void OnMouse1Down()
         {
             switch (_controlType)
             {
@@ -163,12 +171,12 @@ namespace Controls
 
         private void OrderMoveSelectedAgents()
         {
-            gameManager.MoveSelectedAgents(mouseOverWorldPosition);
+            gameSession.MoveSelectedAgents(mouseOverWorldPosition);
         }
 
         private void OrderStopSelectedAgents()
         {
-            gameManager.StopSelectedAgents();
+            gameSession.StopSelectedAgents();
         }
 
         public bool IsMouseOverUi()
@@ -176,24 +184,24 @@ namespace Controls
             return _eventSystem.IsPointerOverGameObject();
         }
 
-        void ResetSelection()
+        private void ResetSelection()
         {
             _isBoxSelecting = false;
             OnDeselectObjects();
         }
 
-        void ResetUi()
+        private void ResetUi()
         {
             _uiManager.Reset();
         }
 
-        void ProcessSelectionArea()
+        private void ProcessSelectionArea()
         {
             // placeholder selection
             SelectionCriteria selectionCriteria = new SelectionCriteria(
                 true, false, true,
                 SelectionCriteria.ECondition.Or,
-                gameManager.gameSession.CurrentPlayer.ownership.info
+                gameSession.CurrentPlayer.ownership.info
             );
 
             // TODO ADD CRITERIA/SORTING of selected objects
@@ -208,7 +216,7 @@ namespace Controls
                     if (selectedObjects.Count == 1)
                     {
                         var selectedObject = selectedObjects[0];
-                        var entity = selectedObject.GetComponent<Entity>();
+                        var entity = EntityManager.GetEntity(selectedObject);
 
                         if (entity != null)
                         {
@@ -244,19 +252,14 @@ namespace Controls
             _startedBoxSelection = false;
         }
 
-        void Update()
+        private void Update()
         {
-            float time = Time.time;
-            float deltaTime = Time.deltaTime;
-
             RayToCursorPosition();
 
             ProcessControls();
 
             if (!IsMouseOverUi())
                 ProcessSelectionArea();
-
-            AnimationManager.Update(time, deltaTime);
         }
 
         private void RayToCursorPosition()

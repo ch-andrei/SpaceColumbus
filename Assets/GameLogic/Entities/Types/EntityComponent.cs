@@ -5,23 +5,6 @@ using Common;
 
 namespace Entities
 {
-    public abstract class EntityComponentEvent : GameEvent
-    {
-        public EntityComponentEvent() { }
-    }
-
-    public class EntityComponentAddedEvent : GameEvent
-    {
-        public Entity Entity { get; private set; }
-        public EntityComponent EntityComponent { get; private set; }
-
-        public EntityComponentAddedEvent(Entity entity, EntityComponent entityComponent) : base()
-        {
-            this.Entity = entity;
-            this.EntityComponent = entityComponent;
-        }
-    }
-
     public enum EntityComponentType
     {
         Damageable,
@@ -35,12 +18,16 @@ namespace Entities
     public abstract class EntityComponent : MonoBehaviour, INamed, IIdentifiable
     {
         public abstract EntityComponentType ComponentType { get; }
-
         public abstract string Name { get; }
 
-        public int Guid => entity.Guid;
-
         public Entity entity { get; private set; }
+
+        // id will be set by EntityManager when the entity component is registered
+        private int _id;
+        public void SetId(int id) { this._id = id; }
+        public int Guid => _id;
+
+        public override int GetHashCode() => this.Guid;
 
         public void Awake()
         {
@@ -48,5 +35,21 @@ namespace Entities
         }
 
         public abstract void OnDestroy();
+    }
+
+    public abstract class EntityComponentEvent : GameEvent
+    {
+        protected EntityComponent Component;
+
+        public EntityComponentEvent(EntityComponent component)
+        {
+            this.Component = component;
+        }
+    }
+
+    public abstract class EntityComponentSystem : INamed
+    {
+        public abstract string Name { get; }
+        public abstract void Update(float time, float deltaTime);
     }
 }

@@ -36,13 +36,13 @@ namespace EntitySelection
             this._ownership = ownership;
         }
 
-        public static bool IsValidSelection(SelectionCriteria criteria, Selectable selectable)
+        public static bool IsValidSelection(SelectionCriteria criteria, SelectableComponent selectableComponent)
         {
             if (criteria is null)
                 return true;
 
-            bool valid = criteria._isAgent == StaticGameDefs.IsAgent(selectable.gameObject);
-            valid = criteria._op(valid, criteria._isBuilding == StaticGameDefs.IsStructure(selectable.gameObject));
+            bool valid = criteria._isAgent == StaticGameDefs.IsAgent(selectableComponent.gameObject);
+            valid = criteria._op(valid, criteria._isBuilding == StaticGameDefs.IsStructure(selectableComponent.gameObject));
             //valid = criteria.op(valid, criteria.isControlable != selectable.gameObject.GetComponent<Owner>());
 
             return valid;
@@ -61,19 +61,19 @@ namespace EntitySelection
 
     public class SelectionListener : IEventListener<SelectionEvent>
     {
-        public Selectable selectable { get; }
+        public SelectableComponent SelectableComponent { get; }
 
-        public SelectionListener(Selectable selectable)
+        public SelectionListener(SelectableComponent selectableComponent)
         {
-            this.selectable = selectable;
+            this.SelectableComponent = selectableComponent;
         }
 
         public bool OnEvent(SelectionEvent selectionEvent)
         {
             if (selectionEvent.IsSelected)
-                selectable.Select();
+                SelectableComponent.Select();
             else
-                selectable.Deselect();
+                SelectableComponent.Deselect();
 
             // selection listener always listens
             return true;

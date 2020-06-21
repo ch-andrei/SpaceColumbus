@@ -22,7 +22,7 @@ namespace UI.Menus
         public GameObject rightInfoField;
 
         private Entity _entity = null;
-        private Damageable _damageable = null;
+        private DamageableComponent _damageableComponent = null;
         private bool _hasDamageable;
 
         private TextMeshProUGUI _statusTextMesh;
@@ -45,7 +45,7 @@ namespace UI.Menus
         void UpdateView()
         {
             if (_hasDamageable)
-                _statusTextMesh.text = GetStatusString(this._damageable.GetDamageState());
+                _statusTextMesh.text = GetStatusString(this._damageableComponent.GetDamageState());
         }
 
         public string GetStatusString(EDamageState damageState)
@@ -58,9 +58,9 @@ namespace UI.Menus
             if (!this._entity.Equals(entity))
             {
                 this._entity = entity;
-                this._damageable = EntityManager.GetComponent<Damageable>(_entity);
+                this._damageableComponent = EntityManager.GetComponent<DamageableComponent>(_entity);
 
-                _hasDamageable = _damageable != null;
+                _hasDamageable = _damageableComponent != null;
                 if (_hasDamageable)
                 {
                     entity.AddListener(this);

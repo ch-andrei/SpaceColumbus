@@ -34,17 +34,17 @@ namespace EntitySelection
             ProcessSelected();
         }
 
-        public static void AddSelectable(Selectable selectable)
+        public static void AddSelectable(SelectableComponent selectableComponent)
         {
-            int id = selectable.Guid;
+            int id = selectableComponent.Guid;
 
             if (!_selectionListeners.ContainsKey(id))
-                _selectionListeners.Add(id, selectable.selectionListener);
+                _selectionListeners.Add(id, selectableComponent.selectionListener);
         }
 
-        public static void RemoveSelectable(Selectable selectable)
+        public static void RemoveSelectable(SelectableComponent selectableComponent)
         {
-            int id = selectable.Guid;
+            int id = selectableComponent.Guid;
 
             if (_selectionListeners.ContainsKey(id))
                 _selectionListeners.Remove(id);
@@ -66,8 +66,8 @@ namespace EntitySelection
 
             foreach (var selectionListener in _selectionListeners.Values)
             {
-                var selectable = selectionListener.selectable;
-                if (selectionListener.selectable.isSelected)
+                var selectable = selectionListener.SelectableComponent;
+                if (selectionListener.SelectableComponent.isSelected)
                 {
                     selectedListeners.Add(selectionListener);
                     selectedObjects.Add(selectable.gameObject);
@@ -105,7 +105,7 @@ namespace EntitySelection
 
             foreach (var selectionListener in _selectionListeners.Values)
             {
-                var selectable = selectionListener.selectable;
+                var selectable = selectionListener.SelectableComponent;
                 if (selectable.isSelected)
                     selectable.Deselect();
             }
@@ -113,12 +113,12 @@ namespace EntitySelection
             ProcessSelected();
         }
 
-        public static List<Selectable> GetSelectables(GameObject gameObject)
+        public static List<SelectableComponent> GetSelectables(GameObject gameObject)
         {
             if (gameObject is null)
-                return new List<Selectable>();
+                return new List<SelectableComponent>();
 
-            return EntityManager.GetComponents<Selectable>(gameObject);
+            return EntityManager.GetComponents<SelectableComponent>(gameObject);
         }
 
         public static void Deselect(GameObject gameObject)
@@ -129,16 +129,16 @@ namespace EntitySelection
             }
         }
 
-        public static void Deselect(Selectable selectable)
+        public static void Deselect(SelectableComponent selectableComponent)
         {
-            if (selectable.isSelected)
-                selectable.Deselect();
+            if (selectableComponent.isSelected)
+                selectableComponent.Deselect();
         }
 
-        public static void Select(Selectable selectable, SelectionCriteria selectionCriteria = null)
+        public static void Select(SelectableComponent selectableComponent, SelectionCriteria selectionCriteria = null)
         {
-            if (!selectable.isSelected && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
-                selectable.Select();
+            if (!selectableComponent.isSelected && SelectionCriteria.IsValidSelection(selectionCriteria, selectableComponent))
+                selectableComponent.Select();
         }
 
         public static void Select(GameObject gameObject, SelectionCriteria selectionCriteria=null)
@@ -183,7 +183,7 @@ namespace EntitySelection
         {
             foreach (var selectionListener in _selectionListeners.Values)
             {
-                var selectable = selectionListener.selectable;
+                var selectable = selectionListener.SelectableComponent;
 
                 if (selectionCriteria != null && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
                 {

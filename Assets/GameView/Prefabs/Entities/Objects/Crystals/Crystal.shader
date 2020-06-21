@@ -15,6 +15,7 @@ Shader "Custom/Crystal"
         _ParallaxMap("Height Map", 2D) = "black" {}
         _DistortionAmount("Distortion Amount", float) = 0
         _DistortionInfluence("Distortion Influence", Range(0.0, 1.0)) = 0
+        _BackgroundAttenuation("Light Attenuation Amount", Range(0.0, 1.0)) = 0
         _MinAngleFactor("Distortion Angle Min Influence", Range(0.001, 0.999)) = 0
         _RootPos("Root Position", Vector) = (1,1,1,1)
         _EmissionFalloff("Distance Emission Falloff", Range(0.01, 10.0)) = 1
@@ -86,14 +87,14 @@ Shader "Custom/Crystal"
             {
                 IN.uv_BumpMap += getParallaxOffset(_ParallaxMap, _Parallax, IN.uv_ParallaxMap, IN.viewDir);
                 o.Normal = UnpackScaleNormal(tex2D(_BumpMap, IN.uv_BumpMap), _BumpScale);
-                
+
                 o.Albedo = _Color.rgb;
 
                 o.Metallic = _Metallic;
                 o.Smoothness = _Glossiness;
 
                 float angleFactor = abs(dot(IN.viewDir, o.Normal)); // TODO: VERIFY WORLD VS OBJECT NORMALS?
-                
+
                 float4 emission = lerp(1, tex2D(_EmissionMap, IN.uv_BumpMap), _EmissionMapInfluence);
 
                 float3 localPos = IN.worldPos - mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
@@ -111,11 +112,9 @@ Shader "Custom/Crystal"
 
         Pass
         {
-            Name "CrystalDistortion"
+            Name "Crystal Distortion Custom Blending"
             //Cull On
             ZWrite On
-
-            //Blend One One
 
             CGPROGRAM
                 #pragma vertex vert
@@ -146,6 +145,7 @@ Shader "Custom/Crystal"
 
                 float _DistortionAmount;
                 float _DistortionInfluence;
+                float _BackgroundAttenuation;
 
                 float _MinAngleFactor;
 
@@ -190,7 +190,7 @@ Shader "Custom/Crystal"
 
                     return o;
                 }
-                
+
                 // BLENDING IS DONE HERE
                 half4 frag(v2f i) : SV_Target
                 {
@@ -199,23 +199,22 @@ Shader "Custom/Crystal"
                     float3 normal = UnpackScaleNormal(tex2D(_BumpMap, i.uvBump), _BumpScale);
                     //normal.y = 0;
 
-                    float crystalDepthFactor = smoothstep(0, 1, pow(depthAlongRay(i.worldPos, _RootPos), 0.1));
+                    float distanceFromRoot = depthAlongRay(i.worldPos, _RootPos);
+                    float distanceFromRootFactor = smoothstep(0, 1, pow(distanceFromRoot, 0.5));
 
                     fixed4 distortedUv = i.uvGrab;
-                    distortedUv.xy += crystalDepthFactor * normal.xy * i.angleFactor * _DistortionAmount;
+                    distortedUv.xy += distanceFromRootFactor * normal.xy * i.angleFactor * _DistortionAmount;
 
-                    half4 bgcolorDistorted = tex2Dproj(_CrystalBackgroundTexture1, distortedUv); // distorted only
+                    half4 bgcolorDistorted = (1 - _BackgroundAttenuation) * tex2Dproj(_CrystalBackgroundTexture1, distortedUv); // distorted only
                     half4 bgcolorCrystal = tex2Dproj(_GrabTexture, i.uvGrab); // with crystal
 
-                    return 
-                        lerp(
-                            bgcolorCrystal,
-                            bgcolorCrystal + hsvMaxBlendMode(bgcolorDistorted, bgcolorCrystal),
-                            _DistortionInfluence * (_DistortionInfluence + Luminance(bgcolorDistorted) * (1 - _DistortionInfluence))
-                        );
-
-                    //return fixed4(crystalDepthFactor, crystalDepthFactor, crystalDepthFactor, 1);
-                    //return bgcolor1 + 0.25;
+                     return
+                         lerp(
+                             bgcolorCrystal,
+                             bgcolorCrystal + hsvMaxBlendMode(bgcolorDistorted, bgcolorCrystal),
+                             (_DistortionInfluence + Luminance(bgcolorDistorted) * (1 - _DistortionInfluence))
+                             //_DistortionInfluence * (_DistortionInfluence + Luminance(bgcolorDistorted) * (1 - _DistortionInfluence))
+                         );
                 }
             ENDCG
         }

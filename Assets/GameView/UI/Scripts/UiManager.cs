@@ -76,14 +76,15 @@ namespace UI
 
         public void OnSelectEntity(Entity entity)
         {
-            if (entity.entityType == EntityType.Agent)
+            if (entity.EntityType == EntityType.Agent)
             {
-                this._agentVitalsModule.SetObservedAgent(entity);
-
                 OnSelectAgent(true);
+                this._agentVitalsModule.SetObservedAgent(entity);
             }
             else
-                Debug.Log("Selected something that isn't an agent.");
+            {
+                // Debug.Log("Selected something that isn't an agent.");
+            }
         }
 
         public void OnSelectAgent(bool selectState) => this._agentVitalsModule.SetActive(selectState);
