@@ -7,7 +7,7 @@ using Utilities.Misc;
 using Common;
 
 using Entities;
-using Entities.Health;
+using Entities.Damageables;
 using UnityEngine.AI;
 using XmlReader = Utilities.XmlReader.XmlReader;
 
@@ -17,8 +17,6 @@ namespace Entities.Materials
     {
         #region XmlDefs
         private const string MaterialsXmlPath = "Assets/Defs/materials.xml";
-
-        private const string RootField = "root";
 
         private const string HardnessField = "Hardness";
         private const string RestorationField = "Restoration";
@@ -87,9 +85,9 @@ namespace Entities.Materials
 
         private static void InitializeFromXml(ref EntityMaterial material, string name)
         {
-            material.Hardness = _materialXmlReader.GetFloat(new List<string>() { RootField, name, HardnessField });
-            material.Restoration = _materialXmlReader.GetFloat(new List<string>() { RootField, name, RestorationField });
-            material.Flammability = _materialXmlReader.GetFloat(new List<string>() { RootField, name, FlammabilityField });
+            material.Hardness = _materialXmlReader.GetFloat(new List<string>() { name, HardnessField });
+            material.Restoration = _materialXmlReader.GetFloat(new List<string>() { name, RestorationField });
+            material.Flammability = _materialXmlReader.GetFloat(new List<string>() { name, FlammabilityField });
 
             var damageTypes = Damages.DamageTypes;
             material.DamageMultipliers = new Damage[damageTypes.Count];
@@ -103,7 +101,7 @@ namespace Entities.Materials
                 {
                     // try read damage type multipliers from xml file
                     multiplier = _materialXmlReader.GetFloat(
-                        new List<string>() {RootField, name, DamageMultipliersField, Damages.DamageType2Str(damageType)}
+                        new List<string>() { name, DamageMultipliersField, Damages.DamageType2Str(damageType) }
                     );
                 }
                 catch (Exception e) { }

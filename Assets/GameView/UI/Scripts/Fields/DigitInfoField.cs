@@ -26,7 +26,7 @@ namespace UI.Fields
         [Range(0.1f, 1)] public float valueSuffixScale = 0.5f;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             _titleText = titleText.GetComponent<TextMeshProUGUI>();
             _infoText = infoText.GetComponent<TextMeshProUGUI>();
@@ -41,7 +41,7 @@ namespace UI.Fields
         }
 
         // Update is called once per frame
-        void OnValidate()
+        private void OnValidate()
         {
             Start();
         }

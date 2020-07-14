@@ -1,172 +1,182 @@
 <?xml version="1.0" ?>
 <root>
-	<BaseStats>
+	<BodyStats>
+		<Default>
+			<HealingSpeed>0</HealingSpeed>
+			<HealingAmount>0</HealingAmount>
+		</Default>
+		<Humanoid>
+			<HealingSpeed>2.5</HealingSpeed>
+			<HealingAmount>0.025</HealingAmount>
+		</Humanoid>
+	</BodyStats>
+	<BodyParts>
 		<Humanoid>
 			<Torso>
-				<isContainer>1</isContainer>
 				<hp>200</hp>
 				<size>1</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Torso>
 			<Spine>
-				<isContainer>0</isContainer>
 				<hp>50</hp>
 				<size>0.4</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
-					<item>
-						<name>Bone</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
+					<Bone>1</Bone>
 				</mat>
 			</Spine>
 			<Leg>
-				<isContainer>0</isContainer>
 				<hp>50</hp>
 				<size>0.5</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
-					<item>
-						<name>Bone</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
+					<Bone>1</Bone>
 				</mat>
 			</Leg>
 			<Arm>
-				<isContainer>0</isContainer>
 				<hp>35</hp>
 				<size>0.35</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
-					<item>
-						<name>Bone</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
+					<Bone>1</Bone>
 				</mat>
 			</Arm>
 			<Heart>
-				<isContainer>0</isContainer>
 				<hp>10</hp>
 				<size>0.03</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Heart>
 			<Lung>
-				<isContainer>0</isContainer>
 				<hp>10</hp>
 				<size>0.035</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Lung>
 			<Stomach>
-				<isContainer>0</isContainer>
 				<hp>25</hp>
 				<size>0.25</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Stomach>
 			<Head>
-				<isContainer>1</isContainer>
 				<hp>50</hp>
 				<size>0.075</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
-					<item>
-						<name>Bone</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
+					<Bone>1</Bone>
 				</mat>
 			</Head>
 			<Eye>
-				<isContainer>0</isContainer>
 				<hp>2</hp>
 				<size>0.01</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Eye>
 			<Ear>
-				<isContainer>0</isContainer>
 				<hp>10</hp>
 				<size>0.015</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Ear>
 			<Mouth>
-				<isContainer>0</isContainer>
 				<hp>10</hp>
 				<size>0.02</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Mouth>
 			<Nose>
-				<isContainer>0</isContainer>
 				<hp>20</hp>
 				<size>0.02</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
-					<item>
-						<name>Bone</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
+					<Bone>1</Bone>
 				</mat>
 			</Nose>
 			<Brain>
-				<isContainer>0</isContainer>
 				<hp>5</hp>
 				<size>0.05</size>
 				<mat>
-					<item>
-						<name>Flesh</name>
-						<size>1</size>
-					</item>
+					<Flesh>1</Flesh>
 				</mat>
 			</Brain>
 		</Humanoid>
-	</BaseStats>
+		<Tank>
+			<MainBody>
+				<hp>500</hp>
+				<size>1</size>
+				<mat>
+					<Steel>1</Steel>
+					<Plastic>1</Plastic>
+					<Electronics>0.5</Electronics>
+				</mat>
+			</MainBody>
+		</Tank>
+	</BodyParts>
+	<CapacityStats>
+		<Humanoid>
+			<Spine>
+				<Movement>0.95</Movement>
+				<Manipulation>0.95</Manipulation>
+			</Spine>
+			<Leg>
+				<Movement>0.45</Movement>
+			</Leg>
+			<Arm>
+				<Manipulation>0.45</Manipulation>
+			</Arm>
+			<Heart>
+				<Manipulation>0.25</Manipulation>
+				<Movement>0.25</Movement>
+				<Healing>0.2</Healing>
+				<Critical>1</Critical>
+			</Heart>
+			<Lung>
+				<Manipulation>0.2</Manipulation>
+				<Movement>0.2</Movement>
+				<Healing>0.2</Healing>
+				<Critical>0.5</Critical>
+			</Lung>
+			<Stomach>
+				<Manipulation>0.1</Manipulation>
+				<Movement>0.1</Movement>
+				<Healing>0.5</Healing>
+				<Critical>1</Critical>
+			</Stomach>
+			<Eye>
+				<Manipulation>0.35</Manipulation>
+				<Communication>0.1</Communication>
+				<Movement>0.25</Movement>
+			</Eye>
+			<Ear>
+				<Manipulation>0.05</Manipulation>
+				<Communication>0.75</Communication>
+				<Movement>0.1</Movement>
+			</Ear>
+			<Mouth>
+				<Communication>0.85</Communication>
+			</Mouth>
+			<Nose>
+				<Healing>0.25</Healing>
+				<Movement>0.25</Movement>
+			</Nose>
+			<Brain>
+				<Movement>1</Movement>
+				<Manipulation>1</Manipulation>
+				<Communication>1</Communication>
+				<Cognition>1</Cognition>
+				<Critical>1</Critical>
+			</Brain>
+		</Humanoid>
+	</CapacityStats>
 	<Inclusion>
 		<Humanoid>
 			<Torso>
@@ -200,5 +210,8 @@
 				<Nose/>
 			</Head>
 		</Humanoid>
+		<Tank>
+			<MainBody/>
+		</Tank>
 	</Inclusion>
 </root>

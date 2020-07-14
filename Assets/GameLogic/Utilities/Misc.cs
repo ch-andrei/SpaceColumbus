@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.IO;
+using Entities;
 
 namespace Utilities.Misc
 {
@@ -148,7 +149,7 @@ namespace Utilities.Misc
         {
             int min = SampleFromPdf(sample - tolerance, pdfs);
             int max = SampleFromPdf(sample + tolerance, pdfs);
-            Debug.Log($"Sampled pdf size {pdfs.Count}: {min} - {max}");
+            // Debug.Log($"Sampled pdf size {pdfs.Count}: {min} - {max}");
             return new Vector2Int(min, max);
         }
 
@@ -433,5 +434,11 @@ namespace Utilities.Misc
         {
             // do nothing
         }
+    }
+
+    public static class EnumString
+    {
+        public static string Get<T>(T e) => Enum.GetName(typeof(T), e);
+        public static T Get<T>(string s) => (T)Enum.Parse(typeof(T), s);
     }
 }

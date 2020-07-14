@@ -10,12 +10,6 @@
             solution: use y of crystal for light? use center of cluster for light? -> i.e. center crystals are better?
 
 
-2. entity manager / destroy system
-    
-    - must safe guard all other systems:
-        when entity is destroyed, must make sure all other systems dont try to access it
-
-
 3. entity clustering system
     
     - helps with finding closest objects
@@ -30,7 +24,7 @@
 
 5. Health System / Damage
 
-    Dwarf Fortress Injury Types:
+    - Dwarf Fortress Injury Types:
         NONE: No recorded active wounds on the part.
         MINOR: Any damage that doesn't have functional/structural consequences (might be heavy bleeding, though).
         INHIBITED: Any muscular, structural, or functional damage, without total loss.
@@ -38,8 +32,7 @@
         BROKEN: The part has lost all structural integrity or muscular ability.
         MISSING: The part is completely gone.
 
-
-6. Entity bodies / materials
-
+    - XML defines body parts and how these affect agent efficiencies
+        
 
 7. BUG: MoveBrain movement; when multiple agents are told to move to X, not all agents actually start moving to X (command ignored).

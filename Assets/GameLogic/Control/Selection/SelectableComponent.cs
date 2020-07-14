@@ -21,7 +21,7 @@ namespace EntitySelection
         public bool isSelected { get; private set; }
 
         public Vector3 position => this.entity.Position;
-        public GameObject gameObject => this.entity.gameObject;
+        public new GameObject gameObject => this.entity.gameObject;
         public GameObject selectionIndicator;
 
         public void Start()

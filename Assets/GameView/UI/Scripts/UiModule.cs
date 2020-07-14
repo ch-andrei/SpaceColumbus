@@ -9,6 +9,7 @@ namespace UI.Components
     [System.Serializable]
     public class UiModule : MonoBehaviour
     {
+        // Name of the UI module
         public string label;
 
         protected List<UiModule> _submodules;

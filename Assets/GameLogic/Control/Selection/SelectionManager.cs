@@ -1,13 +1,41 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Entities;
+
 using UnityEngine;
+using UnityEngine.Profiling;
+
+using Entities;
+using Players;
 
 using Utilities.Events;
 
 namespace EntitySelection
 {
+    public class SelectionCriteria
+    {
+        public enum ECondition
+        {
+            And,
+            Or
+        }
+
+        public bool _isAgent;
+        public bool _isBuilding;
+        public bool _isControllable;
+        public Func<bool, bool, bool> _op;
+        OwnershipInfo _ownership;
+
+        public SelectionCriteria(bool isAgent, bool isBuilding, bool isControllable, ECondition condition, OwnershipInfo ownership)
+        {
+            this._isAgent = isAgent;
+            this._isBuilding = isBuilding;
+            this._isControllable = isControllable;
+            if (condition == ECondition.And) this._op = (a, b) => a & b; else this._op = (a, b) => a | b;
+            this._ownership = ownership;
+        }
+    }
+
     public static class SelectionManager
     {
         #region Config
@@ -23,7 +51,7 @@ namespace EntitySelection
 
         private static float _timeSinceLastSelectionUpdate;
 
-        private static GameObject _mouseOverObject;
+        public static GameObject MouseOverObject { get; private set; }
 
         public static bool Dirty { get; set; }
 
@@ -52,7 +80,7 @@ namespace EntitySelection
 
         //public List<SelectionListener> GetSelectedListeners() { return this.currentlySelectedListeners; }
 
-        public static List<GameObject> GetSelectedObjects() { return _currentlySelectedGameObjects; }
+        public static List<GameObject> GetSelectedObjects() => _currentlySelectedGameObjects;
 
         //public List<GameObject> GetSelectedObjects(SelectionCriteria criteria)
         //{
@@ -61,8 +89,8 @@ namespace EntitySelection
 
         private static void ProcessSelected()
         {
-            List<SelectionListener> selectedListeners = new List<SelectionListener>();
-            List<GameObject> selectedObjects = new List<GameObject>();
+            var selectedListeners = new List<SelectionListener>();
+            var selectedObjects = new List<GameObject>();
 
             foreach (var selectionListener in _selectionListeners.Values)
             {
@@ -101,7 +129,7 @@ namespace EntitySelection
 
         public static void DeselectAll()
         {
-            _mouseOverObject = null;
+            MouseOverObject = null;
 
             foreach (var selectionListener in _selectionListeners.Values)
             {
@@ -137,7 +165,7 @@ namespace EntitySelection
 
         public static void Select(SelectableComponent selectableComponent, SelectionCriteria selectionCriteria = null)
         {
-            if (!selectableComponent.isSelected && SelectionCriteria.IsValidSelection(selectionCriteria, selectableComponent))
+            if (!selectableComponent.isSelected && IsValidSelection(selectionCriteria, selectableComponent))
                 selectableComponent.Select();
         }
 
@@ -151,13 +179,13 @@ namespace EntitySelection
 
         public static void UpdateMouseSelection(GameObject mouseOverObject, SelectionCriteria selectionCriteria)
         {
-            // TODO: optimize this
-            //if (this.mouseOverObject == mouseOverObject)
-            //    return;
+            // // TODO: optimize this
+            // if (MouseOverObject == mouseOverObject)
+            //     return;
 
-            Deselect(_mouseOverObject);
-            _mouseOverObject = mouseOverObject;
-            Select(_mouseOverObject, selectionCriteria);
+            Deselect(MouseOverObject);
+            MouseOverObject = mouseOverObject;
+            Select(MouseOverObject, selectionCriteria);
         }
 
         public static void UpdateSelected(Vector3 s1, Vector3 s2, GameObject mouseOverObject, SelectionCriteria selectionCriteria = null)
@@ -179,31 +207,39 @@ namespace EntitySelection
             }
         }
 
+        public static bool IsValidSelection(SelectionCriteria criteria, SelectableComponent selectableComponent)
+        {
+            if (criteria is null)
+                return true;
+
+            bool valid = criteria._isAgent == selectableComponent.entity.isAgent;
+            valid = criteria._op(valid, criteria._isBuilding == selectableComponent.entity.isStructure);
+            //valid = criteria.op(valid, criteria.isControllable != selectable.gameObject.GetComponent<Owner>());
+
+            return valid;
+        }
+
         public static void UpdateBoxSelection(Vector3 s1, Vector3 s2, SelectionCriteria selectionCriteria = null)
         {
+            Profiler.BeginSample("UpdateBoxSelection");
+
             foreach (var selectionListener in _selectionListeners.Values)
             {
                 var selectable = selectionListener.SelectableComponent;
 
-                if (selectionCriteria != null && SelectionCriteria.IsValidSelection(selectionCriteria, selectable))
-                {
-                    Vector3 p = Camera.main.WorldToScreenPoint(selectable.position);
-                    Vector2 s1P = Vector2.Min(s1, s2);
-                    Vector2 s2P = Vector2.Max(s1, s2);
-                    bool selected = s1P.x <= p.x && p.x <= s2P.x && s1P.y <= p.y && p.y <= s2P.y;
+                var p = Camera.main.WorldToScreenPoint(selectable.position);
+                var s1P = Vector2.Min(s1, s2);
+                var s2P = Vector2.Max(s1, s2);
+                bool selected = s1P.x <= p.x && p.x <= s2P.x && s1P.y <= p.y && p.y <= s2P.y;
 
-                    // update and notify only selection changes
-                    if (selected)
-                        Select(selectable); // no need to check selectable again
-
-                    else
-                        Deselect(selectable);
-                }
+                // update and notify only selection changes
+                if (selected && IsValidSelection(selectionCriteria, selectable))
+                    Select(selectable); // no need to check selectable again
                 else
-                {
-                    // not valid selection
-                }
+                    Deselect(selectable);
             }
+
+            Profiler.EndSample();
         }
 
         private static bool CheckDirty(Vector3 s1, Vector3 s2)
@@ -212,7 +248,7 @@ namespace EntitySelection
 
             _timeSinceLastSelectionUpdate += Time.deltaTime;
 
-            List<Vector3> selectionScreenCoordsNew = new List<Vector3>() { s1, s2 };
+            var selectionScreenCoordsNew = new List<Vector3>() { s1, s2 };
             selectionScreenCoordsNew = selectionScreenCoordsNew.OrderBy(v => v.x).ToList();
 
             if (_selectionScreenCoords[0] != selectionScreenCoordsNew[0] || _selectionScreenCoords[1] != selectionScreenCoordsNew[1])

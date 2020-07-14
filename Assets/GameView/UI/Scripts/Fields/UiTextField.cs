@@ -17,12 +17,12 @@ namespace UI.Components
 
         public string Text
         {
-            set { this._textMesh.text = value; }
-            get { return this._textMesh.text; }
+            set => this._textMesh.text = value;
+            get => this._textMesh.text;
         }
 
-        public float FontSize { get { return this._textMesh.fontSize; } }
-        public int NumLines { get { return this._textMesh.textInfo.lineCount; } }
+        public float FontSize => this._textMesh.fontSize;
+        public int NumLines => this._textMesh.textInfo.lineCount;
 
         public new void Awake()
         {

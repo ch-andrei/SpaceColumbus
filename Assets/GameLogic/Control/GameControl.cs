@@ -76,7 +76,7 @@ namespace Controls
                 .GetComponent(typeof(EventSystem));
         }
 
-        void Start()
+        private void Start()
         {
             _debugMenu = this.GetComponent<DebugMenu>();
 
@@ -89,6 +89,109 @@ namespace Controls
             KeyActiveManager.NewDoubleDetector(GameControlsManager.RightClickDown.keyPress);
 
             DefaultMode();
+        }
+
+        private void Update()
+        {
+            RayToCursorPosition();
+
+            ProcessControls();
+
+            if (!IsMouseOverUi())
+                ProcessSelectionArea();
+        }
+
+        private void RayToCursorPosition()
+        {
+            // trace a ray to cursor location
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out var hitInfo))
+            {
+                mouseOverWorldPosition = hitInfo.point;
+                var hitObject = hitInfo.collider.transform.gameObject;
+                if (hitObject is null)
+                {
+                    // nothing to do
+                }
+                else
+                {
+                    _mouseOverObject = hitObject;
+                }
+            }
+        }
+
+        private void ProcessControls()
+        {
+            KeyActiveManager.Update(); // process key presses
+
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
+                OnMouse0Down();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClick))
+                OnMouse0Hold();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickUp))
+                OnMouse0Up();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.RightClickDown))
+                OnMouse1Down();
+
+            if (KeyActiveManager.IsActive(GameControlsManager.AgentStopHotkey))
+                OrderStopSelectedAgents();
+        }
+
+        private void ProcessSelectionArea()
+        {
+            // If selecting with mouse pointer only (no box selection)
+            if (!_isBoxSelecting)
+            {
+                var selectedObjects = SelectionManager.GetSelectedObjects();
+
+                try
+                {
+                    if (selectedObjects.Count == 1)
+                    {
+                        var selectedObject = selectedObjects[0];
+                        var entity = EntityManager.GetEntityInParent(selectedObject);
+
+                        if (entity != null)
+                        {
+                            _uiManager.OnSelectEntity(entity);
+                        }
+                    }
+                    else if (selectedObjects.Count == 0)
+                        SelectionManager.UpdateMouseSelection(_mouseOverObject, null);
+                }
+                catch (MissingReferenceException e)
+                {
+                    // if object gets destroyed, it may still be referenced here if selection manager doesnt update 'currently selected'
+                    Debug.Log("Warning: trying to inspect a destroyed object.");
+                    SelectionManager.CheckMissingSelected(); // TODO: optionally remove this
+                }
+
+                return;
+            }
+
+            if (_startedBoxSelection)
+            {
+                _startedBoxSelection = false;
+                OnDeselectObjects();
+            }
+
+            // placeholder selection
+            var selectionCriteria = new SelectionCriteria(
+                isAgent: true,
+                isBuilding: false,
+                isControllable: true,
+                SelectionCriteria.ECondition.Or,
+                gameSession.CurrentPlayer.ownership.info
+            );
+
+            // TODO ADD CRITERIA/SORTING of selected objects
+
+            SelectionManager.UpdateSelected(
+                _mousePositionAtSelectionStart, _mousePositionAtSelectionEnd,
+                _mouseOverObject, selectionCriteria);
         }
 
         public void SetDebugMenu()
@@ -117,17 +220,6 @@ namespace Controls
                     break;
                 default:
                     break;
-            }
-        }
-
-        private void SelectionStart()
-        {
-            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
-            {
-                _startedBoxSelection = true;
-                _isBoxSelecting = true;
-                _mousePositionAtSelectionStart = Input.mousePosition;
-                SelectionManager.Dirty = true;
             }
         }
 
@@ -163,7 +255,18 @@ namespace Controls
             }
         }
 
-        private void DefaultMode()
+        private void SelectionStart()
+        {
+            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
+            {
+                _startedBoxSelection = true;
+                _isBoxSelecting = true;
+                _mousePositionAtSelectionStart = Input.mousePosition;
+                SelectionManager.Dirty = true;
+            }
+        }
+
+        public void DefaultMode()
         {
             _controlType = EControlType.Default;
             ResetSelection();
@@ -171,7 +274,7 @@ namespace Controls
 
         private void OrderMoveSelectedAgents()
         {
-            gameSession.MoveSelectedAgents(mouseOverWorldPosition);
+            gameSession.MoveSelected(mouseOverWorldPosition);
         }
 
         private void OrderStopSelectedAgents()
@@ -187,6 +290,7 @@ namespace Controls
         private void ResetSelection()
         {
             _isBoxSelecting = false;
+            _startedBoxSelection = false;
             OnDeselectObjects();
         }
 
@@ -195,113 +299,13 @@ namespace Controls
             _uiManager.Reset();
         }
 
-        private void ProcessSelectionArea()
-        {
-            // placeholder selection
-            SelectionCriteria selectionCriteria = new SelectionCriteria(
-                true, false, true,
-                SelectionCriteria.ECondition.Or,
-                gameSession.CurrentPlayer.ownership.info
-            );
-
-            // TODO ADD CRITERIA/SORTING of selected objects
-
-            // If selecting with mouse pointer only (no box selection)
-            if (!_isBoxSelecting)
-            {
-                var selectedObjects = SelectionManager.GetSelectedObjects();
-
-                try
-                {
-                    if (selectedObjects.Count == 1)
-                    {
-                        var selectedObject = selectedObjects[0];
-                        var entity = EntityManager.GetEntity(selectedObject);
-
-                        if (entity != null)
-                        {
-                            _uiManager.OnSelectEntity(entity);
-                        }
-                    }
-                    else if (selectedObjects.Count == 0)
-                        SelectionManager.UpdateMouseSelection(_mouseOverObject, null);
-                }
-                catch (MissingReferenceException e)
-                {
-                    // if object gets destroyed, it may still be referenced here if selection manager doesnt update 'currently selected'
-                    Debug.Log("Warning: trying to inspect a destroyed object.");
-                    SelectionManager.CheckMissingSelected(); // TODO: optionally remove this
-                }
-
-                return;
-            }
-
-            if (_startedBoxSelection)
-            {
-                OnDeselectObjects();
-            }
-
-            SelectionManager.UpdateSelected(_mousePositionAtSelectionStart, _mousePositionAtSelectionEnd,
-                _mouseOverObject, selectionCriteria);
-        }
-
         private void OnDeselectObjects()
         {
             SelectionManager.DeselectAll();
             _uiManager.OnDeselect();
-            _startedBoxSelection = false;
         }
 
-        private void Update()
-        {
-            RayToCursorPosition();
-
-            ProcessControls();
-
-            if (!IsMouseOverUi())
-                ProcessSelectionArea();
-        }
-
-        private void RayToCursorPosition()
-        {
-            // trace a ray to cursor location
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out var hitInfo))
-            {
-                mouseOverWorldPosition = hitInfo.point;
-                GameObject hitObject = hitInfo.collider.transform.gameObject;
-                if (hitObject is null)
-                {
-                    // nothing to do
-                }
-                else
-                {
-                    _mouseOverObject = hitObject;
-                }
-            }
-        }
-
-        private void ProcessControls()
-        {
-            KeyActiveManager.Update(); // process key presses
-
-            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickDown))
-                OnMouse0Down();
-
-            if (KeyActiveManager.IsActive(GameControlsManager.LeftClick))
-                OnMouse0Hold();
-
-            if (KeyActiveManager.IsActive(GameControlsManager.LeftClickUp))
-                OnMouse0Up();
-
-            if (KeyActiveManager.IsActive(GameControlsManager.RightClickDown))
-                OnMouse1Down();
-
-            if (KeyActiveManager.IsActive(GameControlsManager.AgentStopHotkey))
-                OrderStopSelectedAgents();
-        }
-
-        void OnGUI()
+        private void OnGUI()
         {
             if (showGui)
             {

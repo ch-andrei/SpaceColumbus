@@ -47,4 +47,32 @@ namespace Common
     {
         int Guid { get; }
     }
+
+    public struct Timed
+    {
+        public float TimeAtSpawn;
+        public float Duration;
+    }
+
+    public static class FunctionExceptionWrapper
+    {
+        public static T1 Execute<T1, T2>(Func<T1> func, T2 exception=null, string message=null)
+            where T2 : Exception
+        {
+            try {
+                return func();
+            } catch (T2 e)
+            {
+                if (exception is null)
+                {
+                    if (!(message is null))
+                        Debug.Log(message);
+
+                    return default(T1);
+                }
+                else
+                    throw exception;
+            }
+        }
+    }
 }

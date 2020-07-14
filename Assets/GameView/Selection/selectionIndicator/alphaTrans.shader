@@ -1,4 +1,6 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿// Upgrade NOTE: replaced 'UNITY_INSTANCE_ID' with 'UNITY_VERTEX_INPUT_INSTANCE_ID'
+
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 // Unlit alpha - blended shader.
 // - no lighting
@@ -26,19 +28,23 @@ Shader "Unlit/TransparentAlphaMask" {
                 CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
+
                 #pragma multi_compile_fog
+                #pragma multi_compile_instancing
 
                 #include "UnityCG.cginc"
 
                 struct appdata_t {
                     float4 vertex : POSITION;
                     float2 uv : TEXCOORD0;
+                    UNITY_VERTEX_INPUT_INSTANCE_ID
                 };
 
                 struct v2f {
                     float2 uv : TEXCOORD0;
                     UNITY_FOG_COORDS(1)
                     float4 vertex : SV_POSITION;
+                    UNITY_VERTEX_INPUT_INSTANCE_ID
                 };
 
                 fixed4 _Color;
@@ -53,14 +59,22 @@ Shader "Unlit/TransparentAlphaMask" {
                 v2f vert(appdata_t v)
                 {
                     v2f o;
+
+                    UNITY_SETUP_INSTANCE_ID (v);
+                    UNITY_TRANSFER_INSTANCE_ID (v, o);
+
                     o.vertex = UnityObjectToClipPos(v.vertex);
+
                     UNITY_TRANSFER_FOG(o, o.vertex);
+
                     o.uv = v.uv;
                     return o;
                 }
 
                 fixed4 frag(v2f i) : SV_Target
                 {
+                    UNITY_SETUP_INSTANCE_ID (i);
+
                     float2 uv = -1.0 + i.uv * 2.0;
                     uv = uv * uv;
 

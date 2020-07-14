@@ -24,7 +24,7 @@ namespace UI
 
         //public UiComponent EntityUi;
         public UiModule MenuVitalsLog;
-        private UiModuleVitalsLog _agentVitalsModule;
+        private AgentInspectorUiModule _agentInspectorUi;
 
         #endregion Contexts and Modules
 
@@ -32,7 +32,7 @@ namespace UI
 
         private void Awake()
         {
-            _agentVitalsModule = MenuVitalsLog.GetComponentInChildren<UiModuleVitalsLog>();
+            _agentInspectorUi = MenuVitalsLog.GetComponentInChildren<AgentInspectorUiModule>();
         }
 
         // Start is called before the first frame update
@@ -76,18 +76,21 @@ namespace UI
 
         public void OnSelectEntity(Entity entity)
         {
+            // Debug.Log("OnSelectEntity");
+
             if (entity.EntityType == EntityType.Agent)
             {
                 OnSelectAgent(true);
-                this._agentVitalsModule.SetObservedAgent(entity);
+                this._agentInspectorUi.SetObservedEntity(entity);
             }
             else
             {
-                // Debug.Log("Selected something that isn't an agent.");
+                OnDeselect();
+                Debug.Log("Selected something that isn't an agent.");
             }
         }
 
-        public void OnSelectAgent(bool selectState) => this._agentVitalsModule.SetActive(selectState);
+        public void OnSelectAgent(bool selectState) => this._agentInspectorUi.SetActive(selectState);
         public void OnDeselect() => OnSelectAgent(false);
     }
 

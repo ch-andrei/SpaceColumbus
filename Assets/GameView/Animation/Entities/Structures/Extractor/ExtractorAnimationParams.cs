@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Unity.Burst;
 using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Jobs;
@@ -50,6 +51,7 @@ namespace Animation.Entities.Extractor
 
     public class ExtractorAnimationSystemThreaded : AnimationSystemThreaded<ExtractorAnimationParams>
     {
+        [BurstCompile]
         private struct ExtractorAnimationJob : IJobParallelForTransform
         {
             [ReadOnly] public NativeArray<Vector3> Pivots;

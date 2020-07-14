@@ -30,7 +30,7 @@ namespace UI.Components
         {
             foreach (var module in _submodules)
             {
-                Canvas canvas = module.GetComponent<Canvas>();
+                var canvas = module.GetComponent<Canvas>();
                 if (canvas == null) return;
 
                 this._canvases.Add(canvas);

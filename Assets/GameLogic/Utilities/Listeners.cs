@@ -80,7 +80,9 @@ namespace Utilities.Events
 
     public class QueuedEventListener<T> : IEventListener<T> where T : GameEvent
     {
-        public Queue<T> eventQueue { get; private set; }
+        public Queue<T> EventQueue { get; private set; }
+
+        public bool HasEvents => 0 < this.EventQueue.Count;
 
         public QueuedEventListener() : base()
         {
@@ -89,12 +91,14 @@ namespace Utilities.Events
 
         public void ResetEvents()
         {
-            eventQueue = new Queue<T>();
+            EventQueue = new Queue<T>();
         }
+
+        public T DequeueEvent() => this.EventQueue.Dequeue();
 
         public virtual bool OnEvent(T gameEvent)
         {
-            eventQueue.Enqueue(gameEvent);
+            EventQueue.Enqueue(gameEvent);
 
             return true;
         }

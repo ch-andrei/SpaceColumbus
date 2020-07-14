@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 using Entities;
 using Entities.Bodies;
-using Entities.Health;
+using Entities.Damageables;
 using Entities.Materials;
 using Navigation;
 
@@ -29,24 +29,16 @@ namespace GameLogic
         {
             // managers
             EntityManager.Initialize();
+            EntitySystemManager.Initialize();
             PlayerManager.Initialize();
             SelectionManager.Initialize();
 
             // factories
             EntityMaterialFactory.Initialize(); // must be initialized before BodyPartFactory due to dependencies
-            BodyPartFactory.Initialize();
+            BodyFactory.Initialize();
 
             // initialize game
             InitializeGameSession();
-        }
-
-        public void FixedUpdate()
-        {
-            float time = Time.time;
-            float deltaTime = Time.deltaTime;
-
-            // must be done every fixed frame
-            EntityManager.Update(time, deltaTime);
         }
 
         public void Update()
@@ -56,6 +48,8 @@ namespace GameLogic
 
             // must be done every frame
             AnimationManager.Update(time, deltaTime);
+            EntityManager.Update(time, deltaTime);
+            EntitySystemManager.Update(time, deltaTime);
         }
 
         public void OnDestroy()

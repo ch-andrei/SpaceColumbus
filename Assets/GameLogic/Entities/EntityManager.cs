@@ -1,48 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Common;
-using Entities.Health;
-using EntitySelection;
+
 using UnityEngine;
+
+using Entities.Capacities;
+using Entities.Damageables;
+
+using Brains;
+
+using EntitySelection;
+
 using Utilities.QuadTree;
 
 namespace Entities
 {
+    // private struct EntityNode : IHasPoint
+    // {
+    //     public Entity Entity;
+    //     public Vector2 Point => Entity.Position2d;
+    // }
+    //
+    // private static PointQuadTree<EntityNode> _entityTree;
+    //
+    // // TODO 1: refactor this out of EntityManager;
+    // // TODO 2: get game session region bounds
+    // float t = 1e6f; // some large value for the bound
+    // _entityTree = new PointQuadTree<EntityNode>(
+    //     new Rectangle(-t, -t, t, t)
+    // );
+
+    // mapping between entity component type and IDs; ID is added upon entity registration
+    // private static Dictionary<EntityComponentType, HashSet<int>> _entitiesWithComponent;
+
+    // private struct CachedSet<T> where T : IIdentifiable
+    // {
+    //     public HashSet<T> Items;
+    //     public bool Dirty; // indicates whether the set must be re-invalidated
+    //
+    //     public void Initialize()
+    //     {
+    //         // TODO: hashset with capacity?
+    //         // https://stackoverflow.com/questions/6771917/why-cant-i-preallocate-a-hashsett
+    //         Items = new HashSet<T>();
+    //     }
+    //
+
     public static class EntityManager
     {
-        // private struct EntityNode : IHasPoint
-        // {
-        //     public Entity Entity;
-        //     public Vector2 Point => Entity.Position2d;
-        // }
-        //
-        // private static PointQuadTree<EntityNode> _entityTree;
-        //
-        // // TODO 1: refactor this out of EntityManager;
-        // // TODO 2: get game session region bounds
-        // float t = 1e6f; // some large value for the bound
-        // _entityTree = new PointQuadTree<EntityNode>(
-        //     new Rectangle(-t, -t, t, t)
-        // );
-
-        // mapping between entity component type and IDs; ID is added upon entity registration
-        // private static Dictionary<EntityComponentType, HashSet<int>> _entitiesWithComponent;
-
-        // private struct CachedSet<T> where T : IIdentifiable
-        // {
-        //     public HashSet<T> Items;
-        //     public bool Dirty; // indicates whether the set must be re-invalidated
-        //
-        //     public void Initialize()
-        //     {
-        //         // TODO: hashset with capacity?
-        //         // https://stackoverflow.com/questions/6771917/why-cant-i-preallocate-a-hashsett
-        //         Items = new HashSet<T>();
-        //     }
-        // }
-
         private static int _entityId = 0;
         private static int NewEntityId => _entityId++;
 
@@ -57,7 +62,6 @@ namespace Entities
         private static Dictionary<EntityComponentType, HashSet<Entity>> _cachedEntities;
         private static Dictionary<EntityComponentType, HashSet<EntityComponent>> _cachedComponents;
 
-        private static List<EntityComponentSystem> _systems;
 
         // this must be called before using EntityManager
         public static void Initialize()
@@ -67,25 +71,11 @@ namespace Entities
 
             _cachedEntities = new Dictionary<EntityComponentType, HashSet<Entity>>();
             _cachedComponents = new Dictionary<EntityComponentType, HashSet<EntityComponent>>();
-
-            _systems = new List<EntityComponentSystem>();
-
-            AddEntitySystems();
         }
 
-        private static void AddEntitySystems()
-        {
-            var damageableSystem = DamageableSystem.GetInstance();
-            _systems.Add(damageableSystem);
-
-            // TODO: ADD MORE SYSTEMS HERE
-        }
-
-        // should be called at fixed intervals, e.g. by FixedUpdate() somewhere
         public static void Update(float time, float deltaTime)
         {
-            foreach (var system in _systems)
-                system.Update(time, deltaTime);
+            // TODO: add work here
         }
 
         #region Methods for getting entities and components
@@ -99,6 +89,10 @@ namespace Entities
                     return typeof(DamageableComponent);
                 case EntityComponentType.Selectable:
                     return typeof(SelectableComponent);
+                case EntityComponentType.AI:
+                    return typeof(AIComponent);
+                case EntityComponentType.Capacities:
+                    return typeof(CapacitiesComponent);
                 // TODO: remove fall through to default
                 case EntityComponentType.Movement:
                 case EntityComponentType.None:
@@ -115,21 +109,22 @@ namespace Entities
                 return EntityComponentType.Damageable;
             else if (type == typeof(SelectableComponent))
                 return EntityComponentType.Selectable;
+            else if (type == typeof(AIComponent))
+                return EntityComponentType.AI;
+            else if (type == typeof(CapacitiesComponent))
+                return EntityComponentType.Capacities;
             else
                 throw new ArgumentException("EntityManager: queried Type T is not a supported type of EntityComponent.");
         }
 
         #region Methods for getting Entity Components from entities and game objects
 
-        public static Entity GetEntity(GameObject go) => go.GetComponentInParent<Entity>();
-
-        // returns all entity components from a given GameObject or Entity
-        public static EntityComponent[] GetComponentsUnity(GameObject go) => GetComponentsUnity(GetEntity(go));
-        public static EntityComponent[] GetComponentsUnity(Entity en) => en.gameObject.GetComponents<EntityComponent>();
+        public static Entity GetEntity(GameObject go) => (go is null) ? null : go.GetComponent<Entity>();
+        public static Entity GetEntityInParent(GameObject go) => (go is null) ? null : go.GetComponentInParent<Entity>();
 
         // returns all entity components with particular Component Type T from a given GameObject or Entity
         public static List<T> GetComponents<T>(GameObject go) where T : EntityComponent =>
-            GetComponents<T>(GetEntity(go));
+            GetComponents<T>(GetEntityInParent(go));
         public static List<T> GetComponents<T>(Entity en) where T : EntityComponent
         {
             if (en is null)
@@ -146,8 +141,15 @@ namespace Entities
             return components;
         }
 
+        public static bool HasComponent<T>(Entity en) where T : EntityComponent
+        {
+            var components = GetComponents<T>();
+
+            return 0 < components.Count;
+        }
+
         // returns the first entity component with particular Component Type T from a given GameObject or Entity
-        public static T GetComponent<T>(GameObject go) where T : EntityComponent => GetComponent<T>(GetEntity(go));
+        public static T GetComponent<T>(GameObject go) where T : EntityComponent => GetComponent<T>(GetEntityInParent(go));
         public static T GetComponent<T>(Entity entity, bool allowSubtypes = true) where T : EntityComponent
         {
             if (entity is null)
@@ -172,14 +174,10 @@ namespace Entities
             => GetEntitiesWithComponent(GetTypeForComponentType<T>());
         public static List<Entity> GetEntitiesWithComponent(EntityComponentType type)
         {
-            var entities = new List<Entity>();
-
             if (!_cachedEntities.ContainsKey(type))
-                return entities;
+                return new List<Entity>();;
 
-            entities.AddRange(_cachedEntities[type]);
-
-            return entities;
+            return _cachedEntities[type].ToList();
         }
 
         // returns all components with particular Component Type T from all entities
@@ -204,7 +202,7 @@ namespace Entities
         #region Entity and Component registration
 
         // checks if entity was previously registered
-        public static bool IsRegisteredEntity(GameObject go) => IsRegisteredEntity(GetEntity(go));
+        public static bool IsRegisteredEntity(GameObject go) => IsRegisteredEntity(GetEntityInParent(go));
         public static bool IsRegisteredEntity(Entity entity) => IsRegisteredEntityId(entity.Guid);
         public static bool IsRegisteredEntityId(int id) => _entities.ContainsKey(id);
 
@@ -214,7 +212,7 @@ namespace Entities
             int id = NewEntityId;
             entity.SetId(id);
 
-            Debug.Log($"Registering new entity with id [{id}]");
+            // Debug.Log($"Registering new entity with id [{id}]");
 
             if (!IsRegisteredEntityId(id))
                 _entities.Add(id, entity);

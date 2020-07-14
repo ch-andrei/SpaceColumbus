@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" ?>
+<root>
+    <Timed>
+        <Global>0.033</Global>
+        <DamageableSystem>0.033</DamageableSystem>
+        <AiSystem>0.033</AiSystem>
+        <CapacitiesSystem>0.033</CapacitiesSystem>
+    </Timed>
+
+    <Verbosity>
+        <EntityComponentSystem>0</EntityComponentSystem>
+    </Verbosity>
+
+    <CapacitiesModifiers>
+        <TerminalDamageState>1.0</TerminalDamageState>
+        <CriticalDamageState>0.8</CriticalDamageState>
+        <MajorDamageState>0.5</MajorDamageState>
+        <MinorDamageState>0.2</MinorDamageState>
+        <NoneDamageState>0</NoneDamageState>
+    </CapacitiesModifiers>
+
+</root>

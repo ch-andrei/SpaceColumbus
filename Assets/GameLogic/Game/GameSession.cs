@@ -1,5 +1,7 @@
 ﻿using System;
+using Brains;
 using Entities;
+using Entities.Materials;
 using EntitySelection;
 using UnityEngine;
 
@@ -92,10 +94,10 @@ namespace GameLogic
                 GameObject.Destroy(t.gameObject);
             }
 
-            GameObject regionView = new GameObject(StaticGameDefs.RegionViewObjectName);
+            var regionView = new GameObject(StaticGameDefs.RegionViewObjectName);
             regionView.transform.parent = viewablesRoot.transform;
 
-            SquareRegionModelGenerator squareRegionModelGenerator =
+            var squareRegionModelGenerator =
                 regionView.AddComponent<RegionModelGenerators.SquareRegionModelGenerator>();
             squareRegionModelGenerator.InitializeMesh(this.region);
         }
@@ -134,17 +136,17 @@ namespace GameLogic
             GameObject.Instantiate(agentPrefab, position, agentPrefab.transform.rotation, agentRoot.transform);
         }
 
-        public void MoveSelectedAgents(Vector3 destination)
+        public void MoveSelected(Vector3 destination)
         {
             var selectedObjects = SelectionManager.GetSelectedObjects();
             foreach (var selectedObject in selectedObjects)
             {
                 try
                 {
-                    var agent = selectedObject.GetComponent<Agent>();
-                    agent.MoveTo(destination);
+                    var ai = EntityManager.GetComponent<AIComponent>(selectedObject);
+                    ai.MoveTo(destination);
                 }
-                // these may occur when an object is destroyed
+                // these may occur when an object is destroyed or if the object does not have AIComponent
                 catch (MissingReferenceException e)
                 {
                 }
@@ -159,10 +161,21 @@ namespace GameLogic
             var selectedObjects = SelectionManager.GetSelectedObjects();
             foreach (var selectedObject in selectedObjects)
             {
-                var agent = selectedObject.GetComponent<Agent>();
-                if (agent != null)
-                    agent.Stop();
+                try
+                {
+                    var ai = EntityManager.GetComponent<AIComponent>(selectedObject);
+                    ai.StopMoving();
+                }
+                // these may occur when an object is destroyed or if the object does not have AIComponent
+                catch (MissingReferenceException e)
+                {
+                }
+                catch (NullReferenceException e)
+                {
+                }
             }
         }
+
+
     }
 }

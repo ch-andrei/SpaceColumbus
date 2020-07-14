@@ -23,6 +23,9 @@ namespace Utilities.XmlReader
     {
         // TODO: add maximum number of currently open XmlDocuments, order these by open time, i.e. cache
 
+        public const string RootField = "root";
+        public const string ItemField = "item";
+
         private static Dictionary<string, XmlDocument> _openDocs = new Dictionary<string, XmlDocument>();
 
         // all paths passed to this class are relative to current directory
@@ -38,25 +41,47 @@ namespace Utilities.XmlReader
             this._doc = GetXmlDoc(path);
         }
 
-        public bool HasField(string field) { return HasField(this._doc, field); }
-        public bool HasField(List<string> fields) { return HasField(this._doc, fields); }
-        public float GetFloat(string field) { return GetFloat(this._doc, field); }
-        public float GetFloat(List<string> fields) { return GetFloat(this._doc, fields); }
-        public string GetString(string field) { return GetString(this._doc, field); }
-        public string GetString(List<string> fields) { return GetString(this._doc, fields); }
-        public List<string> GetStrings(string field) { return GetStrings(this._doc, field); }
-        public List<string> GetStrings(List<string> fields) { return GetStrings(this._doc, fields); }
-        public List<string> GetChildren(string field) { return GetChildren(this._doc, field); }
-        public List<string> GetChildren(List<string> fields) { return GetChildren(this._doc, fields); }
+        public bool HasField(string field) => HasField(this._doc, field);
+        public bool HasField(List<string> fields) => HasField(this._doc, fields);
+
+        public float GetFloat(string field) => GetFloat(this._doc, field);
+        public float GetFloat(List<string> fields) => GetFloat(this._doc, fields);
+
+        public float TryGetFloat(string field, float defaultValue) => TryGetFloat(this._doc, field, defaultValue);
+        public float TryGetFloat(List<string> fields, float defaultValue) => TryGetFloat(this._doc, fields, defaultValue);
+
+        public string GetString(string field) => GetString(this._doc, field);
+        public string GetString(List<string> fields) => GetString(this._doc, fields);
+
+        public List<string> GetStrings(string field) => GetStrings(this._doc, field);
+        public List<string> GetStrings(List<string> fields) => GetStrings(this._doc, fields);
+
+        public List<string> GetChildren(string field) => GetChildren(this._doc, field);
+        public List<string> GetChildren(List<string> fields) => GetChildren(this._doc, fields);
+
         #endregion NonStatic
+
+        public static float TryGetFloat(XmlDocument doc, List<string> fields, float defaultValue = 0f) =>
+            TryGetFloat(doc, GetFieldPathFromStringList(fields), defaultValue);
+        public static float TryGetFloat(XmlDocument doc, string fieldPath, float defaultValue = 0f)
+        {
+            if (HasField(doc, fieldPath))
+                return GetFloat(doc, fieldPath);
+            else
+            {
+                return defaultValue;
+            }
+        }
 
         public static bool HasField(XmlDocument doc, List<string> fields)
         {
             return HasField(doc, GetFieldPathFromStringList(fields));
         }
+
         public static bool HasField(XmlDocument doc, string fieldPath)
         {
-            XmlNode node = doc.DocumentElement.SelectSingleNode($"/{fieldPath}");
+            var path = GetXmlPathFromFieldPath(fieldPath);
+            var node = doc.DocumentElement.SelectSingleNode(path);
             return node != null;
         }
 
@@ -78,7 +103,8 @@ namespace Utilities.XmlReader
 
         public static string GetString(XmlDocument doc, string fieldPath)
         {
-            XmlNode node = doc.DocumentElement.SelectSingleNode($"/{fieldPath}");
+            var path = GetXmlPathFromFieldPath(fieldPath);
+            var node = doc.DocumentElement.SelectSingleNode(path);
             if (node != null)
             {
                 return node.InnerText;
@@ -94,40 +120,39 @@ namespace Utilities.XmlReader
 
         public static List<string> GetStrings(XmlDocument doc, string fieldPath)
         {
-            XmlNodeList nodes = doc.DocumentElement.SelectNodes($"/{fieldPath}");
+            var path = GetXmlPathFromFieldPath(fieldPath);
+            var nodes = doc.DocumentElement.SelectNodes(path);
             return (nodes == null) ? null : RecursiveNodeToString(nodes);
         }
 
-        public static List<string> GetChildren(XmlDocument doc, List<string> fields)
-        {
-            return GetChildren(doc, GetFieldPathFromStringList(fields));
-        }
+        public static List<string> GetChildren(XmlDocument doc, List<string> fields) =>
+            GetChildren(doc, GetFieldPathFromStringList(fields));
 
         public static List<string> GetChildren(XmlDocument doc, string fieldPath)
         {
-            List<string> strings = new List<string>();
-            XmlNodeList nodes = doc.DocumentElement.SelectNodes($"/{fieldPath}");
+            var strings = new List<string>();
+            var path = GetXmlPathFromFieldPath(fieldPath);
+            var nodes = doc.DocumentElement.SelectNodes(path);
             if (nodes != null)
             {
                 foreach (XmlNode node in nodes)
                     foreach (XmlNode childNode in node.ChildNodes)
                         strings.Add(childNode.Name);
-                
             }
             return strings;
         }
 
-        public static List<String> RecursiveNodeToString(XmlNodeList nodes, string name = "")
+        public static List<string> RecursiveNodeToString(XmlNodeList nodes, string name = "")
         {
-            List<string> strings = new List<string>();
+            var strings = new List<string>();
             foreach (XmlNode node in nodes)
                 strings.AddRange(RecursiveNodeToString(node, name));
             return strings;
         }
 
-        public static List<String> RecursiveNodeToString(XmlNode node, string name="")
+        public static List<string> RecursiveNodeToString(XmlNode node, string name="")
         {
-            List<string> strings = new List<string>();
+            var strings = new List<string>();
             if (node.HasChildNodes)
                 foreach (XmlNode child in node.ChildNodes)
                     foreach (var s in RecursiveNodeToString(child))
@@ -139,7 +164,7 @@ namespace Utilities.XmlReader
 
         public static XmlDocument AddNewXmlDoc(string path)
         {
-            XmlDocument doc = ReadXmlDocument(path);
+            var doc = ReadXmlDocument(path);
             _openDocs.Add(path, doc);
             return doc;
         }
@@ -165,10 +190,11 @@ namespace Utilities.XmlReader
                 return AddNewXmlDoc(path);
         }
 
+        private static string GetXmlPathFromFieldPath(string fieldPath) => $"/{RootField}/{fieldPath}";
+
         private static string GetFieldPathFromStringList(List<string> fields)
         {
-            // TODO: verify '/' at the end
-            StringBuilder fieldPath = new StringBuilder();
+            var fieldPath = new StringBuilder();
             for (int i = 0; i < fields.Count; i++)
             {
                 fieldPath.Append(fields[i]);
@@ -180,7 +206,7 @@ namespace Utilities.XmlReader
 
         private static XmlDocument ReadXmlDocument(string path)
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load($"{_curDir}/{path}");
             return doc;
         }
