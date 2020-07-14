@@ -1,0 +1,18 @@
+﻿stage 1:
+
+    - GameManager.Awake()
+            // managers
+            EntityManager.Initialize();
+            PlayerManager.Initialize();
+            SelectionManager.Initialize();
+
+            // factories
+            EntityMaterialFactory.Initialize(); // must be initialized before BodyPartFactory due to dependencies
+            BodyFactory.Initialize();
+
+            // initialize game
+            InitializeGameSession();
+
+    -Entity.Awake()
+            entityEventSystem = new EntityEventGenerator(this);
+            Components = new List<EntityComponent>();

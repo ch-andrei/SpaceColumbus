@@ -19,24 +19,24 @@ public class GunShoot : MonoBehaviour {
 	public GameObject[] fleshHitEffects;
 	public GameObject woodHitEffect;
 
-	private float nextFire;												// Float to store the time the player will be allowed to fire again, after firing
-	private Animator anim;
-	private GunAim gunAim;
+	private float _nextFire;												// Float to store the time the player will be allowed to fire again, after firing
+	private Animator _anim;
+	private GunAim _gunAim;
 
 	void Start () 
 	{
-		anim = GetComponent<Animator> ();
-		gunAim = GetComponentInParent<GunAim>();
+		_anim = GetComponent<Animator> ();
+		_gunAim = GetComponentInParent<GunAim>();
 	}
 
 	void Update () 
 	{
-		if (Input.GetButtonDown("Fire1") && Time.time > nextFire && !gunAim.GetIsOutOfBounds()) 
+		if (Input.GetButtonDown("Fire1") && Time.time > _nextFire && !_gunAim.GetIsOutOfBounds()) 
 		{
-			nextFire = Time.time + fireRate;
+			_nextFire = Time.time + fireRate;
 			muzzleFlash.Play();
 			cartridgeEjection.Play();
-			anim.SetTrigger ("Fire");
+			_anim.SetTrigger ("Fire");
 
 			Vector3 rayOrigin = gunEnd.position;
 			RaycastHit hit;

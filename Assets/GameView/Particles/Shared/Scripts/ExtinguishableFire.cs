@@ -11,13 +11,13 @@ public class ExtinguishableFire : MonoBehaviour
     public ParticleSystem fireParticleSystem;
     public ParticleSystem smokeParticleSystem;
 
-    protected bool m_isExtinguished;
+    protected bool MIsExtinguished;
 
-    const float m_FireStartingTime = 2.0f;
+    const float MFireStartingTime = 2.0f;
 
     private void Start()
     {
-        m_isExtinguished = true;
+        MIsExtinguished = true;
 
         smokeParticleSystem.Stop();
         fireParticleSystem.Stop();
@@ -27,10 +27,10 @@ public class ExtinguishableFire : MonoBehaviour
 
     public void Extinguish()
     {
-        if (m_isExtinguished)
+        if (MIsExtinguished)
             return;
 
-        m_isExtinguished = true;
+        MIsExtinguished = true;
         StartCoroutine(Extinguishing());
     }
 
@@ -41,9 +41,9 @@ public class ExtinguishableFire : MonoBehaviour
         smokeParticleSystem.Play();
 
         float elapsedTime = 0.0f;
-        while (elapsedTime < m_FireStartingTime)
+        while (elapsedTime < MFireStartingTime)
         {
-            float ratio = Mathf.Max(0.0f, 1.0f - (elapsedTime / m_FireStartingTime));
+            float ratio = Mathf.Max(0.0f, 1.0f - (elapsedTime / MFireStartingTime));
 
             fireParticleSystem.transform.localScale = Vector3.one * ratio;
 
@@ -69,9 +69,9 @@ public class ExtinguishableFire : MonoBehaviour
         fireParticleSystem.Play();
 
         float elapsedTime = 0.0f;
-        while (elapsedTime < m_FireStartingTime)
+        while (elapsedTime < MFireStartingTime)
         {
-            float ratio = Mathf.Min(1.0f, (elapsedTime / m_FireStartingTime));
+            float ratio = Mathf.Min(1.0f, (elapsedTime / MFireStartingTime));
 
             fireParticleSystem.transform.localScale = Vector3.one * ratio;
 
@@ -81,6 +81,6 @@ public class ExtinguishableFire : MonoBehaviour
         }
 
         fireParticleSystem.transform.localScale = Vector3.one;
-        m_isExtinguished = false;
+        MIsExtinguished = false;
     }
 }

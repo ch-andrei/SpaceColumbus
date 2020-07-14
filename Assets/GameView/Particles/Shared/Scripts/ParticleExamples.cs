@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class ParticleExamples {
@@ -9,6 +10,6 @@ public class ParticleExamples {
 	[TextArea]
 	public string description;
 	public bool isWeaponEffect;
-	public GameObject particleSystemGO;
+	[FormerlySerializedAs("particleSystemGO")] public GameObject particleSystemGo;
 	public Vector3 particlePosition, particleRotation;
 }

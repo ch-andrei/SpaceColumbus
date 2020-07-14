@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 namespace UnityEditor.AI
 {
-    public static class NavMeshComponentsGUIUtility
+    public static class NavMeshComponentsGuiUtility
     {
         public static void AreaPopup(string labelName, SerializedProperty areaProperty)
         {
@@ -35,7 +35,7 @@ namespace UnityEditor.AI
             EditorGUI.EndProperty();
         }
 
-        public static void AgentTypePopup(string labelName, SerializedProperty agentTypeID)
+        public static void AgentTypePopup(string labelName, SerializedProperty agentTypeId)
         {
             var index = -1;
             var count = NavMesh.GetSettingsCount();
@@ -45,7 +45,7 @@ namespace UnityEditor.AI
                 var id = NavMesh.GetSettingsByIndex(i).agentTypeID;
                 var name = NavMesh.GetSettingsNameFromID(id);
                 agentTypeNames[i] = name;
-                if (id == agentTypeID.intValue)
+                if (id == agentTypeId.intValue)
                     index = i;
             }
             agentTypeNames[count] = "";
@@ -58,7 +58,7 @@ namespace UnityEditor.AI
             }
 
             var rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
-            EditorGUI.BeginProperty(rect, GUIContent.none, agentTypeID);
+            EditorGUI.BeginProperty(rect, GUIContent.none, agentTypeId);
 
             EditorGUI.BeginChangeCheck();
             index = EditorGUI.Popup(rect, labelName, index, agentTypeNames);
@@ -67,7 +67,7 @@ namespace UnityEditor.AI
                 if (index >= 0 && index < count)
                 {
                     var id = NavMesh.GetSettingsByIndex(index).agentTypeID;
-                    agentTypeID.intValue = id;
+                    agentTypeId.intValue = id;
                 }
                 else if (index == count + 1)
                 {
@@ -116,7 +116,7 @@ namespace UnityEditor.AI
                     var id = NavMesh.GetSettingsByIndex(i).agentTypeID;
                     var sname = NavMesh.GetSettingsNameFromID(id);
 
-                    var showSelected = show && AgentMaskHasSelectedAgentTypeID(agentMask, id);
+                    var showSelected = show && AgentMaskHasSelectedAgentTypeId(agentMask, id);
                     var userData = new object[] { agentMask, id, !showSelected };
                     menu.AddItem(new GUIContent(sname), showSelected, ToggleAgentMaskItem, userData);
                 }
@@ -133,9 +133,9 @@ namespace UnityEditor.AI
             var uniqueName = GameObjectUtility.GetUniqueNameForSibling(parentTransform, suggestedName);
             var child = new GameObject(uniqueName);
 
-            Undo.RegisterCreatedObjectUndo(child, "Create " + uniqueName);
+            Undo.RegisterCreatedObjectUndo(child, $"Create {uniqueName}");
             if (parentTransform != null)
-                Undo.SetTransformParent(child.transform, parentTransform, "Parent " + uniqueName);
+                Undo.SetTransformParent(child.transform, parentTransform, $"Parent {uniqueName}");
 
             Selection.activeGameObject = child;
 
@@ -151,13 +151,13 @@ namespace UnityEditor.AI
         {
             var args = (object[])userData;
             var agentMask = (SerializedProperty)args[0];
-            var agentTypeID = (int)args[1];
+            var agentTypeId = (int)args[1];
             var value = (bool)args[2];
 
-            ToggleAgentMaskItem(agentMask, agentTypeID, value);
+            ToggleAgentMaskItem(agentMask, agentTypeId, value);
         }
 
-        static void ToggleAgentMaskItem(SerializedProperty agentMask, int agentTypeID, bool value)
+        static void ToggleAgentMaskItem(SerializedProperty agentMask, int agentTypeId, bool value)
         {
             if (agentMask.hasMultipleDifferentValues)
             {
@@ -170,7 +170,7 @@ namespace UnityEditor.AI
             for (var j = 0; j < agentMask.arraySize; j++)
             {
                 var elem = agentMask.GetArrayElementAtIndex(j);
-                if (elem.intValue == agentTypeID)
+                if (elem.intValue == agentTypeId)
                     idx = j;
             }
 
@@ -186,7 +186,7 @@ namespace UnityEditor.AI
                 if (idx == -1)
                 {
                     agentMask.InsertArrayElementAtIndex(agentMask.arraySize);
-                    agentMask.GetArrayElementAtIndex(agentMask.arraySize - 1).intValue = agentTypeID;
+                    agentMask.GetArrayElementAtIndex(agentMask.arraySize - 1).intValue = agentTypeId;
                 }
             }
             else
@@ -244,12 +244,12 @@ namespace UnityEditor.AI
             return "Mixed...";
         }
 
-        static bool AgentMaskHasSelectedAgentTypeID(SerializedProperty agentMask, int agentTypeID)
+        static bool AgentMaskHasSelectedAgentTypeId(SerializedProperty agentMask, int agentTypeId)
         {
             for (var j = 0; j < agentMask.arraySize; j++)
             {
                 var elem = agentMask.GetArrayElementAtIndex(j);
-                if (elem.intValue == agentTypeID)
+                if (elem.intValue == agentTypeId)
                     return true;
             }
             return false;

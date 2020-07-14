@@ -8,12 +8,12 @@ public class GunAim:MonoBehaviour
 	public int borderTop;
 	public int borderBottom;
 
-	private Camera parentCamera;
-	private bool isOutOfBounds;
+	private Camera _parentCamera;
+	private bool _isOutOfBounds;
 
 	void Start () 
 	{
-		parentCamera = GetComponentInParent<Camera>();
+		_parentCamera = GetComponentInParent<Camera>();
 	}
 
 	void Update()
@@ -23,22 +23,22 @@ public class GunAim:MonoBehaviour
 
 		if (mouseX <= borderLeft || mouseX >= Screen.width - borderRight || mouseY <= borderBottom || mouseY >= Screen.height - borderTop) 
 		{
-			isOutOfBounds = true;
+			_isOutOfBounds = true;
 		} 
 		else 
 		{
-			isOutOfBounds = false;
+			_isOutOfBounds = false;
 		}
 
-		if (!isOutOfBounds)
+		if (!_isOutOfBounds)
 		{
-			transform.LookAt(parentCamera.ScreenToWorldPoint (new Vector3(mouseX, mouseY, 5.0f)));
+			transform.LookAt(_parentCamera.ScreenToWorldPoint (new Vector3(mouseX, mouseY, 5.0f)));
 		}
 	}
 
 	public bool GetIsOutOfBounds()
 	{
-		return isOutOfBounds;
+		return _isOutOfBounds;
 	}
 }
 

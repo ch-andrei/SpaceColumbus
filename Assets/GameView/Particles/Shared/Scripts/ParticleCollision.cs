@@ -9,22 +9,22 @@ using UnityEngine;
 /// </summary>
 public class ParticleCollision : MonoBehaviour
 {
-    private List<ParticleCollisionEvent> m_CollisionEvents = new List<ParticleCollisionEvent>();
-    private ParticleSystem m_ParticleSystem;
+    private List<ParticleCollisionEvent> _mCollisionEvents = new List<ParticleCollisionEvent>();
+    private ParticleSystem _mParticleSystem;
 
 
     private void Start()
     {
-        m_ParticleSystem = GetComponent<ParticleSystem>();
+        _mParticleSystem = GetComponent<ParticleSystem>();
     }
 
 
     private void OnParticleCollision(GameObject other)
     {
-        int numCollisionEvents = m_ParticleSystem.GetCollisionEvents(other, m_CollisionEvents);
+        int numCollisionEvents = _mParticleSystem.GetCollisionEvents(other, _mCollisionEvents);
         for (int i = 0; i < numCollisionEvents; ++i)
         {
-            var col = m_CollisionEvents[i].colliderComponent;
+            var col = _mCollisionEvents[i].colliderComponent;
 
             var fire = col.GetComponent<ExtinguishableFire>();
             if (fire != null)
